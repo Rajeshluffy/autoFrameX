@@ -5,8 +5,10 @@ import java.time.Duration;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
+import cucumber.api.testng.AbstractTestNGCucumberTests;
 
-public class BrowserFactory implements WebDriverFactoryInterface{
+
+public class BrowserFactory extends AbstractTestNGCucumberTests implements WebDriverFactoryInterface{
 
 	private RemoteWebDriver driver;
 	/**
@@ -29,7 +31,6 @@ public class BrowserFactory implements WebDriverFactoryInterface{
 		}
 		 
 	}
-
 
 	@Override
 	public RemoteWebDriver createDriver(BrowserType browsertype, Capabilities capabilities) {

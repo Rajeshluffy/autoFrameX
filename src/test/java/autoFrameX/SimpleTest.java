@@ -11,8 +11,8 @@ import design.patterns.factory.browser.BrowserType;
 import design.patterns.factory.browser.WebDriverFactoryInterface;
 import design.patterns.object.pool.WebDriverPoolFactory;
 
-public class WebDriverPoolTest {
-	private static final Logger logger = Logger.getLogger(WebDriverPoolTest.class.getName());
+public class SimpleTest {
+	private static final Logger logger = Logger.getLogger(SimpleTest.class.getName());
 
 	public static void main(String[] args) {
 
@@ -45,11 +45,28 @@ public class WebDriverPoolTest {
 
 		testOne(pool, BrowserType.CHROME, url1);
 		testTwo(pool, BrowserType.CHROME, url2);
+		testThree(pool, BrowserType.FIREFOX, url1);
+		testFour(pool,BrowserType.FIREFOX, url2);
+
 
 	}
 	
-	
-	
+	private static void testFour(WebDriverPoolFactory pool, BrowserType browser, String url2) {
+		logger.info("The test 4 started");
+		RemoteWebDriver driver = pool.getDriverFactory(browser,url2);
+		
+		logger.info("Title >> "+driver.getTitle());
+		pool.releaseDrver(driver);
+		logger.info("The test 4 completed");
+	}
+
+	private static void testThree(WebDriverPoolFactory pool, BrowserType browser, String url1) {
+		logger.info("The test 3 started");
+		RemoteWebDriver driver = pool.getDriverFactory(browser,url1);
+		logger.info("Title >> "+driver.getTitle());
+		pool.releaseDrver(driver);
+		logger.info("The test 3 completed");
+	}
 	
 	private static void testTwo(WebDriverPoolFactory pool, BrowserType browser, String url2) {
 		logger.info("The test 2 started");
