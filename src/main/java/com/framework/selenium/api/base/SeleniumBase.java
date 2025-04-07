@@ -24,7 +24,6 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -36,23 +35,12 @@ import com.framework.selenium.api.design.Element;
 import com.framework.selenium.api.design.Locators;
 import com.framework.utils.Reporter;
 
+import design.patterns.factory.browser.BrowserFactory;
+import design.patterns.factory.browser.BrowserType;
 import design.patterns.factory.browser.WebDriverFactoryInterface;
+import design.patterns.object.pool.WebDriverPoolFactory;
 
 public class SeleniumBase extends Reporter implements Browser, Element  {
-
-
-	public SeleniumBase(WebDriverFactoryInterface factory) {
-		super(factory);
-		// TODO Auto-generated constructor stub
-	}
-
-//	public RemoteWebDriver  getDriver() {
-//		return 	new ChromeDriver();
-//	}
-//
-//	public WebDriverWait  getWait(){
-//		return new WebDriverWait(getDriver(), Duration.ofSeconds(10));
-//	}
 
 
 	public Actions act;
@@ -610,37 +598,42 @@ public class SeleniumBase extends Reporter implements Browser, Element  {
 	@Override
 	public void startApp(String url, boolean headless) {
 		try {
-			//			setDriver("chrome", headless);
-			//			setWait();
-			//			act = new Actions(getDriver());
-			//			getDriver().manage().window().maximize();
-			//			getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(90));
-			//			getDriver().get(url);
-			//			reportStep("The Browser Launched in chrome browser with URL " + url, "pass");
+			// Initialize >> Factory
+			WebDriverFactoryInterface factory = new BrowserFactory();
+
+			// Initialize >> Object Pool
+			WebDriverPoolFactory pool = new WebDriverPoolFactory(factory);
+
+			RemoteWebDriver currentInstanceDriver = pool.getDriverFactory(BrowserType.CHROME,url);
+			setWait();
+			act = new Actions(getDriver());
+			currentInstanceDriver.manage().window().maximize();
+			currentInstanceDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(90));
+			currentInstanceDriver.get(url);
+			reportStep("The Browser Launched in chrome browser with URL " + url, "pass");
 		} catch (Exception e) {
 			reportStep("Something went wrong \n" + e.getMessage(), "fail");
 		}
 
 	}
-
 	@Override
-	public void startApp(String browser, boolean headless, String url) {
+
+	public void startApp(BrowserType browserType, boolean headless, String url) {
 		try {
-			//			if (browser.equalsIgnoreCase("chrome")) {
-			//				System.setProperty("webdriver.chrome.silentOutput", "true");
-			//				setDriver("chrome", headless);
-			//			} else if (browser.equalsIgnoreCase("firefox")) {
-			//				setDriver("firefox", headless);
-			//			} else if (browser.equalsIgnoreCase("ie")) {
-			//				setDriver("ie",false);
-			//			}else if (browser.equalsIgnoreCase("edge")) {
-			//				setDriver("edge",false);
-			//			}
-			//			setWait();
-			//			getDriver().manage().window().maximize();
-			//			getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(90));
-			//			getDriver().manage().timeouts().pageLoadTimeout(Duration.ofSeconds(20));
-			//			getDriver().get(url);
+
+			// Initialize >> Factory
+			WebDriverFactoryInterface factory = new BrowserFactory();
+
+			// Initialize >> Object Pool
+			WebDriverPoolFactory pool = new WebDriverPoolFactory(factory);
+
+			RemoteWebDriver currentInstanceDriver = pool.getDriverFactory(browserType,url);
+
+			setWait();
+			currentInstanceDriver.manage().window().maximize();
+			currentInstanceDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(90));
+			currentInstanceDriver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(20));
+			currentInstanceDriver.get(url);
 		} catch (WebDriverException e) {
 			e.printStackTrace();
 			reportStep("The Browser Could not be Launched. Hence Failed \n" + e.getMessage(), "fail");
@@ -1051,6 +1044,9 @@ public class SeleniumBase extends Reporter implements Browser, Element  {
 	public void executeTheScript(String js, WebElement ele) {
 		getDriver().executeScript(js, ele);
 	}
+
+
+
 
 
 

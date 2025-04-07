@@ -1,6 +1,5 @@
 package design.patterns.object.pool;
 
-import java.time.Duration;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -8,9 +7,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
-import cucumber.api.testng.AbstractTestNGCucumberTests;
 import design.patterns.factory.browser.BrowserType;
 import design.patterns.factory.browser.WebDriverFactoryInterface;
 
@@ -57,7 +53,7 @@ public class WebDriverPoolFactory  {
 		return driver;
 	}
 
-	public void releaseDrver(RemoteWebDriver driver) {
+	public void releaseDriver(RemoteWebDriver driver) {
 		BrowserType browserType = driverToBrowserKey.get(driver);
 		if(browserType !=null) {
 			BlockingQueue<RemoteWebDriver> queue = driverPool.get(browserType);
@@ -66,24 +62,6 @@ public class WebDriverPoolFactory  {
 			driver.quit();
 		}
 	}
-
-
-
-
-	private static final ThreadLocal<RemoteWebDriver> remoteWebdriver = new ThreadLocal<RemoteWebDriver>();
-	private static final ThreadLocal<WebDriverWait> wait = new  ThreadLocal<WebDriverWait>();
-
-	public void setWait() {
-		wait.set(new WebDriverWait(getDriver(), Duration.ofSeconds(10)));
-	}
-
-	public WebDriverWait getWait() {
-		return wait.get();
-	}
-	public RemoteWebDriver  getDriver() {
-		return remoteWebdriver.get();
-	}
-
 
 
 }

@@ -22,23 +22,13 @@ import com.aventstack.extentreports.reporter.configuration.ChartLocation;
 import com.aventstack.extentreports.reporter.configuration.Theme;
 import com.framework.selenium.api.base.DriverInstance;
 
+import design.patterns.factory.browser.BrowserFactory;
 import design.patterns.factory.browser.WebDriverFactoryInterface;
 import design.patterns.object.pool.WebDriverPoolFactory;
 
 
-//public abstract class Reporter extends WebDriverPoolFactory {
-//
-//
-//	public Reporter(WebDriverFactoryInterface factory) {
-//		super(factory);
-//		// TODO Auto-generated constructor stub
-//	}
-public abstract class Reporter extends WebDriverPoolFactory {
+public abstract class Reporter extends BrowserFactory {
 
-	public Reporter(WebDriverFactoryInterface factory) {
-		super(factory);
-		// TODO Auto-generated constructor stub
-	}
 
 	private static ExtentReports extent;
 	private static final ThreadLocal<ExtentTest> parentTest = new ThreadLocal<>();
@@ -48,7 +38,8 @@ public abstract class Reporter extends WebDriverPoolFactory {
 	private static final String fileName = "result.html";
 	private static final String pattern = "dd-MMM-yyyy HH-mm-ss";
 
-	public String testcaseName, testDescription, authors, category;
+	
+	public String testcaseName, testDescription, authors, category,excelFileName;
 	public static String folderName = "";
 
 	@BeforeSuite(alwaysRun = true)
@@ -84,9 +75,8 @@ public abstract class Reporter extends WebDriverPoolFactory {
 	}
 
 	@BeforeMethod(alwaysRun = true)
-	public void setNode(Method method) {
-		String methodName = method.getName();
-		ExtentTest child = parentTest.get().createNode(methodName);
+	public void setNode() {
+		ExtentTest child = parentTest.get().createNode(getTestName());
 		test.set(child);
 	}
 

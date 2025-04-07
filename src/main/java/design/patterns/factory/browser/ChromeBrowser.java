@@ -20,7 +20,7 @@ public class ChromeBrowser implements Browser{
 		ChromeOptions options = new ChromeOptions();
 		options.addArguments("--start-maximized"); 
 		options.addArguments("--disable-notifications"); 
-		options.addArguments("--incognito");
+//		options.addArguments("--incognito");
 		return new ChromeDriver(options);	
 	}
 

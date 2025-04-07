@@ -55,7 +55,7 @@ public class WebDriverPoolTest {
 		logger.info("The test 2 started");
 		RemoteWebDriver driver = pool.getDriverFactory(browser,url2);
 		logger.info("Title >> "+driver.getTitle());
-		pool.releaseDrver(driver);
+		pool.releaseDriver(driver);
 		logger.info("The test 2 completed");
 
 	}
@@ -65,7 +65,7 @@ public class WebDriverPoolTest {
 		logger.info("The test 1 started");
 		RemoteWebDriver driver = pool.getDriverFactory(browser,url1);
 		logger.info("Title >> "+driver.getTitle());
-		pool.releaseDrver(driver);
+		pool.releaseDriver(driver);
 		logger.info("The test 1 completed");
 
 

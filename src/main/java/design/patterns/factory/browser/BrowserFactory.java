@@ -4,13 +4,29 @@ import java.time.Duration;
 
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import cucumber.api.testng.AbstractTestNGCucumberTests;
+import design.patterns.object.pool.WebDriverPoolFactory;
 
 
 public class BrowserFactory extends AbstractTestNGCucumberTests implements WebDriverFactoryInterface{
 
-	private RemoteWebDriver driver;
+	public RemoteWebDriver driver ;
+	private static final ThreadLocal<RemoteWebDriver> remoteWebdriver = new ThreadLocal<RemoteWebDriver>();
+
+	private static final ThreadLocal<WebDriverWait> wait = new  ThreadLocal<WebDriverWait>();
+
+	public void setWait() {
+		wait.set(new WebDriverWait(getDriver(), Duration.ofSeconds(10)));
+	}
+
+
+	public WebDriverWait getWait() {
+		return wait.get();
+	}	
+
+
 	/**
 	 * 
 	 * @param browser
@@ -20,16 +36,19 @@ public class BrowserFactory extends AbstractTestNGCucumberTests implements WebDr
 		switch (browsertype) {
 		case CHROME:
 			driver = new ChromeBrowser().launchBrowser();
+			remoteWebdriver.set(driver);
 			return driver;
 		case FIREFOX:
+			RemoteWebDriver driver = new FireFoxBrowser().launchBrowser();
 			driver= new FireFoxBrowser().launchBrowser();
+			remoteWebdriver.set(driver);
 			return driver;
 
 		default:
-			driver= new ChromeBrowser().launchBrowser();
+			driver = new ChromeBrowser().launchBrowser();
+			remoteWebdriver.set(driver);
 			return driver;
-		}
-		 
+		}	 
 	}
 
 	@Override
@@ -47,6 +66,14 @@ public class BrowserFactory extends AbstractTestNGCucumberTests implements WebDr
 			driver= new ChromeBrowser().launchBrowser();
 			return driver;
 		}
+
+	}
+
+	public RemoteWebDriver  getDriver() {
+
+		return remoteWebdriver.get();
+
+
 	}
 
 
@@ -56,5 +83,8 @@ public class BrowserFactory extends AbstractTestNGCucumberTests implements WebDr
 		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
 		driver.manage().window().maximize();
 	}
+
+
+
 
 }
