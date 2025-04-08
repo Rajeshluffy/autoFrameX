@@ -8,4 +8,5 @@ public interface WebDriverFactoryInterface {
 	RemoteWebDriver createDriver(BrowserType browsertype,Capabilities capabilities);
 
 	void setupDriver(String url);
+	void tearDownDriver();
 }

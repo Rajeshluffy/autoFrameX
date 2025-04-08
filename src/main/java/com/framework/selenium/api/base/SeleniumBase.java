@@ -611,29 +611,34 @@ public class SeleniumBase extends Reporter implements Browser, Element  {
 			currentInstanceDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(90));
 			currentInstanceDriver.get(url);
 			reportStep("The Browser Launched in chrome browser with URL " + url, "pass");
+
 		} catch (Exception e) {
 			reportStep("Something went wrong \n" + e.getMessage(), "fail");
 		}
 
 	}
+
+	public static  WebDriverPoolFactory pool;
+	public static  RemoteWebDriver driver;
+
 	@Override
 
 	public void startApp(BrowserType browserType, boolean headless, String url) {
 		try {
-
 			// Initialize >> Factory
 			WebDriverFactoryInterface factory = new BrowserFactory();
 
 			// Initialize >> Object Pool
-			WebDriverPoolFactory pool = new WebDriverPoolFactory(factory);
+			pool = new WebDriverPoolFactory(factory);
 
-			RemoteWebDriver currentInstanceDriver = pool.getDriverFactory(browserType,url);
+			driver = pool.getDriverFactory(browserType,url);
 
 			setWait();
-			currentInstanceDriver.manage().window().maximize();
-			currentInstanceDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(90));
-			currentInstanceDriver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(20));
-			currentInstanceDriver.get(url);
+			driver.manage().window().maximize();
+			driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(90));
+			driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(20));
+			driver.get(url);
+
 		} catch (WebDriverException e) {
 			e.printStackTrace();
 			reportStep("The Browser Could not be Launched. Hence Failed \n" + e.getMessage(), "fail");
@@ -641,6 +646,15 @@ public class SeleniumBase extends Reporter implements Browser, Element  {
 			e.printStackTrace();
 			reportStep("The Browser Could not be Launched. Hence Failed \n" + e.getMessage(), "fail");
 		}
+	}
+
+
+	public void releaseDriver(RemoteWebDriver driver) {
+		pool.releaseDriver(driver);
+	}
+
+	public void tearDown() {
+		pool.tearDownDrivers();
 	}
 
 	@Override

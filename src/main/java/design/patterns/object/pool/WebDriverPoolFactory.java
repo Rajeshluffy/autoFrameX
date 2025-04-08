@@ -1,5 +1,6 @@
 package design.patterns.object.pool;
 
+import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -24,7 +25,7 @@ public class WebDriverPoolFactory  {
 	// Map to track : WebDriver , BrowserType
 	private ConcurrentMap<RemoteWebDriver ,BrowserType> driverToBrowserKey;
 
-
+	private BlockingQueue<RemoteWebDriver> queue;
 	//Constructor
 	public WebDriverPoolFactory(WebDriverFactoryInterface factory) {
 		this.driverFactory=factory;
@@ -37,10 +38,26 @@ public class WebDriverPoolFactory  {
 		}
 	}
 
+	public void tearDownDrivers() {
+		// To quit the driver
+        for (Iterator<RemoteWebDriver> iterator = driverToBrowserKey.keySet().iterator(); iterator.hasNext(); ) {
+            RemoteWebDriver driver = iterator.next();
+            if (driverToBrowserKey.get(driver) == BrowserType.FIREFOX) {
+                driverToBrowserKey.remove(driver);
+            }else{
+                driverToBrowserKey.remove(driver);
+
+            }
+        }
+
+        System.out.println("After removal: " + driverToBrowserKey);
+    
+	}
+
 
 	public RemoteWebDriver getDriverFactory(BrowserType browserType,String url) {
 
-		BlockingQueue<RemoteWebDriver> queue = driverPool.get(browserType);
+		queue	 = driverPool.get(browserType);
 		RemoteWebDriver driver = queue.poll();
 		if(driver==null) {
 			driver = driverFactory.createDriver(browserType);
@@ -56,12 +73,16 @@ public class WebDriverPoolFactory  {
 	public void releaseDriver(RemoteWebDriver driver) {
 		BrowserType browserType = driverToBrowserKey.get(driver);
 		if(browserType !=null) {
-			BlockingQueue<RemoteWebDriver> queue = driverPool.get(browserType);
+			System.out.print(driver);
+			queue = driverPool.get(browserType);
 			queue.offer(driver);
 		}else {
 			driver.quit();
 		}
 	}
+
+
+
 
 
 }

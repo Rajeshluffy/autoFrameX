@@ -127,7 +127,9 @@ public abstract class Reporter extends BrowserFactory {
 		if (extent != null) {
 			extent.flush();
 		}
+		
 	}
+	
 
 	public String getTestName() {
 		return testName.get();

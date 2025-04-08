@@ -3,20 +3,20 @@
 <suite name="Failed suite [Default suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="Default test(failed)">
     <classes>
-      <class name="com.framework.testng.api.base.TC001_VerifyLogin">
+      <class name="com.leaftaps.testcases.TC001_VerifyLogin">
         <methods>
           <include name="startTestCase"/>
           <include name="postCondition"/>
-          <include name="runLogin"/>
           <include name="setUpClass"/>
           <include name="startReport"/>
+          <include name="runLogin1"/>
           <include name="tearDownClass"/>
+          <include name="setValues"/>
           <include name="setNode"/>
           <include name="endReport"/>
-          <include name="setValues"/>
           <include name="preCondition"/>
         </methods>
-      </class> <!-- com.framework.testng.api.base.TC001_VerifyLogin -->
+      </class> <!-- com.leaftaps.testcases.TC001_VerifyLogin -->
     </classes>
   </test> <!-- Default test(failed) -->
 </suite> <!-- Failed suite [Default suite] -->

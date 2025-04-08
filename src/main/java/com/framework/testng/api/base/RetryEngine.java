@@ -1,9 +1,10 @@
 package com.framework.testng.api.base;
 
+import org.testng.IAnnotationTransformer;
 import org.testng.IRetryAnalyzer;
 import org.testng.ITestResult;
 
-public class RetryEngine implements IRetryAnalyzer {
+public class RetryEngine implements IRetryAnalyzer,IAnnotationTransformer{
 	 
     private int count = 0;
     private static int maxTry = 0;

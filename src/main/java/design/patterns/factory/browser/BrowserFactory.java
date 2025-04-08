@@ -6,6 +6,8 @@ import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import com.framework.selenium.api.base.SeleniumBase;
+
 import cucumber.api.testng.AbstractTestNGCucumberTests;
 import design.patterns.object.pool.WebDriverPoolFactory;
 
@@ -82,6 +84,13 @@ public class BrowserFactory extends AbstractTestNGCucumberTests implements WebDr
 		driver.get(url);
 		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
 		driver.manage().window().maximize();
+	}
+
+
+	@Override
+	public void tearDownDriver() {
+		new SeleniumBase().tearDown();
+
 	}
 
 
