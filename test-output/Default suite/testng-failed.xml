@@ -8,11 +8,12 @@
           <include name="startTestCase"/>
           <include name="postCondition"/>
           <include name="setUpClass"/>
+          <include name="browserObject"/>
           <include name="startReport"/>
           <include name="runLogin1"/>
           <include name="tearDownClass"/>
-          <include name="setValues"/>
           <include name="setNode"/>
+          <include name="setValues"/>
           <include name="endReport"/>
           <include name="preCondition"/>
         </methods>

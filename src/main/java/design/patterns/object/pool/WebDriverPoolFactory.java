@@ -40,25 +40,25 @@ public class WebDriverPoolFactory  {
 
 	public void tearDownDrivers() {
 		// To quit the driver
-        for (Iterator<RemoteWebDriver> iterator = driverToBrowserKey.keySet().iterator(); iterator.hasNext(); ) {
-            RemoteWebDriver driver = iterator.next();
-            if (driverToBrowserKey.get(driver) == BrowserType.FIREFOX) {
-                driverToBrowserKey.remove(driver);
-            }else{
-                driverToBrowserKey.remove(driver);
+		for (Iterator<RemoteWebDriver> iterator = driverToBrowserKey.keySet().iterator(); iterator.hasNext(); ) {
+			RemoteWebDriver driver = iterator.next();
+			if (driverToBrowserKey.get(driver) == BrowserType.FIREFOX) {
+				driverToBrowserKey.remove(driver);
+			}else{
+				driverToBrowserKey.remove(driver);
 
-            }
-        }
+			}
+		}
 
-        System.out.println("After removal: " + driverToBrowserKey);
-    
+		System.out.println("After removal: " + driverToBrowserKey);
+
 	}
-
+	protected RemoteWebDriver driver;
 
 	public RemoteWebDriver getDriverFactory(BrowserType browserType,String url) {
 
 		queue	 = driverPool.get(browserType);
-		RemoteWebDriver driver = queue.poll();
+		driver = queue.poll();
 		if(driver==null) {
 			driver = driverFactory.createDriver(browserType);
 			driverToBrowserKey.put(driver, browserType);	

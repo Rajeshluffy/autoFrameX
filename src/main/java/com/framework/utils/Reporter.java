@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import java.lang.reflect.Method;
-
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -20,10 +18,7 @@ import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
 import com.aventstack.extentreports.reporter.configuration.ChartLocation;
 import com.aventstack.extentreports.reporter.configuration.Theme;
-import com.framework.selenium.api.base.DriverInstance;
-
 import design.patterns.factory.browser.BrowserFactory;
-import design.patterns.factory.browser.WebDriverFactoryInterface;
 import design.patterns.object.pool.WebDriverPoolFactory;
 
 
@@ -38,9 +33,18 @@ public abstract class Reporter extends BrowserFactory {
 	private static final String fileName = "result.html";
 	private static final String pattern = "dd-MMM-yyyy HH-mm-ss";
 
-	
+
 	public String testcaseName, testDescription, authors, category,excelFileName;
 	public static String folderName = "";
+
+	protected WebDriverPoolFactory pool;
+	public abstract WebDriverPoolFactory poolInitiate ();
+
+	@BeforeSuite(alwaysRun = true)
+	public  WebDriverPoolFactory browserObject() {
+		pool = poolInitiate(); // Assign to class variable
+		return pool;
+	}
 
 	@BeforeSuite(alwaysRun = true)
 	public synchronized void startReport() {
@@ -127,9 +131,9 @@ public abstract class Reporter extends BrowserFactory {
 		if (extent != null) {
 			extent.flush();
 		}
-		
+
 	}
-	
+
 
 	public String getTestName() {
 		return testName.get();

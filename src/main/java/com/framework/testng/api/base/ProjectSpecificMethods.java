@@ -17,30 +17,31 @@ import design.patterns.factory.browser.WebDriverFactoryInterface;
 import design.patterns.object.pool.WebDriverPoolFactory;
 
 public class ProjectSpecificMethods extends SeleniumBase {
-	WebDriverFactoryInterface factory = new BrowserFactory();
 
 	@DataProvider(name = "fetchData", indices = 0)
 	public Object[][] fetchData() throws IOException {
 		return DataLibrary.readExcelData(excelFileName);
-	}
+	}	
+
 
 	@BeforeMethod
 	public void preCondition() {
 		//public void startApp(String browser, boolean headless, String url);
 
-		startApp(BrowserType.CHROME, false, "http://leaftaps.com/opentaps/control/main");
+
+		startApp(pool,BrowserType.CHROME, false, "http://leaftaps.com/opentaps/control/main");
 		setNode();
 	}
 
 	@AfterMethod
 	public void postCondition() {
 
-		//	close();
+	//	close();
 		releaseDriver(driver);
 
 	}
 
-	
+
 
 
 

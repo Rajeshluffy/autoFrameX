@@ -10,6 +10,7 @@ import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.WebElement;
 
 import design.patterns.factory.browser.BrowserType;
+import design.patterns.object.pool.WebDriverPoolFactory;
 
 public interface Browser {
 	
@@ -21,7 +22,7 @@ public interface Browser {
 	 * @author Sarath - TestLeaf
 	 * @throws MalformedURLException 
 	 */	
-	public void startApp(String url, boolean headless);
+	public void startApp(WebDriverPoolFactory pool,String url, boolean headless);
 	
 	/**
 	 * This method will launch the Any browser and 
@@ -32,7 +33,7 @@ public interface Browser {
 	 * @author Sarath - TestLeaf
 	 * @throws MalformedURLException 
 	 */
-	public void startApp(BrowserType browserType, boolean headless, String url);
+	public void startApp(WebDriverPoolFactory pool,BrowserType browserType, boolean headless, String url);
 	/**
 	 * This method will locate the element using any given locator
 	 * @param locatorType  - The locator by which the element to be found
