@@ -40,7 +40,7 @@ public abstract class Reporter extends BrowserFactory {
 	protected WebDriverPoolFactory pool;
 	public abstract WebDriverPoolFactory poolInitiate ();
 
-	@BeforeSuite(alwaysRun = true)
+	@BeforeClass(alwaysRun = true)
 	public  WebDriverPoolFactory browserObject() {
 		pool = poolInitiate(); // Assign to class variable
 		return pool;
