@@ -28,5 +28,10 @@ public class TC001_VerifyLogin extends ProjectSpecificMethods{
 	LoginPage lp=new LoginPage();
 	lp.enterPassword(pass);
 	}
+	@Test(dataProvider = "fetchData")
+	public void runLogin2(String uname,String pass) {
+	LoginPage lp=new LoginPage();
+	lp.enterUsername(uname).enterPassword(pass).clickLogin();
+	}
 
 }
