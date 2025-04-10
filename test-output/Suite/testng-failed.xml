@@ -3,15 +3,47 @@
 <suite name="Failed suite [Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" parallel="classes" name="Test(failed)">
     <classes>
-      <class name="com.leaftaps.testcases.TC001_VerifyLogin">
+      <class name="com.leaftaps.testcases.TC003_CreateLead">
         <methods>
           <include name="startTestCase"/>
-          <include name="runLogin"/>
+          <include name="postCondition"/>
+          <include name="runLogin" invocation-numbers="0"/>
+          <include name="setUpClass"/>
+          <include name="browserObject"/>
+          <include name="startReport"/>
+          <include name="setValues"/>
+          <include name="tearDownClass"/>
+          <include name="browserClose"/>
+          <include name="setNode"/>
+          <include name="endReport"/>
+          <include name="preCondition"/>
+        </methods>
+      </class> <!-- com.leaftaps.testcases.TC003_CreateLead -->
+      <class name="com.leaftaps.testcases.TC005_DeleteLead">
+        <methods>
+          <include name="startTestCase"/>
+          <include name="setValues"/>
           <include name="postCondition"/>
           <include name="browserObject"/>
           <include name="setUpClass"/>
           <include name="startReport"/>
-          <include name="runLogin1"/>
+          <include name="runLogin" invocation-numbers="0"/>
+          <include name="tearDownClass"/>
+          <include name="browserClose"/>
+          <include name="setNode"/>
+          <include name="endReport"/>
+          <include name="preCondition"/>
+        </methods>
+      </class> <!-- com.leaftaps.testcases.TC005_DeleteLead -->
+      <class name="com.leaftaps.testcases.TC001_VerifyLogin">
+        <methods>
+          <include name="runLogin2"/>
+          <include name="startTestCase"/>
+          <include name="postCondition"/>
+          <include name="setUpClass"/>
+          <include name="browserObject"/>
+          <include name="startReport"/>
+          <include name="browserClose"/>
           <include name="tearDownClass"/>
           <include name="setNode"/>
           <include name="setValues"/>
@@ -19,21 +51,6 @@
           <include name="preCondition"/>
         </methods>
       </class> <!-- com.leaftaps.testcases.TC001_VerifyLogin -->
-      <class name="com.leaftaps.testcases.TC002_VerifyLogout">
-        <methods>
-          <include name="startTestCase"/>
-          <include name="postCondition"/>
-          <include name="setUpClass"/>
-          <include name="browserObject"/>
-          <include name="runLogin"/>
-          <include name="startReport"/>
-          <include name="tearDownClass"/>
-          <include name="setValues"/>
-          <include name="setNode"/>
-          <include name="endReport"/>
-          <include name="preCondition"/>
-        </methods>
-      </class> <!-- com.leaftaps.testcases.TC002_VerifyLogout -->
     </classes>
   </test> <!-- Test(failed) -->
 </suite> <!-- Failed suite [Suite] -->
