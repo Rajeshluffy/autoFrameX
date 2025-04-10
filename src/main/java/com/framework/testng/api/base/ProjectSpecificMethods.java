@@ -2,6 +2,7 @@ package com.framework.testng.api.base;
 
 import java.io.IOException;
 
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
@@ -35,12 +36,14 @@ public class ProjectSpecificMethods extends SeleniumBase {
 
 	@AfterMethod
 	public void postCondition() {
-
-	//	close();
 		releaseDriver(driver);
 
 	}
+	@AfterClass
+	public void browserClose() {
+		close();
 
+	}
 
 
 

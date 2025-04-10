@@ -37,23 +37,24 @@ public class WebDriverPoolFactory  {
 			driverPool.put(browserType, new LinkedBlockingQueue<RemoteWebDriver>());
 		}
 	}
-
+	protected RemoteWebDriver driver;
 	public void tearDownDrivers() {
 		// To quit the driver
 		for (Iterator<RemoteWebDriver> iterator = driverToBrowserKey.keySet().iterator(); iterator.hasNext(); ) {
 			RemoteWebDriver driver = iterator.next();
 			if (driverToBrowserKey.get(driver) == BrowserType.FIREFOX) {
 				driverToBrowserKey.remove(driver);
-			}else{
+			}else if (driverToBrowserKey.get(driver) == BrowserType.CHROME) {
 				driverToBrowserKey.remove(driver);
-
+			}else {
+				driverToBrowserKey.remove(driver);
 			}
 		}
 
 		System.out.println("After removal: " + driverToBrowserKey);
 
 	}
-	protected RemoteWebDriver driver;
+
 
 	public RemoteWebDriver getDriverFactory(BrowserType browserType,String url) {
 

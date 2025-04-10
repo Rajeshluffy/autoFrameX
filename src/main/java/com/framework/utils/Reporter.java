@@ -43,8 +43,10 @@ public abstract class Reporter extends BrowserFactory {
 	@BeforeClass(alwaysRun = true)
 	public  WebDriverPoolFactory browserObject() {
 		pool = poolInitiate(); // Assign to class variable
+		
 		return pool;
 	}
+
 
 	@BeforeSuite(alwaysRun = true)
 	public synchronized void startReport() {
@@ -130,7 +132,9 @@ public abstract class Reporter extends BrowserFactory {
 	public synchronized void endReport() {
 		if (extent != null) {
 			extent.flush();
+			pool.tearDownDrivers();
 		}
+		
 
 	}
 

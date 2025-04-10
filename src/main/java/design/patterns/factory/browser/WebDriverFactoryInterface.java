@@ -6,7 +6,6 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 public interface WebDriverFactoryInterface {
 	RemoteWebDriver createDriver(BrowserType browsertype);
 	RemoteWebDriver createDriver(BrowserType browsertype,Capabilities capabilities);
-
 	void setupDriver(String url);
-	void tearDownDriver();
+
 }

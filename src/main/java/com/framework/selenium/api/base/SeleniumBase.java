@@ -622,6 +622,7 @@ public class SeleniumBase extends Reporter implements Browser, Element  {
 		return new WebDriverPoolFactory(factory);
 
 	}
+	
 	protected RemoteWebDriver driver;
 	@Override
 
@@ -651,9 +652,7 @@ public class SeleniumBase extends Reporter implements Browser, Element  {
 		pool.releaseDriver(driver);
 	}
 
-	public void tearDown(WebDriverPoolFactory pool) {
-		pool.tearDownDrivers();
-	}
+	
 
 	@Override
 	public WebElement locateElement(Locators locatorType, String value) {
