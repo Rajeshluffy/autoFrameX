@@ -1,1171 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testng-results ignored="0" total="7" passed="4" failed="2" skipped="1">
+<testng-results ignored="0" total="3" passed="0" failed="0" skipped="3">
   <reporter-output>
   </reporter-output>
-  <suite started-at="2025-04-10T17:59:59 IST" name="Suite" finished-at="2025-04-10T18:01:04 IST" duration-ms="65209">
+  <suite started-at="2025-04-11T15:48:46 IST" name="Default suite" finished-at="2025-04-11T15:48:47 IST" duration-ms="820">
     <groups>
       <group name="cucumber">
-        <method signature="AbstractTestNGCucumberTests.runScenario(cucumber.api.testng.PickleEventWrapper,cucumber.api.testng.CucumberFeatureWrapper)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" name="runScenario" class="cucumber.api.testng.AbstractTestNGCucumberTests"/>
-        <method signature="AbstractTestNGCucumberTests.runScenario(cucumber.api.testng.PickleEventWrapper,cucumber.api.testng.CucumberFeatureWrapper)[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@448c8166]" name="runScenario" class="cucumber.api.testng.AbstractTestNGCucumberTests"/>
-        <method signature="AbstractTestNGCucumberTests.runScenario(cucumber.api.testng.PickleEventWrapper,cucumber.api.testng.CucumberFeatureWrapper)[pri:0, instance:com.leaftaps.testcases.TC003_CreateLead@4470fbd6]" name="runScenario" class="cucumber.api.testng.AbstractTestNGCucumberTests"/>
-        <method signature="AbstractTestNGCucumberTests.runScenario(cucumber.api.testng.PickleEventWrapper,cucumber.api.testng.CucumberFeatureWrapper)[pri:0, instance:com.leaftaps.testcases.TC005_DeleteLead@15d49048]" name="runScenario" class="cucumber.api.testng.AbstractTestNGCucumberTests"/>
-        <method signature="AbstractTestNGCucumberTests.runScenario(cucumber.api.testng.PickleEventWrapper,cucumber.api.testng.CucumberFeatureWrapper)[pri:0, instance:com.leaftaps.testcases.TC006_DuplicateLead@7098b907]" name="runScenario" class="cucumber.api.testng.AbstractTestNGCucumberTests"/>
+        <method signature="AbstractTestNGCucumberTests.runScenario(cucumber.api.testng.PickleEventWrapper,cucumber.api.testng.CucumberFeatureWrapper)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" name="runScenario" class="cucumber.api.testng.AbstractTestNGCucumberTests"/>
       </group> <!-- cucumber -->
     </groups>
-    <test started-at="2025-04-10T17:59:59 IST" name="Test" finished-at="2025-04-10T18:01:04 IST" duration-ms="65209">
-      <class name="com.leaftaps.testcases.TC005_DeleteLead">
-        <test-method is-config="true" signature="setValues()[pri:0, instance:com.leaftaps.testcases.TC005_DeleteLead@15d49048]" started-at="2025-04-10T17:59:59 IST" name="setValues" finished-at="2025-04-10T17:59:59 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setValues -->
-        <test-method is-config="true" signature="setUpClass()[pri:0, instance:com.leaftaps.testcases.TC005_DeleteLead@15d49048]" started-at="2025-04-10T17:59:59 IST" name="setUpClass" finished-at="2025-04-10T17:59:59 IST" duration-ms="75" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setUpClass -->
-        <test-method is-config="true" signature="browserObject()[pri:0, instance:com.leaftaps.testcases.TC005_DeleteLead@15d49048]" started-at="2025-04-10T17:59:59 IST" name="browserObject" finished-at="2025-04-10T17:59:59 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- browserObject -->
-        <test-method is-config="true" signature="startTestCase()[pri:0, instance:com.leaftaps.testcases.TC005_DeleteLead@15d49048]" started-at="2025-04-10T17:59:59 IST" name="startTestCase" finished-at="2025-04-10T17:59:59 IST" duration-ms="7" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- startTestCase -->
-        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC005_DeleteLead@15d49048]" started-at="2025-04-10T18:00:00 IST" name="setNode" finished-at="2025-04-10T18:00:00 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setNode -->
-        <test-method is-config="true" signature="preCondition()[pri:0, instance:com.leaftaps.testcases.TC005_DeleteLead@15d49048]" started-at="2025-04-10T18:00:00 IST" name="preCondition" finished-at="2025-04-10T18:00:14 IST" duration-ms="13835" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- preCondition -->
-        <test-method signature="runLogin(java.lang.String,java.lang.String,java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC005_DeleteLead@15d49048]" started-at="2025-04-10T18:00:14 IST" name="runLogin" data-provider="fetchData" finished-at="2025-04-10T18:01:04 IST" duration-ms="50556" status="FAIL">
-          <params>
-            <param index="0">
-              <value>
-                <![CDATA[DemoSalesManager]]>
-              </value>
-            </param>
-            <param index="1">
-              <value>
-                <![CDATA[crmsfa]]>
-              </value>
-            </param>
-            <param index="2">
-              <value>
-                <![CDATA[Babu]]>
-              </value>
-            </param>
-            <param index="3">
-              <value>
-                <![CDATA[No records to display]]>
-              </value>
-            </param>
-          </params>
-          <exception class="java.lang.StackOverflowError">
-            <full-stacktrace>
-              <![CDATA[java.lang.StackOverflowError
-at java.base/java.util.regex.Pattern$GroupHead.match(Pattern.java:4801)
-at java.base/java.util.regex.Pattern$Branch.match(Pattern.java:4746)
-at java.base/java.util.regex.Pattern$Branch.match(Pattern.java:4744)
-at java.base/java.util.regex.Pattern$Branch.match(Pattern.java:4744)
-at java.base/java.util.regex.Pattern$BranchConn.match(Pattern.java:4710)
-at java.base/java.util.regex.Pattern$GroupTail.match(Pattern.java:4832)
-at java.base/java.util.regex.Pattern$BmpCharPropertyGreedy.match(Pattern.java:4341)
-at java.base/java.util.regex.Pattern$GroupHead.match(Pattern.java:4801)
-at java.base/java.util.regex.Pattern$Branch.match(Pattern.java:4746)
-at java.base/java.util.regex.Pattern$Branch.match(Pattern.java:4744)
-at java.base/java.util.regex.Pattern$BmpCharProperty.match(Pattern.java:3967)
-at java.base/java.util.regex.Pattern$Start.match(Pattern.java:3620)
-at java.base/java.util.regex.Matcher.search(Matcher.java:1728)
-at java.base/java.util.regex.Matcher.find(Matcher.java:772)
-at java.base/java.util.Formatter.parse(Formatter.java:2718)
-at java.base/java.util.Formatter.format(Formatter.java:2671)
-at java.base/java.util.Formatter.format(Formatter.java:2625)
-at java.base/java.lang.String.format(String.java:3290)
-at org.openqa.selenium.SharedCapabilitiesMethods.lambda$abbreviate$4(SharedCapabilitiesMethods.java:115)
-at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
-at java.base/java.util.stream.SortedOps$SizedRefSortingSink.end(SortedOps.java:357)
-at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:485)
-at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
-at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
-at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
-at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:682)
-at org.openqa.selenium.SharedCapabilitiesMethods.abbreviate(SharedCapabilitiesMethods.java:117)
-at org.openqa.selenium.SharedCapabilitiesMethods.lambda$abbreviate$4(SharedCapabilitiesMethods.java:116)
-at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
-at java.base/java.util.stream.SortedOps$SizedRefSortingSink.end(SortedOps.java:357)
-at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:485)
-at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
-at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
-at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
-at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:682)
-at org.openqa.selenium.SharedCapabilitiesMethods.abbreviate(SharedCapabilitiesMethods.java:117)
-at org.openqa.selenium.SharedCapabilitiesMethods.toString(SharedCapabilitiesMethods.java:84)
-at org.openqa.selenium.ImmutableCapabilities.toString(ImmutableCapabilities.java:184)
-at org.openqa.selenium.remote.RemoteWebDriver.populateWebDriverException(RemoteWebDriver.java:613)
-at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:576)
-at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:618)
-at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:622)
-at org.openqa.selenium.remote.RemoteWebDriver.getScreenshotAs(RemoteWebDriver.java:334)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:924)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.takeSnap(SeleniumBase.java:927)
-at com.framework.utils.Reporter.reportStep(Reporter.java:95)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-]]>
-            </full-stacktrace>
-          </exception> <!-- java.lang.StackOverflowError -->
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- runLogin -->
-        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC005_DeleteLead@15d49048]" started-at="2025-04-10T18:01:04 IST" name="postCondition" finished-at="2025-04-10T18:01:04 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- postCondition -->
-        <test-method is-config="true" signature="browserClose()[pri:0, instance:com.leaftaps.testcases.TC005_DeleteLead@15d49048]" started-at="2025-04-10T18:01:04 IST" name="browserClose" finished-at="2025-04-10T18:01:04 IST" duration-ms="3" status="FAIL">
-          <exception class="java.lang.RuntimeException">
-            <message>
-              <![CDATA[Test failed: See report for details.]]>
-            </message>
-            <full-stacktrace>
-              <![CDATA[java.lang.RuntimeException: Test failed: See report for details.
-at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-at com.framework.selenium.api.base.SeleniumBase.close(SeleniumBase.java:942)
-at com.framework.testng.api.base.ProjectSpecificMethods.browserClose(ProjectSpecificMethods.java:44)
-at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
-at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-at org.testng.internal.invokers.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:141)
-at org.testng.internal.invokers.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:71)
-at org.testng.internal.invokers.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:400)
-at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:333)
-at org.testng.internal.invokers.TestMethodWorker.invokeAfterClassConfigurations(TestMethodWorker.java:238)
-at org.testng.internal.invokers.TestMethodWorker.invokeAfterClassMethods(TestMethodWorker.java:223)
-at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:137)
-at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-at org.testng.internal.thread.graph.TestNGFutureTask.run(TestNGFutureTask.java:22)
-at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-at java.base/java.lang.Thread.run(Thread.java:831)
-]]>
-            </full-stacktrace>
-          </exception> <!-- java.lang.RuntimeException -->
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- browserClose -->
-        <test-method is-config="true" signature="tearDownClass()[pri:0, instance:com.leaftaps.testcases.TC005_DeleteLead@15d49048]" started-at="2025-04-10T18:01:04 IST" name="tearDownClass" finished-at="2025-04-10T18:01:04 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- tearDownClass -->
-      </class> <!-- com.leaftaps.testcases.TC005_DeleteLead -->
+    <test started-at="2025-04-11T15:48:46 IST" name="Default test" finished-at="2025-04-11T15:48:47 IST" duration-ms="820">
       <class name="com.leaftaps.testcases.TC001_VerifyLogin">
-        <test-method is-config="true" signature="startReport()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T17:59:59 IST" name="startReport" finished-at="2025-04-10T17:59:59 IST" duration-ms="136" status="PASS">
+        <test-method is-config="true" signature="startReport()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:46 IST" name="startReport" finished-at="2025-04-11T15:48:46 IST" duration-ms="128" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- startReport -->
-        <test-method is-config="true" signature="setValues()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T17:59:59 IST" name="setValues" finished-at="2025-04-10T17:59:59 IST" duration-ms="1" status="PASS">
+        <test-method is-config="true" signature="setValues()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:46 IST" name="setValues" finished-at="2025-04-11T15:48:46 IST" duration-ms="0" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setValues -->
-        <test-method is-config="true" signature="setUpClass()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T17:59:59 IST" name="setUpClass" finished-at="2025-04-10T17:59:59 IST" duration-ms="75" status="PASS">
+        <test-method is-config="true" signature="setUpClass()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:46 IST" name="setUpClass" finished-at="2025-04-11T15:48:46 IST" duration-ms="91" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setUpClass -->
-        <test-method is-config="true" signature="browserObject()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T17:59:59 IST" name="browserObject" finished-at="2025-04-10T17:59:59 IST" duration-ms="0" status="PASS">
+        <test-method is-config="true" signature="browserObject()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:46 IST" name="browserObject" finished-at="2025-04-11T15:48:46 IST" duration-ms="1" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- browserObject -->
-        <test-method is-config="true" signature="startTestCase()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T17:59:59 IST" name="startTestCase" finished-at="2025-04-10T17:59:59 IST" duration-ms="7" status="PASS">
+        <test-method is-config="true" signature="startTestCase()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:46 IST" name="startTestCase" finished-at="2025-04-11T15:48:46 IST" duration-ms="6" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- startTestCase -->
-        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T18:00:00 IST" name="setNode" finished-at="2025-04-10T18:00:00 IST" duration-ms="0" status="PASS">
+        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="setNode" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setNode -->
-        <test-method is-config="true" signature="preCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T18:00:00 IST" name="preCondition" finished-at="2025-04-10T18:00:23 IST" duration-ms="23538" status="PASS">
+        <test-method is-config="true" signature="preCondition(design.patterns.factory.browser.BrowserType)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="preCondition" finished-at="1970-01-01T05:30:00 IST" duration-ms="-1744366727229" status="FAIL">
+          <exception class="org.testng.TestNGException">
+            <message>
+              <![CDATA[
+Parameter 'browser' is required by BeforeMethod on method preCondition but has not been marked @Optional or defined
+in C:\Users\rajes\AppData\Local\Temp\testng-eclipse-2104717193\testng-customsuite.xml]]>
+            </message>
+            <full-stacktrace>
+              <![CDATA[org.testng.TestNGException: 
+Parameter 'browser' is required by BeforeMethod on method preCondition but has not been marked @Optional or defined
+in C:\Users\rajes\AppData\Local\Temp\testng-eclipse-2104717193\testng-customsuite.xml
+at org.testng.internal.Parameters.createParams(Parameters.java:264)
+at org.testng.internal.Parameters.createParametersForMethod(Parameters.java:352)
+at org.testng.internal.Parameters.createParameters(Parameters.java:690)
+at org.testng.internal.Parameters.createConfigurationParameters(Parameters.java:163)
+at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:313)
+at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
+at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
+at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
+at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
+at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
+at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
+at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
+at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
+at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+at org.testng.TestRunner.privateRun(TestRunner.java:739)
+at org.testng.TestRunner.run(TestRunner.java:614)
+at org.testng.SuiteRunner.runTest(SuiteRunner.java:421)
+at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:413)
+at org.testng.SuiteRunner.privateRun(SuiteRunner.java:373)
+at org.testng.SuiteRunner.run(SuiteRunner.java:312)
+at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:52)
+at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:95)
+at org.testng.TestNG.runSuitesSequentially(TestNG.java:1274)
+at org.testng.TestNG.runSuitesLocally(TestNG.java:1208)
+at org.testng.TestNG.runSuites(TestNG.java:1112)
+at org.testng.TestNG.run(TestNG.java:1079)
+at org.testng.remote.AbstractRemoteTestNG.run(AbstractRemoteTestNG.java:115)
+at org.testng.remote.RemoteTestNG.initAndRun(RemoteTestNG.java:293)
+at org.testng.remote.RemoteTestNG.main(RemoteTestNG.java:91)
+]]>
+            </full-stacktrace>
+          </exception> <!-- org.testng.TestNGException -->
           <reporter-output>
           </reporter-output>
         </test-method> <!-- preCondition -->
-        <test-method signature="runLogin(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T18:00:23 IST" name="runLogin" data-provider="fetchData" finished-at="2025-04-10T18:00:23 IST" duration-ms="251" status="PASS">
+        <test-method signature="runLogin(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="runLogin" data-provider="fetchData" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
           <params>
             <param index="0">
               <value>
@@ -1178,22 +93,64 @@ at java.base/java.lang.Thread.run(Thread.java:831)
               </value>
             </param>
           </params>
+          <exception class="org.testng.TestNGException">
+            <message>
+              <![CDATA[
+Parameter 'browser' is required by BeforeMethod on method preCondition but has not been marked @Optional or defined
+in C:\Users\rajes\AppData\Local\Temp\testng-eclipse-2104717193\testng-customsuite.xml]]>
+            </message>
+            <full-stacktrace>
+              <![CDATA[org.testng.TestNGException: 
+Parameter 'browser' is required by BeforeMethod on method preCondition but has not been marked @Optional or defined
+in C:\Users\rajes\AppData\Local\Temp\testng-eclipse-2104717193\testng-customsuite.xml
+at org.testng.internal.Parameters.createParams(Parameters.java:264)
+at org.testng.internal.Parameters.createParametersForMethod(Parameters.java:352)
+at org.testng.internal.Parameters.createParameters(Parameters.java:690)
+at org.testng.internal.Parameters.createConfigurationParameters(Parameters.java:163)
+at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:313)
+at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
+at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
+at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
+at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
+at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
+at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
+at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
+at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
+at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+at org.testng.TestRunner.privateRun(TestRunner.java:739)
+at org.testng.TestRunner.run(TestRunner.java:614)
+at org.testng.SuiteRunner.runTest(SuiteRunner.java:421)
+at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:413)
+at org.testng.SuiteRunner.privateRun(SuiteRunner.java:373)
+at org.testng.SuiteRunner.run(SuiteRunner.java:312)
+at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:52)
+at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:95)
+at org.testng.TestNG.runSuitesSequentially(TestNG.java:1274)
+at org.testng.TestNG.runSuitesLocally(TestNG.java:1208)
+at org.testng.TestNG.runSuites(TestNG.java:1112)
+at org.testng.TestNG.run(TestNG.java:1079)
+at org.testng.remote.AbstractRemoteTestNG.run(AbstractRemoteTestNG.java:115)
+at org.testng.remote.RemoteTestNG.initAndRun(RemoteTestNG.java:293)
+at org.testng.remote.RemoteTestNG.main(RemoteTestNG.java:91)
+]]>
+            </full-stacktrace>
+          </exception> <!-- org.testng.TestNGException -->
           <reporter-output>
           </reporter-output>
         </test-method> <!-- runLogin -->
-        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T18:00:23 IST" name="postCondition" finished-at="2025-04-10T18:00:23 IST" duration-ms="0" status="PASS">
+        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="postCondition" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- postCondition -->
-        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T18:00:24 IST" name="setNode" finished-at="2025-04-10T18:00:24 IST" duration-ms="0" status="PASS">
+        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="setNode" finished-at="2025-04-11T15:48:47 IST" duration-ms="1" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setNode -->
-        <test-method is-config="true" signature="preCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T18:00:24 IST" name="preCondition" finished-at="2025-04-10T18:00:24 IST" duration-ms="375" status="PASS">
+        <test-method is-config="true" signature="preCondition(design.patterns.factory.browser.BrowserType)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="preCondition" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- preCondition -->
-        <test-method signature="runLogin1(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T18:00:24 IST" name="runLogin1" data-provider="fetchData" finished-at="2025-04-10T18:00:24 IST" duration-ms="179" status="PASS">
+        <test-method signature="runLogin1(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="runLogin1" data-provider="fetchData" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
           <params>
             <param index="0">
               <value>
@@ -1206,57 +163,64 @@ at java.base/java.lang.Thread.run(Thread.java:831)
               </value>
             </param>
           </params>
+          <exception class="org.testng.TestNGException">
+            <message>
+              <![CDATA[
+Parameter 'browser' is required by BeforeMethod on method preCondition but has not been marked @Optional or defined
+in C:\Users\rajes\AppData\Local\Temp\testng-eclipse-2104717193\testng-customsuite.xml]]>
+            </message>
+            <full-stacktrace>
+              <![CDATA[org.testng.TestNGException: 
+Parameter 'browser' is required by BeforeMethod on method preCondition but has not been marked @Optional or defined
+in C:\Users\rajes\AppData\Local\Temp\testng-eclipse-2104717193\testng-customsuite.xml
+at org.testng.internal.Parameters.createParams(Parameters.java:264)
+at org.testng.internal.Parameters.createParametersForMethod(Parameters.java:352)
+at org.testng.internal.Parameters.createParameters(Parameters.java:690)
+at org.testng.internal.Parameters.createConfigurationParameters(Parameters.java:163)
+at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:313)
+at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
+at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
+at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
+at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
+at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
+at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
+at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
+at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
+at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+at org.testng.TestRunner.privateRun(TestRunner.java:739)
+at org.testng.TestRunner.run(TestRunner.java:614)
+at org.testng.SuiteRunner.runTest(SuiteRunner.java:421)
+at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:413)
+at org.testng.SuiteRunner.privateRun(SuiteRunner.java:373)
+at org.testng.SuiteRunner.run(SuiteRunner.java:312)
+at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:52)
+at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:95)
+at org.testng.TestNG.runSuitesSequentially(TestNG.java:1274)
+at org.testng.TestNG.runSuitesLocally(TestNG.java:1208)
+at org.testng.TestNG.runSuites(TestNG.java:1112)
+at org.testng.TestNG.run(TestNG.java:1079)
+at org.testng.remote.AbstractRemoteTestNG.run(AbstractRemoteTestNG.java:115)
+at org.testng.remote.RemoteTestNG.initAndRun(RemoteTestNG.java:293)
+at org.testng.remote.RemoteTestNG.main(RemoteTestNG.java:91)
+]]>
+            </full-stacktrace>
+          </exception> <!-- org.testng.TestNGException -->
           <reporter-output>
           </reporter-output>
         </test-method> <!-- runLogin1 -->
-        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T18:00:24 IST" name="postCondition" finished-at="2025-04-10T18:00:24 IST" duration-ms="0" status="PASS">
+        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="postCondition" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- postCondition -->
-        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T18:00:24 IST" name="setNode" finished-at="2025-04-10T18:00:24 IST" duration-ms="1" status="PASS">
+        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="setNode" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setNode -->
-        <test-method is-config="true" signature="preCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T18:00:24 IST" name="preCondition" finished-at="2025-04-10T18:00:37 IST" duration-ms="12742" status="FAIL">
-          <exception class="java.lang.RuntimeException">
-            <message>
-              <![CDATA[Test failed: See report for details.]]>
-            </message>
-            <full-stacktrace>
-              <![CDATA[java.lang.RuntimeException: Test failed: See report for details.
-at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:643)
-at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:33)
-at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
-at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-at org.testng.internal.invokers.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:141)
-at org.testng.internal.invokers.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:71)
-at org.testng.internal.invokers.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:400)
-at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:333)
-at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
-at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
-at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-at org.testng.internal.thread.graph.TestNGFutureTask.run(TestNGFutureTask.java:22)
-at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-at java.base/java.lang.Thread.run(Thread.java:831)
-]]>
-            </full-stacktrace>
-          </exception> <!-- java.lang.RuntimeException -->
+        <test-method is-config="true" signature="preCondition(design.patterns.factory.browser.BrowserType)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="preCondition" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- preCondition -->
-        <test-method signature="runLogin2(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T18:00:37 IST" name="runLogin2" data-provider="fetchData" finished-at="2025-04-10T18:00:37 IST" duration-ms="0" status="SKIP">
+        <test-method signature="runLogin2(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="runLogin2" data-provider="fetchData" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
           <params>
             <param index="0">
               <value>
@@ -1269,24 +233,21 @@ at java.base/java.lang.Thread.run(Thread.java:831)
               </value>
             </param>
           </params>
-          <exception class="java.lang.RuntimeException">
+          <exception class="org.testng.TestNGException">
             <message>
-              <![CDATA[Test failed: See report for details.]]>
+              <![CDATA[
+Parameter 'browser' is required by BeforeMethod on method preCondition but has not been marked @Optional or defined
+in C:\Users\rajes\AppData\Local\Temp\testng-eclipse-2104717193\testng-customsuite.xml]]>
             </message>
             <full-stacktrace>
-              <![CDATA[java.lang.RuntimeException: Test failed: See report for details.
-at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:643)
-at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:33)
-at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
-at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-at org.testng.internal.invokers.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:141)
-at org.testng.internal.invokers.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:71)
-at org.testng.internal.invokers.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:400)
-at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:333)
+              <![CDATA[org.testng.TestNGException: 
+Parameter 'browser' is required by BeforeMethod on method preCondition but has not been marked @Optional or defined
+in C:\Users\rajes\AppData\Local\Temp\testng-eclipse-2104717193\testng-customsuite.xml
+at org.testng.internal.Parameters.createParams(Parameters.java:264)
+at org.testng.internal.Parameters.createParametersForMethod(Parameters.java:352)
+at org.testng.internal.Parameters.createParameters(Parameters.java:690)
+at org.testng.internal.Parameters.createConfigurationParameters(Parameters.java:163)
+at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:313)
 at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
 at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
 at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
@@ -1295,249 +256,45 @@ at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInv
 at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
 at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
 at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-at org.testng.internal.thread.graph.TestNGFutureTask.run(TestNGFutureTask.java:22)
-at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-at java.base/java.lang.Thread.run(Thread.java:831)
+at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+at org.testng.TestRunner.privateRun(TestRunner.java:739)
+at org.testng.TestRunner.run(TestRunner.java:614)
+at org.testng.SuiteRunner.runTest(SuiteRunner.java:421)
+at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:413)
+at org.testng.SuiteRunner.privateRun(SuiteRunner.java:373)
+at org.testng.SuiteRunner.run(SuiteRunner.java:312)
+at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:52)
+at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:95)
+at org.testng.TestNG.runSuitesSequentially(TestNG.java:1274)
+at org.testng.TestNG.runSuitesLocally(TestNG.java:1208)
+at org.testng.TestNG.runSuites(TestNG.java:1112)
+at org.testng.TestNG.run(TestNG.java:1079)
+at org.testng.remote.AbstractRemoteTestNG.run(AbstractRemoteTestNG.java:115)
+at org.testng.remote.RemoteTestNG.initAndRun(RemoteTestNG.java:293)
+at org.testng.remote.RemoteTestNG.main(RemoteTestNG.java:91)
 ]]>
             </full-stacktrace>
-          </exception> <!-- java.lang.RuntimeException -->
+          </exception> <!-- org.testng.TestNGException -->
           <reporter-output>
           </reporter-output>
         </test-method> <!-- runLogin2 -->
-        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T18:00:37 IST" name="postCondition" finished-at="2025-04-10T18:00:37 IST" duration-ms="0" status="SKIP">
+        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="postCondition" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- postCondition -->
-        <test-method is-config="true" signature="tearDownClass()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T18:00:37 IST" name="tearDownClass" finished-at="2025-04-10T18:00:37 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- tearDownClass -->
-        <test-method is-config="true" signature="browserClose()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T18:00:37 IST" name="browserClose" finished-at="2025-04-10T18:00:37 IST" duration-ms="0" status="SKIP">
+        <test-method is-config="true" signature="browserClose()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="browserClose" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- browserClose -->
-        <test-method is-config="true" signature="endReport()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@6d5620ce]" started-at="2025-04-10T18:01:04 IST" name="endReport" finished-at="2025-04-10T18:01:04 IST" duration-ms="216" status="PASS">
+        <test-method is-config="true" signature="tearDownClass()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="tearDownClass" finished-at="2025-04-11T15:48:47 IST" duration-ms="1" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- tearDownClass -->
+        <test-method is-config="true" signature="endReport()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="endReport" finished-at="2025-04-11T15:48:47 IST" duration-ms="190" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- endReport -->
       </class> <!-- com.leaftaps.testcases.TC001_VerifyLogin -->
-      <class name="com.leaftaps.testcases.TC006_DuplicateLead">
-        <test-method is-config="true" signature="setValues()[pri:0, instance:com.leaftaps.testcases.TC006_DuplicateLead@7098b907]" started-at="2025-04-10T17:59:59 IST" name="setValues" finished-at="2025-04-10T17:59:59 IST" duration-ms="1" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setValues -->
-        <test-method is-config="true" signature="setUpClass()[pri:0, instance:com.leaftaps.testcases.TC006_DuplicateLead@7098b907]" started-at="2025-04-10T17:59:59 IST" name="setUpClass" finished-at="2025-04-10T17:59:59 IST" duration-ms="75" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setUpClass -->
-        <test-method is-config="true" signature="browserObject()[pri:0, instance:com.leaftaps.testcases.TC006_DuplicateLead@7098b907]" started-at="2025-04-10T17:59:59 IST" name="browserObject" finished-at="2025-04-10T17:59:59 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- browserObject -->
-        <test-method is-config="true" signature="startTestCase()[pri:0, instance:com.leaftaps.testcases.TC006_DuplicateLead@7098b907]" started-at="2025-04-10T17:59:59 IST" name="startTestCase" finished-at="2025-04-10T17:59:59 IST" duration-ms="7" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- startTestCase -->
-        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC006_DuplicateLead@7098b907]" started-at="2025-04-10T18:00:00 IST" name="setNode" finished-at="2025-04-10T18:00:00 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setNode -->
-        <test-method is-config="true" signature="preCondition()[pri:0, instance:com.leaftaps.testcases.TC006_DuplicateLead@7098b907]" started-at="2025-04-10T18:00:00 IST" name="preCondition" finished-at="2025-04-10T18:00:23 IST" duration-ms="23538" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- preCondition -->
-        <test-method signature="runLogin(java.lang.String,java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC006_DuplicateLead@7098b907]" started-at="2025-04-10T18:00:23 IST" name="runLogin" data-provider="fetchData" finished-at="2025-04-10T18:00:39 IST" duration-ms="16026" status="PASS">
-          <params>
-            <param index="0">
-              <value>
-                <![CDATA[DemoSalesManager]]>
-              </value>
-            </param>
-            <param index="1">
-              <value>
-                <![CDATA[crmsfa]]>
-              </value>
-            </param>
-            <param index="2">
-              <value>
-                <![CDATA[Babu]]>
-              </value>
-            </param>
-          </params>
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- runLogin -->
-        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC006_DuplicateLead@7098b907]" started-at="2025-04-10T18:00:39 IST" name="postCondition" finished-at="2025-04-10T18:00:39 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- postCondition -->
-        <test-method is-config="true" signature="browserClose()[pri:0, instance:com.leaftaps.testcases.TC006_DuplicateLead@7098b907]" started-at="2025-04-10T18:00:39 IST" name="browserClose" finished-at="2025-04-10T18:00:39 IST" duration-ms="103" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- browserClose -->
-        <test-method is-config="true" signature="tearDownClass()[pri:0, instance:com.leaftaps.testcases.TC006_DuplicateLead@7098b907]" started-at="2025-04-10T18:00:39 IST" name="tearDownClass" finished-at="2025-04-10T18:00:39 IST" duration-ms="2" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- tearDownClass -->
-      </class> <!-- com.leaftaps.testcases.TC006_DuplicateLead -->
-      <class name="com.leaftaps.testcases.TC003_CreateLead">
-        <test-method is-config="true" signature="setValues()[pri:0, instance:com.leaftaps.testcases.TC003_CreateLead@4470fbd6]" started-at="2025-04-10T17:59:59 IST" name="setValues" finished-at="2025-04-10T17:59:59 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setValues -->
-        <test-method is-config="true" signature="setUpClass()[pri:0, instance:com.leaftaps.testcases.TC003_CreateLead@4470fbd6]" started-at="2025-04-10T17:59:59 IST" name="setUpClass" finished-at="2025-04-10T17:59:59 IST" duration-ms="75" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setUpClass -->
-        <test-method is-config="true" signature="browserObject()[pri:0, instance:com.leaftaps.testcases.TC003_CreateLead@4470fbd6]" started-at="2025-04-10T17:59:59 IST" name="browserObject" finished-at="2025-04-10T17:59:59 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- browserObject -->
-        <test-method is-config="true" signature="startTestCase()[pri:0, instance:com.leaftaps.testcases.TC003_CreateLead@4470fbd6]" started-at="2025-04-10T17:59:59 IST" name="startTestCase" finished-at="2025-04-10T17:59:59 IST" duration-ms="7" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- startTestCase -->
-        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC003_CreateLead@4470fbd6]" started-at="2025-04-10T18:00:00 IST" name="setNode" finished-at="2025-04-10T18:00:00 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setNode -->
-        <test-method is-config="true" signature="preCondition()[pri:0, instance:com.leaftaps.testcases.TC003_CreateLead@4470fbd6]" started-at="2025-04-10T18:00:00 IST" name="preCondition" finished-at="2025-04-10T18:00:13 IST" duration-ms="13732" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- preCondition -->
-        <test-method signature="runLogin(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC003_CreateLead@4470fbd6]" started-at="2025-04-10T18:00:13 IST" name="runLogin" data-provider="fetchData" finished-at="2025-04-10T18:00:48 IST" duration-ms="34807" status="FAIL">
-          <params>
-            <param index="0">
-              <value>
-                <![CDATA[Demosalesmanager]]>
-              </value>
-            </param>
-            <param index="1">
-              <value>
-                <![CDATA[crmsfa]]>
-              </value>
-            </param>
-            <param index="2">
-              <value>
-                <![CDATA[Testleaf]]>
-              </value>
-            </param>
-            <param index="3">
-              <value>
-                <![CDATA[Babu]]>
-              </value>
-            </param>
-            <param index="4">
-              <value>
-                <![CDATA[M]]>
-              </value>
-            </param>
-          </params>
-          <exception class="java.lang.RuntimeException">
-            <message>
-              <![CDATA[Test failed: See report for details.]]>
-            </message>
-            <full-stacktrace>
-              <![CDATA[java.lang.RuntimeException: Test failed: See report for details.
-at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.locateElement(SeleniumBase.java:685)
-at com.leaftaps.pages.MyLeadsPage.clickCreateLeadLink(MyLeadsPage.java:11)
-at com.leaftaps.testcases.TC003_CreateLead.runLogin(TC003_CreateLead.java:23)
-at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
-at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-at org.testng.internal.invokers.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:141)
-at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:686)
-at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-at org.testng.internal.thread.graph.TestNGFutureTask.run(TestNGFutureTask.java:22)
-at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-at java.base/java.lang.Thread.run(Thread.java:831)
-]]>
-            </full-stacktrace>
-          </exception> <!-- java.lang.RuntimeException -->
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- runLogin -->
-        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC003_CreateLead@4470fbd6]" started-at="2025-04-10T18:00:48 IST" name="postCondition" finished-at="2025-04-10T18:00:48 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- postCondition -->
-        <test-method is-config="true" signature="browserClose()[pri:0, instance:com.leaftaps.testcases.TC003_CreateLead@4470fbd6]" started-at="2025-04-10T18:00:48 IST" name="browserClose" finished-at="2025-04-10T18:00:48 IST" duration-ms="104" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- browserClose -->
-        <test-method is-config="true" signature="tearDownClass()[pri:0, instance:com.leaftaps.testcases.TC003_CreateLead@4470fbd6]" started-at="2025-04-10T18:00:48 IST" name="tearDownClass" finished-at="2025-04-10T18:00:48 IST" duration-ms="1" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- tearDownClass -->
-      </class> <!-- com.leaftaps.testcases.TC003_CreateLead -->
-      <class name="com.leaftaps.testcases.TC002_VerifyLogout">
-        <test-method is-config="true" signature="setValues()[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@448c8166]" started-at="2025-04-10T17:59:59 IST" name="setValues" finished-at="2025-04-10T17:59:59 IST" duration-ms="1" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setValues -->
-        <test-method is-config="true" signature="setUpClass()[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@448c8166]" started-at="2025-04-10T17:59:59 IST" name="setUpClass" finished-at="2025-04-10T17:59:59 IST" duration-ms="75" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setUpClass -->
-        <test-method is-config="true" signature="browserObject()[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@448c8166]" started-at="2025-04-10T17:59:59 IST" name="browserObject" finished-at="2025-04-10T17:59:59 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- browserObject -->
-        <test-method is-config="true" signature="startTestCase()[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@448c8166]" started-at="2025-04-10T17:59:59 IST" name="startTestCase" finished-at="2025-04-10T17:59:59 IST" duration-ms="7" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- startTestCase -->
-        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@448c8166]" started-at="2025-04-10T18:00:00 IST" name="setNode" finished-at="2025-04-10T18:00:00 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setNode -->
-        <test-method is-config="true" signature="preCondition()[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@448c8166]" started-at="2025-04-10T18:00:00 IST" name="preCondition" finished-at="2025-04-10T18:00:13 IST" duration-ms="13695" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- preCondition -->
-        <test-method signature="runLogin(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@448c8166]" started-at="2025-04-10T18:00:13 IST" name="runLogin" data-provider="fetchData" finished-at="2025-04-10T18:00:16 IST" duration-ms="2872" status="PASS">
-          <params>
-            <param index="0">
-              <value>
-                <![CDATA[Demosalesmanager]]>
-              </value>
-            </param>
-            <param index="1">
-              <value>
-                <![CDATA[crmsfa]]>
-              </value>
-            </param>
-          </params>
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- runLogin -->
-        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@448c8166]" started-at="2025-04-10T18:00:16 IST" name="postCondition" finished-at="2025-04-10T18:00:16 IST" duration-ms="1" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- postCondition -->
-        <test-method is-config="true" signature="browserClose()[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@448c8166]" started-at="2025-04-10T18:00:16 IST" name="browserClose" finished-at="2025-04-10T18:00:16 IST" duration-ms="110" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- browserClose -->
-        <test-method is-config="true" signature="tearDownClass()[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@448c8166]" started-at="2025-04-10T18:00:16 IST" name="tearDownClass" finished-at="2025-04-10T18:00:16 IST" duration-ms="6" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- tearDownClass -->
-      </class> <!-- com.leaftaps.testcases.TC002_VerifyLogout -->
-    </test> <!-- Test -->
-  </suite> <!-- Suite -->
+    </test> <!-- Default test -->
+  </suite> <!-- Default suite -->
 </testng-results>
