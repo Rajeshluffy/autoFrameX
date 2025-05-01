@@ -2,7 +2,6 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 <suite name="Failed suite [Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" parallel="classes" name="Test(failed)">
-    <parameter name="browser" value="FIREFOX"/>
     <classes>
       <class name="com.leaftaps.testcases.TC001_VerifyLogin">
         <methods>
@@ -22,70 +21,6 @@
           <include name="endReport"/>
         </methods>
       </class> <!-- com.leaftaps.testcases.TC001_VerifyLogin -->
-      <class name="com.leaftaps.testcases.TC003_CreateLead">
-        <methods>
-          <include name="startTestCase"/>
-          <include name="postCondition"/>
-          <include name="runLogin"/>
-          <include name="browserObject"/>
-          <include name="setUpClass"/>
-          <include name="startReport"/>
-          <include name="setValues"/>
-          <include name="tearDownClass"/>
-          <include name="browserClose"/>
-          <include name="setNode"/>
-          <include name="endReport"/>
-          <include name="preCondition"/>
-        </methods>
-      </class> <!-- com.leaftaps.testcases.TC003_CreateLead -->
-      <class name="com.leaftaps.testcases.TC006_DuplicateLead">
-        <methods>
-          <include name="startTestCase"/>
-          <include name="postCondition"/>
-          <include name="runLogin"/>
-          <include name="setUpClass"/>
-          <include name="browserObject"/>
-          <include name="startReport"/>
-          <include name="tearDownClass"/>
-          <include name="browserClose"/>
-          <include name="setNode"/>
-          <include name="endReport"/>
-          <include name="preCondition"/>
-          <include name="setValues"/>
-        </methods>
-      </class> <!-- com.leaftaps.testcases.TC006_DuplicateLead -->
-      <class name="com.leaftaps.testcases.TC005_DeleteLead">
-        <methods>
-          <include name="startTestCase"/>
-          <include name="setValues"/>
-          <include name="postCondition"/>
-          <include name="browserObject"/>
-          <include name="setUpClass"/>
-          <include name="startReport"/>
-          <include name="runLogin"/>
-          <include name="tearDownClass"/>
-          <include name="browserClose"/>
-          <include name="setNode"/>
-          <include name="endReport"/>
-          <include name="preCondition"/>
-        </methods>
-      </class> <!-- com.leaftaps.testcases.TC005_DeleteLead -->
-      <class name="com.leaftaps.testcases.TC002_VerifyLogout">
-        <methods>
-          <include name="startTestCase"/>
-          <include name="postCondition"/>
-          <include name="browserObject"/>
-          <include name="setUpClass"/>
-          <include name="runLogin"/>
-          <include name="startReport"/>
-          <include name="setValues"/>
-          <include name="tearDownClass"/>
-          <include name="browserClose"/>
-          <include name="setNode"/>
-          <include name="endReport"/>
-          <include name="preCondition"/>
-        </methods>
-      </class> <!-- com.leaftaps.testcases.TC002_VerifyLogout -->
     </classes>
   </test> <!-- Test(failed) -->
 </suite> <!-- Failed suite [Suite] -->

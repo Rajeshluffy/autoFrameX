@@ -2,85 +2,73 @@
 <testng-results ignored="0" total="3" passed="0" failed="0" skipped="3">
   <reporter-output>
   </reporter-output>
-  <suite started-at="2025-04-11T15:48:46 IST" name="Default suite" finished-at="2025-04-11T15:48:47 IST" duration-ms="820">
+  <suite started-at="2025-05-01T13:50:51 IST" name="Suite" finished-at="2025-05-01T13:52:33 IST" duration-ms="101243">
     <groups>
       <group name="cucumber">
-        <method signature="AbstractTestNGCucumberTests.runScenario(cucumber.api.testng.PickleEventWrapper,cucumber.api.testng.CucumberFeatureWrapper)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" name="runScenario" class="cucumber.api.testng.AbstractTestNGCucumberTests"/>
+        <method signature="AbstractTestNGCucumberTests.runScenario(cucumber.api.testng.PickleEventWrapper,cucumber.api.testng.CucumberFeatureWrapper)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" name="runScenario" class="cucumber.api.testng.AbstractTestNGCucumberTests"/>
       </group> <!-- cucumber -->
     </groups>
-    <test started-at="2025-04-11T15:48:46 IST" name="Default test" finished-at="2025-04-11T15:48:47 IST" duration-ms="820">
+    <test started-at="2025-05-01T13:50:51 IST" name="Test" finished-at="2025-05-01T13:52:33 IST" duration-ms="101243">
       <class name="com.leaftaps.testcases.TC001_VerifyLogin">
-        <test-method is-config="true" signature="startReport()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:46 IST" name="startReport" finished-at="2025-04-11T15:48:46 IST" duration-ms="128" status="PASS">
+        <test-method is-config="true" signature="startReport()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:50:51 IST" name="startReport" finished-at="2025-05-01T13:50:51 IST" duration-ms="286" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- startReport -->
-        <test-method is-config="true" signature="setValues()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:46 IST" name="setValues" finished-at="2025-04-11T15:48:46 IST" duration-ms="0" status="PASS">
+        <test-method is-config="true" signature="setValues()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:50:51 IST" name="setValues" finished-at="2025-05-01T13:50:51 IST" duration-ms="0" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setValues -->
-        <test-method is-config="true" signature="setUpClass()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:46 IST" name="setUpClass" finished-at="2025-04-11T15:48:46 IST" duration-ms="91" status="PASS">
+        <test-method is-config="true" signature="setUpClass()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:50:51 IST" name="setUpClass" finished-at="2025-05-01T13:50:51 IST" duration-ms="122" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setUpClass -->
-        <test-method is-config="true" signature="browserObject()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:46 IST" name="browserObject" finished-at="2025-04-11T15:48:46 IST" duration-ms="1" status="PASS">
+        <test-method is-config="true" signature="browserObject()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:50:51 IST" name="browserObject" finished-at="2025-05-01T13:50:51 IST" duration-ms="0" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- browserObject -->
-        <test-method is-config="true" signature="startTestCase()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:46 IST" name="startTestCase" finished-at="2025-04-11T15:48:46 IST" duration-ms="6" status="PASS">
+        <test-method is-config="true" signature="startTestCase()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:50:51 IST" name="startTestCase" finished-at="2025-05-01T13:50:51 IST" duration-ms="8" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- startTestCase -->
-        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="setNode" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="PASS">
+        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:50:53 IST" name="setNode" finished-at="2025-05-01T13:50:53 IST" duration-ms="1" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setNode -->
-        <test-method is-config="true" signature="preCondition(design.patterns.factory.browser.BrowserType)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="preCondition" finished-at="1970-01-01T05:30:00 IST" duration-ms="-1744366727229" status="FAIL">
-          <exception class="org.testng.TestNGException">
+        <test-method is-config="true" signature="preCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:50:53 IST" name="preCondition" finished-at="2025-05-01T13:52:32 IST" duration-ms="99371" status="FAIL">
+          <exception class="java.lang.RuntimeException">
             <message>
-              <![CDATA[
-Parameter 'browser' is required by BeforeMethod on method preCondition but has not been marked @Optional or defined
-in C:\Users\rajes\AppData\Local\Temp\testng-eclipse-2104717193\testng-customsuite.xml]]>
+              <![CDATA[Test failed: See report for details.]]>
             </message>
             <full-stacktrace>
-              <![CDATA[org.testng.TestNGException: 
-Parameter 'browser' is required by BeforeMethod on method preCondition but has not been marked @Optional or defined
-in C:\Users\rajes\AppData\Local\Temp\testng-eclipse-2104717193\testng-customsuite.xml
-at org.testng.internal.Parameters.createParams(Parameters.java:264)
-at org.testng.internal.Parameters.createParametersForMethod(Parameters.java:352)
-at org.testng.internal.Parameters.createParameters(Parameters.java:690)
-at org.testng.internal.Parameters.createConfigurationParameters(Parameters.java:163)
-at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:313)
-at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
-at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
-at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-at org.testng.TestRunner.privateRun(TestRunner.java:739)
-at org.testng.TestRunner.run(TestRunner.java:614)
-at org.testng.SuiteRunner.runTest(SuiteRunner.java:421)
-at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:413)
-at org.testng.SuiteRunner.privateRun(SuiteRunner.java:373)
-at org.testng.SuiteRunner.run(SuiteRunner.java:312)
-at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:52)
-at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:95)
-at org.testng.TestNG.runSuitesSequentially(TestNG.java:1274)
-at org.testng.TestNG.runSuitesLocally(TestNG.java:1208)
-at org.testng.TestNG.runSuites(TestNG.java:1112)
-at org.testng.TestNG.run(TestNG.java:1079)
-at org.testng.remote.AbstractRemoteTestNG.run(AbstractRemoteTestNG.java:115)
-at org.testng.remote.RemoteTestNG.initAndRun(RemoteTestNG.java:293)
-at org.testng.remote.RemoteTestNG.main(RemoteTestNG.java:91)
+              <![CDATA[java.lang.RuntimeException: Test failed: See report for details.
+at com.framework.utils.Reporter.reportStep(Reporter.java:110)
+at com.framework.utils.Reporter.reportStep(Reporter.java:128)
+at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
+at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:28)
+at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+at java.base/java.lang.reflect.Method.invoke(Method.java:578)
+at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:133)
+at org.testng.internal.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:62)
+at org.testng.internal.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:385)
+at org.testng.internal.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:321)
+at org.testng.internal.TestInvoker.runConfigMethods(TestInvoker.java:700)
+at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:527)
+at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
+at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:824)
+at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
+at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+at java.base/java.lang.Thread.run(Thread.java:1589)
 ]]>
             </full-stacktrace>
-          </exception> <!-- org.testng.TestNGException -->
+          </exception> <!-- java.lang.RuntimeException -->
           <reporter-output>
           </reporter-output>
         </test-method> <!-- preCondition -->
-        <test-method signature="runLogin(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="runLogin" data-provider="fetchData" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
+        <test-method signature="runLogin(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:32 IST" name="runLogin" data-provider="fetchData" finished-at="2025-05-01T13:52:32 IST" duration-ms="0" status="SKIP">
           <params>
             <param index="0">
               <value>
@@ -93,64 +81,52 @@ at org.testng.remote.RemoteTestNG.main(RemoteTestNG.java:91)
               </value>
             </param>
           </params>
-          <exception class="org.testng.TestNGException">
+          <exception class="java.lang.RuntimeException">
             <message>
-              <![CDATA[
-Parameter 'browser' is required by BeforeMethod on method preCondition but has not been marked @Optional or defined
-in C:\Users\rajes\AppData\Local\Temp\testng-eclipse-2104717193\testng-customsuite.xml]]>
+              <![CDATA[Test failed: See report for details.]]>
             </message>
             <full-stacktrace>
-              <![CDATA[org.testng.TestNGException: 
-Parameter 'browser' is required by BeforeMethod on method preCondition but has not been marked @Optional or defined
-in C:\Users\rajes\AppData\Local\Temp\testng-eclipse-2104717193\testng-customsuite.xml
-at org.testng.internal.Parameters.createParams(Parameters.java:264)
-at org.testng.internal.Parameters.createParametersForMethod(Parameters.java:352)
-at org.testng.internal.Parameters.createParameters(Parameters.java:690)
-at org.testng.internal.Parameters.createConfigurationParameters(Parameters.java:163)
-at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:313)
-at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
-at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
-at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-at org.testng.TestRunner.privateRun(TestRunner.java:739)
-at org.testng.TestRunner.run(TestRunner.java:614)
-at org.testng.SuiteRunner.runTest(SuiteRunner.java:421)
-at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:413)
-at org.testng.SuiteRunner.privateRun(SuiteRunner.java:373)
-at org.testng.SuiteRunner.run(SuiteRunner.java:312)
-at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:52)
-at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:95)
-at org.testng.TestNG.runSuitesSequentially(TestNG.java:1274)
-at org.testng.TestNG.runSuitesLocally(TestNG.java:1208)
-at org.testng.TestNG.runSuites(TestNG.java:1112)
-at org.testng.TestNG.run(TestNG.java:1079)
-at org.testng.remote.AbstractRemoteTestNG.run(AbstractRemoteTestNG.java:115)
-at org.testng.remote.RemoteTestNG.initAndRun(RemoteTestNG.java:293)
-at org.testng.remote.RemoteTestNG.main(RemoteTestNG.java:91)
+              <![CDATA[java.lang.RuntimeException: Test failed: See report for details.
+at com.framework.utils.Reporter.reportStep(Reporter.java:110)
+at com.framework.utils.Reporter.reportStep(Reporter.java:128)
+at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
+at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:28)
+at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+at java.base/java.lang.reflect.Method.invoke(Method.java:578)
+at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:133)
+at org.testng.internal.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:62)
+at org.testng.internal.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:385)
+at org.testng.internal.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:321)
+at org.testng.internal.TestInvoker.runConfigMethods(TestInvoker.java:700)
+at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:527)
+at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
+at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:824)
+at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
+at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+at java.base/java.lang.Thread.run(Thread.java:1589)
 ]]>
             </full-stacktrace>
-          </exception> <!-- org.testng.TestNGException -->
+          </exception> <!-- java.lang.RuntimeException -->
           <reporter-output>
           </reporter-output>
         </test-method> <!-- runLogin -->
-        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="postCondition" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
+        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:32 IST" name="postCondition" finished-at="1970-01-01T05:30:00 IST" duration-ms="-1746087752456" status="SKIP">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- postCondition -->
-        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="setNode" finished-at="2025-04-11T15:48:47 IST" duration-ms="1" status="PASS">
+        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:32 IST" name="setNode" finished-at="2025-05-01T13:52:32 IST" duration-ms="1" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setNode -->
-        <test-method is-config="true" signature="preCondition(design.patterns.factory.browser.BrowserType)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="preCondition" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
+        <test-method is-config="true" signature="preCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:32 IST" name="preCondition" finished-at="1970-01-01T05:30:00 IST" duration-ms="-1746087752713" status="SKIP">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- preCondition -->
-        <test-method signature="runLogin1(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="runLogin1" data-provider="fetchData" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
+        <test-method signature="runLogin1(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:32 IST" name="runLogin1" data-provider="fetchData" finished-at="2025-05-01T13:52:32 IST" duration-ms="0" status="SKIP">
           <params>
             <param index="0">
               <value>
@@ -163,64 +139,52 @@ at org.testng.remote.RemoteTestNG.main(RemoteTestNG.java:91)
               </value>
             </param>
           </params>
-          <exception class="org.testng.TestNGException">
+          <exception class="java.lang.RuntimeException">
             <message>
-              <![CDATA[
-Parameter 'browser' is required by BeforeMethod on method preCondition but has not been marked @Optional or defined
-in C:\Users\rajes\AppData\Local\Temp\testng-eclipse-2104717193\testng-customsuite.xml]]>
+              <![CDATA[Test failed: See report for details.]]>
             </message>
             <full-stacktrace>
-              <![CDATA[org.testng.TestNGException: 
-Parameter 'browser' is required by BeforeMethod on method preCondition but has not been marked @Optional or defined
-in C:\Users\rajes\AppData\Local\Temp\testng-eclipse-2104717193\testng-customsuite.xml
-at org.testng.internal.Parameters.createParams(Parameters.java:264)
-at org.testng.internal.Parameters.createParametersForMethod(Parameters.java:352)
-at org.testng.internal.Parameters.createParameters(Parameters.java:690)
-at org.testng.internal.Parameters.createConfigurationParameters(Parameters.java:163)
-at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:313)
-at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
-at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
-at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-at org.testng.TestRunner.privateRun(TestRunner.java:739)
-at org.testng.TestRunner.run(TestRunner.java:614)
-at org.testng.SuiteRunner.runTest(SuiteRunner.java:421)
-at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:413)
-at org.testng.SuiteRunner.privateRun(SuiteRunner.java:373)
-at org.testng.SuiteRunner.run(SuiteRunner.java:312)
-at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:52)
-at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:95)
-at org.testng.TestNG.runSuitesSequentially(TestNG.java:1274)
-at org.testng.TestNG.runSuitesLocally(TestNG.java:1208)
-at org.testng.TestNG.runSuites(TestNG.java:1112)
-at org.testng.TestNG.run(TestNG.java:1079)
-at org.testng.remote.AbstractRemoteTestNG.run(AbstractRemoteTestNG.java:115)
-at org.testng.remote.RemoteTestNG.initAndRun(RemoteTestNG.java:293)
-at org.testng.remote.RemoteTestNG.main(RemoteTestNG.java:91)
+              <![CDATA[java.lang.RuntimeException: Test failed: See report for details.
+at com.framework.utils.Reporter.reportStep(Reporter.java:110)
+at com.framework.utils.Reporter.reportStep(Reporter.java:128)
+at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
+at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:28)
+at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+at java.base/java.lang.reflect.Method.invoke(Method.java:578)
+at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:133)
+at org.testng.internal.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:62)
+at org.testng.internal.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:385)
+at org.testng.internal.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:321)
+at org.testng.internal.TestInvoker.runConfigMethods(TestInvoker.java:700)
+at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:527)
+at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
+at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:824)
+at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
+at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+at java.base/java.lang.Thread.run(Thread.java:1589)
 ]]>
             </full-stacktrace>
-          </exception> <!-- org.testng.TestNGException -->
+          </exception> <!-- java.lang.RuntimeException -->
           <reporter-output>
           </reporter-output>
         </test-method> <!-- runLogin1 -->
-        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="postCondition" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
+        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:32 IST" name="postCondition" finished-at="1970-01-01T05:30:00 IST" duration-ms="-1746087752723" status="SKIP">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- postCondition -->
-        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="setNode" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="PASS">
+        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:33 IST" name="setNode" finished-at="2025-05-01T13:52:33 IST" duration-ms="0" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setNode -->
-        <test-method is-config="true" signature="preCondition(design.patterns.factory.browser.BrowserType)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="preCondition" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
+        <test-method is-config="true" signature="preCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:33 IST" name="preCondition" finished-at="1970-01-01T05:30:00 IST" duration-ms="-1746087753007" status="SKIP">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- preCondition -->
-        <test-method signature="runLogin2(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="runLogin2" data-provider="fetchData" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
+        <test-method signature="runLogin2(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:33 IST" name="runLogin2" data-provider="fetchData" finished-at="2025-05-01T13:52:33 IST" duration-ms="0" status="SKIP">
           <params>
             <param index="0">
               <value>
@@ -233,68 +197,56 @@ at org.testng.remote.RemoteTestNG.main(RemoteTestNG.java:91)
               </value>
             </param>
           </params>
-          <exception class="org.testng.TestNGException">
+          <exception class="java.lang.RuntimeException">
             <message>
-              <![CDATA[
-Parameter 'browser' is required by BeforeMethod on method preCondition but has not been marked @Optional or defined
-in C:\Users\rajes\AppData\Local\Temp\testng-eclipse-2104717193\testng-customsuite.xml]]>
+              <![CDATA[Test failed: See report for details.]]>
             </message>
             <full-stacktrace>
-              <![CDATA[org.testng.TestNGException: 
-Parameter 'browser' is required by BeforeMethod on method preCondition but has not been marked @Optional or defined
-in C:\Users\rajes\AppData\Local\Temp\testng-eclipse-2104717193\testng-customsuite.xml
-at org.testng.internal.Parameters.createParams(Parameters.java:264)
-at org.testng.internal.Parameters.createParametersForMethod(Parameters.java:352)
-at org.testng.internal.Parameters.createParameters(Parameters.java:690)
-at org.testng.internal.Parameters.createConfigurationParameters(Parameters.java:163)
-at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:313)
-at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
-at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
-at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-at org.testng.TestRunner.privateRun(TestRunner.java:739)
-at org.testng.TestRunner.run(TestRunner.java:614)
-at org.testng.SuiteRunner.runTest(SuiteRunner.java:421)
-at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:413)
-at org.testng.SuiteRunner.privateRun(SuiteRunner.java:373)
-at org.testng.SuiteRunner.run(SuiteRunner.java:312)
-at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:52)
-at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:95)
-at org.testng.TestNG.runSuitesSequentially(TestNG.java:1274)
-at org.testng.TestNG.runSuitesLocally(TestNG.java:1208)
-at org.testng.TestNG.runSuites(TestNG.java:1112)
-at org.testng.TestNG.run(TestNG.java:1079)
-at org.testng.remote.AbstractRemoteTestNG.run(AbstractRemoteTestNG.java:115)
-at org.testng.remote.RemoteTestNG.initAndRun(RemoteTestNG.java:293)
-at org.testng.remote.RemoteTestNG.main(RemoteTestNG.java:91)
+              <![CDATA[java.lang.RuntimeException: Test failed: See report for details.
+at com.framework.utils.Reporter.reportStep(Reporter.java:110)
+at com.framework.utils.Reporter.reportStep(Reporter.java:128)
+at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
+at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:28)
+at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+at java.base/java.lang.reflect.Method.invoke(Method.java:578)
+at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:133)
+at org.testng.internal.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:62)
+at org.testng.internal.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:385)
+at org.testng.internal.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:321)
+at org.testng.internal.TestInvoker.runConfigMethods(TestInvoker.java:700)
+at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:527)
+at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
+at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:824)
+at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
+at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+at java.base/java.lang.Thread.run(Thread.java:1589)
 ]]>
             </full-stacktrace>
-          </exception> <!-- org.testng.TestNGException -->
+          </exception> <!-- java.lang.RuntimeException -->
           <reporter-output>
           </reporter-output>
         </test-method> <!-- runLogin2 -->
-        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="postCondition" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
+        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:33 IST" name="postCondition" finished-at="1970-01-01T05:30:00 IST" duration-ms="-1746087753019" status="SKIP">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- postCondition -->
-        <test-method is-config="true" signature="browserClose()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="browserClose" finished-at="2025-04-11T15:48:47 IST" duration-ms="0" status="SKIP">
+        <test-method is-config="true" signature="browserClose()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:33 IST" name="browserClose" finished-at="1970-01-01T05:30:00 IST" duration-ms="-1746087753021" status="SKIP">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- browserClose -->
-        <test-method is-config="true" signature="tearDownClass()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="tearDownClass" finished-at="2025-04-11T15:48:47 IST" duration-ms="1" status="PASS">
+        <test-method is-config="true" signature="tearDownClass()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:33 IST" name="tearDownClass" finished-at="2025-05-01T13:52:33 IST" duration-ms="7" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- tearDownClass -->
-        <test-method is-config="true" signature="endReport()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@415b0b49]" started-at="2025-04-11T15:48:47 IST" name="endReport" finished-at="2025-04-11T15:48:47 IST" duration-ms="190" status="PASS">
+        <test-method is-config="true" signature="endReport()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:34 IST" name="endReport" finished-at="2025-05-01T13:52:34 IST" duration-ms="502" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- endReport -->
       </class> <!-- com.leaftaps.testcases.TC001_VerifyLogin -->
-    </test> <!-- Default test -->
-  </suite> <!-- Default suite -->
+    </test> <!-- Test -->
+  </suite> <!-- Suite -->
 </testng-results>

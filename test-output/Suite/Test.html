@@ -55,11 +55,11 @@ function toggleAllBoxes() {
 <body>
 <h2 align='center'>Test</h2><table border='1' align="center">
 <tr>
-<td>Tests passed/Failed/Skipped:</td><td>0/0/7</td>
+<td>Tests passed/Failed/Skipped:</td><td>0/0/3</td>
 </tr><tr>
-<td>Started on:</td><td>Fri Apr 11 15:46:42 IST 2025</td>
+<td>Started on:</td><td>Thu May 01 13:50:51 IST 2025</td>
 </tr>
-<tr><td>Total time:</td><td>31 seconds (31501 ms)</td>
+<tr><td>Total time:</td><td>101 seconds (101243 ms)</td>
 </tr><tr>
 <td>Included groups:</td><td></td>
 </tr><tr>
@@ -70,615 +70,200 @@ function toggleAllBoxes() {
 <table width='100%' border='1' class='invocation-failed'>
 <tr><td colspan='4' align='center'><b>FAILED CONFIGURATIONS</b></td></tr>
 <tr><td><b>Test method</b></td>
-<td><b>Attribute(s)</b></td>
 <td width="30%"><b>Exception</b></td>
 <td width="10%"><b>Time (seconds)</b></td>
 <td><b>Instance</b></td>
 </tr>
 <tr>
-<td title='com.leaftaps.testcases.TC005_DeleteLead.preCondition()'><b>preCondition</b><br>Test class: com.leaftaps.testcases.TC005_DeleteLead<br>Parameters: FIREFOX</td>
+<td title='com.leaftaps.testcases.TC001_VerifyLogin.preCondition()'><b>preCondition</b><br>Test class: com.leaftaps.testcases.TC001_VerifyLogin</td>
 <td><div><pre>java.lang.RuntimeException: Test failed: See report for details.
 	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
 	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
 	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-... Removed 17 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1326272254", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-<div class='stack-trace' id='stack-trace1326272254'><pre>java.lang.RuntimeException: Test failed: See report for details.
+	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:28)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1589)
+... Removed 14 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1694634153", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace1694634153'><pre>java.lang.RuntimeException: Test failed: See report for details.
 	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
 	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
 	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:141)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:71)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:400)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:333)
-	at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
-	at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-	at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-	at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-	at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-	at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at org.testng.internal.thread.graph.TestNGFutureTask.run(TestNGFutureTask.java:22)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
+	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:28)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:578)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:133)
+	at org.testng.internal.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:62)
+	at org.testng.internal.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:385)
+	at org.testng.internal.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:321)
+	at org.testng.internal.TestInvoker.runConfigMethods(TestInvoker.java:700)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:527)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:824)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1589)
 </pre></div></td>
-<td>29</td>
-<td>com.leaftaps.testcases.TC005_DeleteLead@3b6d844d</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC006_DuplicateLead.preCondition()'><b>preCondition</b><br>Test class: com.leaftaps.testcases.TC006_DuplicateLead<br>Parameters: FIREFOX</td>
-<td><div><pre>java.lang.RuntimeException: Test failed: See report for details.
-	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-... Removed 17 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace752006811", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-<div class='stack-trace' id='stack-trace752006811'><pre>java.lang.RuntimeException: Test failed: See report for details.
-	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:141)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:71)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:400)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:333)
-	at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
-	at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-	at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-	at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-	at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-	at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at org.testng.internal.thread.graph.TestNGFutureTask.run(TestNGFutureTask.java:22)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-</pre></div></td>
-<td>28</td>
-<td>com.leaftaps.testcases.TC006_DuplicateLead@36804139</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC003_CreateLead.preCondition()'><b>preCondition</b><br>Test class: com.leaftaps.testcases.TC003_CreateLead<br>Parameters: FIREFOX</td>
-<td><div><pre>java.lang.RuntimeException: Test failed: See report for details.
-	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-... Removed 17 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace720572137", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-<div class='stack-trace' id='stack-trace720572137'><pre>java.lang.RuntimeException: Test failed: See report for details.
-	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:141)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:71)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:400)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:333)
-	at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
-	at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-	at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-	at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-	at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-	at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at org.testng.internal.thread.graph.TestNGFutureTask.run(TestNGFutureTask.java:22)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-</pre></div></td>
-<td>28</td>
-<td>com.leaftaps.testcases.TC003_CreateLead@3bcd05cb</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC001_VerifyLogin.preCondition()'><b>preCondition</b><br>Test class: com.leaftaps.testcases.TC001_VerifyLogin<br>Parameters: FIREFOX</td>
-<td><div><pre>java.lang.RuntimeException: Test failed: See report for details.
-	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-... Removed 17 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1503865609", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-<div class='stack-trace' id='stack-trace1503865609'><pre>java.lang.RuntimeException: Test failed: See report for details.
-	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:141)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:71)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:400)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:333)
-	at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
-	at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-	at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-	at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-	at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-	at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at org.testng.internal.thread.graph.TestNGFutureTask.run(TestNGFutureTask.java:22)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-</pre></div></td>
-<td>30</td>
-<td>com.leaftaps.testcases.TC001_VerifyLogin@147e2ae7</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC002_VerifyLogout.preCondition()'><b>preCondition</b><br>Test class: com.leaftaps.testcases.TC002_VerifyLogout<br>Parameters: FIREFOX</td>
-<td><div><pre>java.lang.RuntimeException: Test failed: See report for details.
-	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-... Removed 17 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace988700529", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-<div class='stack-trace' id='stack-trace988700529'><pre>java.lang.RuntimeException: Test failed: See report for details.
-	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:141)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:71)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:400)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:333)
-	at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
-	at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-	at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-	at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-	at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-	at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at org.testng.internal.thread.graph.TestNGFutureTask.run(TestNGFutureTask.java:22)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-</pre></div></td>
-<td>27</td>
-<td>com.leaftaps.testcases.TC002_VerifyLogout@17503f6b</td></tr>
+<td>99</td>
+<td>com.leaftaps.testcases.TC001_VerifyLogin@36ebc363</td></tr>
 </table><p>
 <table width='100%' border='1' class='invocation-skipped'>
 <tr><td colspan='4' align='center'><b>SKIPPED CONFIGURATIONS</b></td></tr>
 <tr><td><b>Test method</b></td>
-<td><b>Attribute(s)</b></td>
 <td width="30%"><b>Exception</b></td>
 <td width="10%"><b>Time (seconds)</b></td>
 <td><b>Instance</b></td>
 </tr>
 <tr>
-<td title='com.leaftaps.testcases.TC002_VerifyLogout.browserClose()'><b>browserClose</b><br>Test class: com.leaftaps.testcases.TC002_VerifyLogout</td>
+<td title='com.leaftaps.testcases.TC001_VerifyLogin.postCondition()'><b>postCondition</b><br>Test class: com.leaftaps.testcases.TC001_VerifyLogin</td>
 <td></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC002_VerifyLogout@17503f6b</td></tr>
+<td>-1746087752</td>
+<td>com.leaftaps.testcases.TC001_VerifyLogin@36ebc363</td></tr>
 <tr>
 <td title='com.leaftaps.testcases.TC001_VerifyLogin.preCondition()'><b>preCondition</b><br>Test class: com.leaftaps.testcases.TC001_VerifyLogin</td>
 <td></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC001_VerifyLogin@147e2ae7</td></tr>
+<td>-1746087752</td>
+<td>com.leaftaps.testcases.TC001_VerifyLogin@36ebc363</td></tr>
+<tr>
+<td title='com.leaftaps.testcases.TC001_VerifyLogin.postCondition()'><b>postCondition</b><br>Test class: com.leaftaps.testcases.TC001_VerifyLogin</td>
+<td></td>
+<td>-1746087753</td>
+<td>com.leaftaps.testcases.TC001_VerifyLogin@36ebc363</td></tr>
+<tr>
+<td title='com.leaftaps.testcases.TC001_VerifyLogin.preCondition()'><b>preCondition</b><br>Test class: com.leaftaps.testcases.TC001_VerifyLogin</td>
+<td></td>
+<td>-1746087753</td>
+<td>com.leaftaps.testcases.TC001_VerifyLogin@36ebc363</td></tr>
+<tr>
+<td title='com.leaftaps.testcases.TC001_VerifyLogin.postCondition()'><b>postCondition</b><br>Test class: com.leaftaps.testcases.TC001_VerifyLogin</td>
+<td></td>
+<td>-1746087752</td>
+<td>com.leaftaps.testcases.TC001_VerifyLogin@36ebc363</td></tr>
 <tr>
 <td title='com.leaftaps.testcases.TC001_VerifyLogin.browserClose()'><b>browserClose</b><br>Test class: com.leaftaps.testcases.TC001_VerifyLogin</td>
 <td></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC001_VerifyLogin@147e2ae7</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC002_VerifyLogout.postCondition()'><b>postCondition</b><br>Test class: com.leaftaps.testcases.TC002_VerifyLogout</td>
-<td></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC002_VerifyLogout@17503f6b</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC001_VerifyLogin.postCondition()'><b>postCondition</b><br>Test class: com.leaftaps.testcases.TC001_VerifyLogin</td>
-<td></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC001_VerifyLogin@147e2ae7</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC001_VerifyLogin.postCondition()'><b>postCondition</b><br>Test class: com.leaftaps.testcases.TC001_VerifyLogin</td>
-<td></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC001_VerifyLogin@147e2ae7</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC001_VerifyLogin.postCondition()'><b>postCondition</b><br>Test class: com.leaftaps.testcases.TC001_VerifyLogin</td>
-<td></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC001_VerifyLogin@147e2ae7</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC003_CreateLead.browserClose()'><b>browserClose</b><br>Test class: com.leaftaps.testcases.TC003_CreateLead</td>
-<td></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC003_CreateLead@3bcd05cb</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC006_DuplicateLead.browserClose()'><b>browserClose</b><br>Test class: com.leaftaps.testcases.TC006_DuplicateLead</td>
-<td></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC006_DuplicateLead@36804139</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC006_DuplicateLead.postCondition()'><b>postCondition</b><br>Test class: com.leaftaps.testcases.TC006_DuplicateLead</td>
-<td></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC006_DuplicateLead@36804139</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC005_DeleteLead.postCondition()'><b>postCondition</b><br>Test class: com.leaftaps.testcases.TC005_DeleteLead</td>
-<td></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC005_DeleteLead@3b6d844d</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC001_VerifyLogin.preCondition()'><b>preCondition</b><br>Test class: com.leaftaps.testcases.TC001_VerifyLogin</td>
-<td></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC001_VerifyLogin@147e2ae7</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC003_CreateLead.postCondition()'><b>postCondition</b><br>Test class: com.leaftaps.testcases.TC003_CreateLead</td>
-<td></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC003_CreateLead@3bcd05cb</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC005_DeleteLead.browserClose()'><b>browserClose</b><br>Test class: com.leaftaps.testcases.TC005_DeleteLead</td>
-<td></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC005_DeleteLead@3b6d844d</td></tr>
+<td>-1746087753</td>
+<td>com.leaftaps.testcases.TC001_VerifyLogin@36ebc363</td></tr>
 </table><p>
 <table width='100%' border='1' class='invocation-skipped'>
 <tr><td colspan='4' align='center'><b>SKIPPED TESTS</b></td></tr>
 <tr><td><b>Test method</b></td>
-<td><b>Attribute(s)</b></td>
 <td width="30%"><b>Exception</b></td>
 <td width="10%"><b>Time (seconds)</b></td>
 <td><b>Instance</b></td>
 </tr>
-<tr>
-<td title='com.leaftaps.testcases.TC003_CreateLead.runLogin()'><b>runLogin</b><br>Test class: com.leaftaps.testcases.TC003_CreateLead<br>Parameters: Demosalesmanager, crmsfa, Testleaf, Babu, M</td>
-<td><div><pre>java.lang.RuntimeException: Test failed: See report for details.
-	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-... Removed 17 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1603812056", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-<div class='stack-trace' id='stack-trace1603812056'><pre>java.lang.RuntimeException: Test failed: See report for details.
-	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:141)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:71)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:400)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:333)
-	at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
-	at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-	at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-	at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-	at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-	at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at org.testng.internal.thread.graph.TestNGFutureTask.run(TestNGFutureTask.java:22)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-</pre></div></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC003_CreateLead@3bcd05cb</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC006_DuplicateLead.runLogin()'><b>runLogin</b><br>Test class: com.leaftaps.testcases.TC006_DuplicateLead<br>Parameters: DemoSalesManager, crmsfa, Babu</td>
-<td><div><pre>java.lang.RuntimeException: Test failed: See report for details.
-	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-... Removed 17 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1660800047", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-<div class='stack-trace' id='stack-trace1660800047'><pre>java.lang.RuntimeException: Test failed: See report for details.
-	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:141)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:71)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:400)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:333)
-	at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
-	at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-	at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-	at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-	at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-	at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at org.testng.internal.thread.graph.TestNGFutureTask.run(TestNGFutureTask.java:22)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-</pre></div></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC006_DuplicateLead@36804139</td></tr>
 <tr>
 <td title='com.leaftaps.testcases.TC001_VerifyLogin.runLogin1()'><b>runLogin1</b><br>Test class: com.leaftaps.testcases.TC001_VerifyLogin<br>Parameters: Demosalesmanager, crmsfa</td>
 <td><div><pre>java.lang.RuntimeException: Test failed: See report for details.
 	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
 	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
 	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-... Removed 17 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1868546233", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-<div class='stack-trace' id='stack-trace1868546233'><pre>java.lang.RuntimeException: Test failed: See report for details.
+	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:28)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1589)
+... Removed 14 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1399235814", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace1399235814'><pre>java.lang.RuntimeException: Test failed: See report for details.
 	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
 	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
 	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:141)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:71)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:400)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:333)
-	at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
-	at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-	at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-	at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-	at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-	at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at org.testng.internal.thread.graph.TestNGFutureTask.run(TestNGFutureTask.java:22)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
+	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:28)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:578)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:133)
+	at org.testng.internal.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:62)
+	at org.testng.internal.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:385)
+	at org.testng.internal.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:321)
+	at org.testng.internal.TestInvoker.runConfigMethods(TestInvoker.java:700)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:527)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:824)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1589)
 </pre></div></td>
 <td>0</td>
-<td>com.leaftaps.testcases.TC001_VerifyLogin@147e2ae7</td></tr>
+<td>com.leaftaps.testcases.TC001_VerifyLogin@36ebc363</td></tr>
 <tr>
 <td title='com.leaftaps.testcases.TC001_VerifyLogin.runLogin()'><b>runLogin</b><br>Test class: com.leaftaps.testcases.TC001_VerifyLogin<br>Parameters: Demosalesmanager, crmsfa</td>
 <td><div><pre>java.lang.RuntimeException: Test failed: See report for details.
 	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
 	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
 	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-... Removed 17 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace2067979578", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-<div class='stack-trace' id='stack-trace2067979578'><pre>java.lang.RuntimeException: Test failed: See report for details.
+	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:28)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1589)
+... Removed 14 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1720878412", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace1720878412'><pre>java.lang.RuntimeException: Test failed: See report for details.
 	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
 	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
 	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:141)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:71)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:400)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:333)
-	at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
-	at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-	at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-	at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-	at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-	at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at org.testng.internal.thread.graph.TestNGFutureTask.run(TestNGFutureTask.java:22)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
+	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:28)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:578)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:133)
+	at org.testng.internal.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:62)
+	at org.testng.internal.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:385)
+	at org.testng.internal.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:321)
+	at org.testng.internal.TestInvoker.runConfigMethods(TestInvoker.java:700)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:527)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:824)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1589)
 </pre></div></td>
 <td>0</td>
-<td>com.leaftaps.testcases.TC001_VerifyLogin@147e2ae7</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC002_VerifyLogout.runLogin()'><b>runLogin</b><br>Test class: com.leaftaps.testcases.TC002_VerifyLogout<br>Parameters: Demosalesmanager, crmsfa</td>
-<td><div><pre>java.lang.RuntimeException: Test failed: See report for details.
-	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-... Removed 17 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace278020200", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-<div class='stack-trace' id='stack-trace278020200'><pre>java.lang.RuntimeException: Test failed: See report for details.
-	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:141)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:71)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:400)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:333)
-	at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
-	at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-	at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-	at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-	at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-	at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at org.testng.internal.thread.graph.TestNGFutureTask.run(TestNGFutureTask.java:22)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-</pre></div></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC002_VerifyLogout@17503f6b</td></tr>
-<tr>
-<td title='com.leaftaps.testcases.TC005_DeleteLead.runLogin()'><b>runLogin</b><br>Test class: com.leaftaps.testcases.TC005_DeleteLead<br>Parameters: DemoSalesManager, crmsfa, Babu, No records to display</td>
-<td><div><pre>java.lang.RuntimeException: Test failed: See report for details.
-	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-... Removed 17 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1692765678", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-<div class='stack-trace' id='stack-trace1692765678'><pre>java.lang.RuntimeException: Test failed: See report for details.
-	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:141)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:71)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:400)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:333)
-	at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
-	at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-	at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-	at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-	at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-	at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at org.testng.internal.thread.graph.TestNGFutureTask.run(TestNGFutureTask.java:22)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-</pre></div></td>
-<td>0</td>
-<td>com.leaftaps.testcases.TC005_DeleteLead@3b6d844d</td></tr>
+<td>com.leaftaps.testcases.TC001_VerifyLogin@36ebc363</td></tr>
 <tr>
 <td title='com.leaftaps.testcases.TC001_VerifyLogin.runLogin2()'><b>runLogin2</b><br>Test class: com.leaftaps.testcases.TC001_VerifyLogin<br>Parameters: Demosalesmanager, crmsfa</td>
 <td><div><pre>java.lang.RuntimeException: Test failed: See report for details.
 	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
 	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
 	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
-... Removed 17 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1904336255", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-<div class='stack-trace' id='stack-trace1904336255'><pre>java.lang.RuntimeException: Test failed: See report for details.
+	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:28)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1589)
+... Removed 14 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace549108628", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace549108628'><pre>java.lang.RuntimeException: Test failed: See report for details.
 	at com.framework.utils.Reporter.reportStep(Reporter.java:110)
 	at com.framework.utils.Reporter.reportStep(Reporter.java:128)
 	at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:35)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:141)
-	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:71)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:400)
-	at org.testng.internal.invokers.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:333)
-	at org.testng.internal.invokers.TestInvoker.runConfigMethods(TestInvoker.java:833)
-	at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:600)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
-	at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
-	at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:992)
-	at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
-	at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
-	at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at org.testng.internal.thread.graph.TestNGFutureTask.run(TestNGFutureTask.java:22)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
-	at java.base/java.lang.Thread.run(Thread.java:831)
+	at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:28)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:578)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:133)
+	at org.testng.internal.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:62)
+	at org.testng.internal.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:385)
+	at org.testng.internal.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:321)
+	at org.testng.internal.TestInvoker.runConfigMethods(TestInvoker.java:700)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:527)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:824)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1589)
 </pre></div></td>
 <td>0</td>
-<td>com.leaftaps.testcases.TC001_VerifyLogin@147e2ae7</td></tr>
+<td>com.leaftaps.testcases.TC001_VerifyLogin@36ebc363</td></tr>
 </table><p>
 </body>
 </html>

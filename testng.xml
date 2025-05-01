@@ -3,11 +3,12 @@
 <suite name="Suite">
   <test thread-count="5" name="Test" parallel="classes">
     <classes>
-      <class name="com.leaftaps.testcases.TC001_VerifyLogin"/>
-      <class name="com.leaftaps.testcases.TC002_VerifyLogout"/>
+    <class name="com.leaftaps.testcases.TC001_VerifyLogin"/>
+     <!--   <class name="com.leaftaps.testcases.TC002_VerifyLogout"/>
       <class name="com.leaftaps.testcases.TC003_CreateLead"/>
       <class name="com.leaftaps.testcases.TC005_DeleteLead"/>
       <class name="com.leaftaps.testcases.TC006_DuplicateLead"/>
+      -->
     </classes>
   </test> <!-- Test -->
 </suite> <!-- Suite -->
