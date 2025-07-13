@@ -12,7 +12,7 @@ public class TC003_CreateLead extends ProjectSpecificMethods{
 	public void setValues() {
 		testcaseName = "CreateLead";
 		testDescription ="Verify that the lead is created";
-		authors="Hari";
+		authors="Rajesh";
 		category ="Smoke";
 		excelFileName="CreateLead";
 	}

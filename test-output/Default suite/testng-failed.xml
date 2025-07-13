@@ -7,18 +7,17 @@
         <methods>
           <include name="startTestCase"/>
           <include name="runLogin2"/>
-          <include name="browserObject"/>
-          <include name="browserClose"/>
-          <include name="setValues"/>
-          <include name="preCondition"/>
-          <include name="runLogin"/>
           <include name="postCondition"/>
           <include name="setUpClass"/>
+          <include name="browserObject"/>
           <include name="startReport"/>
           <include name="runLogin1"/>
+          <include name="browserClose"/>
           <include name="tearDownClass"/>
+          <include name="setValues"/>
           <include name="setNode"/>
           <include name="endReport"/>
+          <include name="preCondition"/>
         </methods>
       </class> <!-- com.leaftaps.testcases.TC001_VerifyLogin -->
     </classes>

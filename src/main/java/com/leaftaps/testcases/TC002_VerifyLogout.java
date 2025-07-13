@@ -12,7 +12,7 @@ public class TC002_VerifyLogout extends ProjectSpecificMethods{
 	public void setValues() {
 		testcaseName = "VerifyLogOut";
 		testDescription ="Verify LogOut functionality with positive data";
-		authors="Hari";
+		authors="Rajesh";
 		category ="Smoke";
 		excelFileName="Login";
 	}

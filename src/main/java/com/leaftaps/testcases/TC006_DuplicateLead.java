@@ -13,7 +13,7 @@ public class TC006_DuplicateLead extends ProjectSpecificMethods{
 	public void setValues() {
 		testcaseName = "DeleteLead";
 		testDescription ="Verify if the lead is duplicated";
-		authors="Hari";
+		authors="Rajesh";
 		category ="Smoke";
 		excelFileName="DuplicateLead";
 

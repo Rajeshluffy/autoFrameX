@@ -13,7 +13,7 @@ public class TC005_DeleteLead extends ProjectSpecificMethods{
 	public void setValues() {
 		testcaseName = "DeleteLead";
 		testDescription ="Verify if the lead has been deleted";
-		authors="Hari";
+		authors="Rajesh";
 		category ="Smoke";
 		excelFileName="DeleteLead";
 

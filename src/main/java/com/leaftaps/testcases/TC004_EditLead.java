@@ -12,7 +12,7 @@ public class TC004_EditLead extends ProjectSpecificMethods{
 	public void setValues() {
 		testcaseName = "EditLead";
 		testDescription ="verify whether the existing lead has been edited";
-		authors="Hari";
+		authors="Rajesh";
 		category ="Smoke";
 		excelFileName="EditLead";
 	}

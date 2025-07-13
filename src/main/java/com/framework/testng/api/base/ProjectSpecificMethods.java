@@ -1,6 +1,7 @@
 package com.framework.testng.api.base;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -29,16 +30,17 @@ public class ProjectSpecificMethods extends SeleniumBase {
 		setNode();
 	}
 
-	@AfterMethod
-	public void postCondition() {
-		releaseDriver(driver);
-
-	}
-	@AfterClass
-	public void browserClose() {
-		close();
-
-	}
+		@AfterMethod
+		public void postCondition() {
+			releaseDriver(driver);
+	
+		}
+		
+//	@AfterClass
+//	public void browserClose() {
+//		close();
+//
+//	}
 
 
 

@@ -37,13 +37,15 @@ public abstract class Reporter extends BrowserFactory {
 	public String testcaseName, testDescription, authors, category,excelFileName;
 	public static String folderName = "";
 
-	protected WebDriverPoolFactory pool;
+	protected static WebDriverPoolFactory pool = null;
+//	protected WebDriverPoolFactory pool;
 	public abstract WebDriverPoolFactory poolInitiate ();
 
 	@BeforeClass(alwaysRun = true)
-	public  WebDriverPoolFactory browserObject() {
-		pool = poolInitiate(); // Assign to class variable
-		
+	public  synchronized WebDriverPoolFactory browserObject() {
+		if(pool==null) {
+			pool = poolInitiate();
+		}
 		return pool;
 	}
 
@@ -134,7 +136,7 @@ public abstract class Reporter extends BrowserFactory {
 			extent.flush();
 			pool.tearDownDrivers();
 		}
-		
+
 
 	}
 
