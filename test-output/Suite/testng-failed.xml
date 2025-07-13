@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 <suite name="Failed suite [Suite]" guice-stage="DEVELOPMENT">
+<<<<<<< HEAD
   <test thread-count="5" name="Test(failed)">
     <classes>
       <class name="com.leaftaps.testcases.TC002_VerifyLogout">
@@ -18,6 +19,28 @@
           <include name="preCondition"/>
         </methods>
       </class> <!-- com.leaftaps.testcases.TC002_VerifyLogout -->
+=======
+  <test thread-count="5" parallel="classes" name="Test(failed)">
+    <classes>
+      <class name="com.leaftaps.testcases.TC001_VerifyLogin">
+        <methods>
+          <include name="runLogin2"/>
+          <include name="startTestCase"/>
+          <include name="browserObject"/>
+          <include name="browserClose"/>
+          <include name="setValues"/>
+          <include name="preCondition"/>
+          <include name="runLogin"/>
+          <include name="postCondition"/>
+          <include name="setUpClass"/>
+          <include name="startReport"/>
+          <include name="runLogin1"/>
+          <include name="tearDownClass"/>
+          <include name="setNode"/>
+          <include name="endReport"/>
+        </methods>
+      </class> <!-- com.leaftaps.testcases.TC001_VerifyLogin -->
+>>>>>>> f691fff8192d328d3892f0acff75713ff4e1cc3f
     </classes>
   </test> <!-- Test(failed) -->
 </suite> <!-- Failed suite [Suite] -->
