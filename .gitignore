@@ -12,18 +12,13 @@ target/
 # -----------------------------
 # IDE Specific Files
 # -----------------------------
-# Eclipse
 .classpath
 .project
 .settings/
-
-# IntelliJ IDEA
 .idea/
 *.iws
 *.iml
 *.ipr
-
-# Visual Studio Code
 .vscode/
 
 # -----------------------------
@@ -43,13 +38,10 @@ screenshots/
 ScreenShots/
 
 # -----------------------------
-# Sensitive Configs / Local Data
+# User-Requested Resources
 # -----------------------------
-# Keep your existing ignored config file
-src/test/resources/leafTapConfig.properties
-
-# Note: If your other properties files (like alfaDOCKConfig.properties) 
-# contain real passwords, you should ignore them here as well.
+src/main/resources/
+src/test/resources/
 
 # -----------------------------
 # Operating System Files
