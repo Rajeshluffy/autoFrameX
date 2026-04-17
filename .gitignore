@@ -1,2 +1,60 @@
-/target/
-test-output
+# -----------------------------
+# Maven / Build Output
+# -----------------------------
+target/
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# -----------------------------
+# IDE Specific Files
+# -----------------------------
+# Eclipse
+.classpath
+.project
+.settings/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Visual Studio Code
+.vscode/
+
+# -----------------------------
+# Test Executions & Reports
+# -----------------------------
+test-output/
+reports/
+*.html
+*.pdf
+
+# -----------------------------
+# Logs & Screenshots
+# -----------------------------
+*.log
+logs/
+screenshots/
+ScreenShots/
+
+# -----------------------------
+# Sensitive Configs / Local Data
+# -----------------------------
+# Keep your existing ignored config file
+src/test/resources/leafTapConfig.properties
+
+# Note: If your other properties files (like alfaDOCKConfig.properties) 
+# contain real passwords, you should ignore them here as well.
+
+# -----------------------------
+# Operating System Files
+# -----------------------------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini

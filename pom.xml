@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>autoFrameX</groupId>
@@ -6,9 +8,14 @@
 	<version>0.0.1-SNAPSHOT</version>
 
 	<properties>
-		<java.version>17</java.version>
-		<selenium.version>4.24.0</selenium.version>
-		<testng.version>7.4.0</testng.version>
+		<java.version>16</java.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<testng.suite.file>alfaDOCKtestng.xml</testng.suite.file>
+		<browser>chrome</browser>
+		<env>qa</env>
+		<headless>false</headless>
+		<selenium.version>4.33.0</selenium.version>
+		<testng.version>7.7.0</testng.version>
 		<apache.poi.version>5.2.4</apache.poi.version>
 		<extent.report.version>3.1.5</extent.report.version> <!-- downgraded for ExtentHtmlReporter -->
 		<rest.assured.version>5.5.0</rest.assured.version>
@@ -18,6 +25,12 @@
 		<cucumber.jvm.testng.version>4.3.1</cucumber.jvm.testng.version>
 		<jackson.databind.version>2.18.0</jackson.databind.version>
 		<owner.version>1.0.12</owner.version>
+		<faker.version>1.0.2</faker.version>
+		<mysql.version>9.6.0</mysql.version>
+		<snakeyaml.version>2.6</snakeyaml.version>
+		<protobuf.version>4.34.1</protobuf.version>
+		<jsoup.version>1.22.1</jsoup.version>
+
 	</properties>
 
 	<dependencies>
@@ -92,6 +105,21 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>${jackson.databind.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+			<version>${snakeyaml.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>${protobuf.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>${jsoup.version}</version>
+		</dependency>
 
 		<!-- Owner Config Library -->
 		<dependency>
@@ -100,33 +128,87 @@
 			<version>${owner.version}</version>
 		</dependency>
 
+		<!-- Faker Config Library -->
+		<dependency>
+			<groupId>com.github.javafaker</groupId>
+			<artifactId>javafaker</artifactId>
+			<version>${faker.version}</version>
+		</dependency>
+
+		<!--mysql-connector-j (upgraded for CVE fixes) -->
+		<dependency>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<version>${mysql.version}</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
-    <plugins>
-        <!-- Maven Compiler Plugin for Java Version -->
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.13.0</version>
-            <configuration>
-                <source>${java.version}</source>
-                <target>${java.version}</target>
-            </configuration>
-        </plugin>
+		<plugins>
+			<!-- Maven Compiler Plugin for Java Version -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.13.0</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<encoding>${project.build.sourceEncoding}</encoding>
+				</configuration>
+			</plugin>
 
-        <!-- Maven Surefire Plugin for TestNG -->
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <version>3.0.0-M7</version>
-            <configuration>
-                <suiteXmlFiles>
-                    <suiteXmlFile>testng.xml</suiteXmlFile>
-                </suiteXmlFiles>
-            </configuration>
-        </plugin>
-    </plugins>
-</build>
+			<!-- Maven Source Plugin to share sources -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Maven Jar Plugin to produce a project-independent framework jar -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<id>framework-jar</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>framework</classifier>
+							<excludes>
+								<exclude>com/leaftaps/**</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Maven Surefire Plugin for TestNG -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.0.0-M7</version>
+				<configuration>
+					<suiteXmlFiles>
+						<suiteXmlFile>${testng.suite.file}</suiteXmlFile>
+					</suiteXmlFiles>
+					<systemPropertyVariables>
+						<testng.suite.file>${testng.suite.file}</testng.suite.file>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>

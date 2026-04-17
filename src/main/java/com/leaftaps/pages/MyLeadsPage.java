@@ -8,7 +8,7 @@ public class MyLeadsPage extends ProjectSpecificMethods {
 
 	
 	public CreateLeadPage clickCreateLeadLink() {
-		click(locateElement(Locators.LINK_TEXT, "Create Lead"));
+		click(locateElement(Locators.XPATH, "(//div[@id='left-content-column']//following::a)[2]"));
 		reportStep("Create Lead link is clicked", "pass");
 		return new CreateLeadPage();
 	}

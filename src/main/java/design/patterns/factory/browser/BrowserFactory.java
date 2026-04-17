@@ -1,94 +1,95 @@
 package design.patterns.factory.browser;
 
 import java.time.Duration;
+import java.util.logging.Logger;
 
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
-import cucumber.api.testng.AbstractTestNGCucumberTests;
+import com.framework.config.data.ConfigManager;
 
+import design.patterns.object.pool.PoolConfig;
 
-public class BrowserFactory extends AbstractTestNGCucumberTests implements WebDriverFactoryInterface{
+/**
+ * Default implementation of {@link WebDriverFactoryInterface}.
+ *
+ * <p>
+ * Uses the {@link BrowserType} Enum Factory pattern to delegate browser
+ * instantiation — zero direct {@code new} calls for browser objects. The
+ * object pool ({@link design.patterns.object.pool.WebDriverPoolFactory}) calls
+ * this factory whenever it needs a fresh driver, so timeouts are configured
+ * here once rather than scattered across tests.
+ *
+ * <p>
+ * Design patterns applied:
+ * <ul>
+ * <li><b>Factory Pattern</b> — encapsulates driver creation logic</li>
+ * <li><b>Enum Factory</b> — {@link BrowserType} dispatches to the right
+ * browser</li>
+ * </ul>
+ *
+ * @author Framework Team
+ * @version 2.1
+ */
+public class BrowserFactory implements WebDriverFactoryInterface {
 
-	public RemoteWebDriver driver ;
-	private static final ThreadLocal<RemoteWebDriver> remoteWebdriver = new ThreadLocal<RemoteWebDriver>();
+	private static final Logger logger = Logger.getLogger(BrowserFactory.class.getName());
 
-	private static final ThreadLocal<WebDriverWait> wait = new  ThreadLocal<WebDriverWait>();
+	// Timeout constants (seconds)
+	private static final int PAGE_LOAD_TIMEOUT = ConfigManager.getInstance().getConfig().getPageLoadTimeout();
+	private static final int SCRIPT_TIMEOUT = ConfigManager.getInstance().getConfig().getScriptTimeout();
+	private static final int IMPLICIT_WAIT = ConfigManager.getInstance().getConfig().getImplicit();
 
-	public void setWait() {
-		wait.set(new WebDriverWait(getDriver(), Duration.ofSeconds(10)));
-	}
-
-
-	public WebDriverWait getWait() {
-		return wait.get();
-	}	
-
+	// -------------------------------------------------------------------------
+	// Primary factory method used by the pool
+	// -------------------------------------------------------------------------
 
 	/**
-	 * 
-	 * @param browser
-	 * @return
+	 * Creates a fully-configured {@link RemoteWebDriver} for the given browser
+	 * type. Called by {@link design.patterns.object.pool.WebDriverPoolFactory}
+	 * each time a new driver is needed.
+	 *
+	 * @param browserType the enum value that identifies the browser
+	 * @param config      pool configuration (reserved for future use)
+	 * @return a new, maximized, timeout-configured WebDriver instance
 	 */
-	public RemoteWebDriver createDriver(BrowserType browsertype) {
-		switch (browsertype) {
-		case CHROME:
-			driver = new ChromeBrowser().launchBrowser();
-			remoteWebdriver.set(driver);
-			return driver;
-		case FIREFOX:
-			RemoteWebDriver driver = new FireFoxBrowser().launchBrowser();
-			driver= new FireFoxBrowser().launchBrowser();
-			remoteWebdriver.set(driver);
-			return driver;
-
-		default:
-			driver = new ChromeBrowser().launchBrowser();
-			remoteWebdriver.set(driver);
-			return driver;
-		}	 
+	public RemoteWebDriver createDriver(BrowserType browserType, PoolConfig config) {
+		logger.fine("Creating driver via Enum Factory: " + browserType);
+		RemoteWebDriver driver = browserType.launchBrowser();
+		configureTimeouts(driver);
+		return driver;
 	}
 
+	// -------------------------------------------------------------------------
+	// WebDriverFactoryInterface overrides
+	// -------------------------------------------------------------------------
+
+	/** Creates a driver without pool config — delegates to Enum Factory. */
 	@Override
-	public RemoteWebDriver createDriver(BrowserType browsertype, Capabilities capabilities) {
-		switch (browsertype) {
-		case CHROME:
-			driver = new ChromeBrowser().launchBrowser();
-			return driver;
-
-		case FIREFOX:
-			driver= new FireFoxBrowser().launchBrowser();
-			return driver;
-
-		default:
-			driver= new ChromeBrowser().launchBrowser();
-			return driver;
-		}
-
+	public RemoteWebDriver createDriver(BrowserType browserType) {
+		return createDriver(browserType, (PoolConfig) null);
 	}
 
-	public RemoteWebDriver  getDriver() {
-
-		return remoteWebdriver.get();
-
-	}
-
-
+	/** Capabilities-based creation — reserved for remote/grid execution. */
 	@Override
-	public void setupDriver(String url) {
-		driver.get(url);
-		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
-		driver.manage().window().maximize();
+	public RemoteWebDriver createDriver(BrowserType browserType, Capabilities capabilities) {
+		// For RemoteWebDriver / Selenium Grid support in future sprints
+		logger.warning("Capabilities-based driver creation not yet implemented; falling back to default.");
+		return createDriver(browserType, (PoolConfig) null);
 	}
 
+	// -------------------------------------------------------------------------
+	// Internal helpers
+	// -------------------------------------------------------------------------
 
-	
-
-
-
-
-
-
-
+	/**
+	 * Applies standard timeouts to a freshly-created driver.
+	 *
+	 * @param driver the driver to configure
+	 */
+	private void configureTimeouts(RemoteWebDriver driver) {
+		driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(PAGE_LOAD_TIMEOUT));
+		driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(SCRIPT_TIMEOUT));
+		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(IMPLICIT_WAIT));
+	}
 }

@@ -26,5 +26,6 @@ public class CreateLeadPage  extends ProjectSpecificMethods{
 		reportStep("Create Lead button is clicked successfully", "pass");
 		return new ViewLeadPage();
 	}
+	
 
 }

@@ -1,0 +1,13 @@
+# Environment URLs
+leaftaps.dev.url=http://leaftaps.com/opentaps/control/main
+leaftaps.qa.url=http://leaftaps.com/opentaps/control/main
+
+# LeafTaps login Details
+leaftaps.userName=<YOUR_USERNAME>
+leaftaps.password=<YOUR_PASSWORD>
+
+# DB Connection Details
+leaftaps.db.url=jdbc:mps
+leaftaps.db.userName=<YOUR_DB_USERNAME>
+leaftaps.db.password=<YOUR_DB_PASSWORD>
+leaftaps.db.query=select PARTY_ID from opentaps.PERSON order by RAND() limit 1

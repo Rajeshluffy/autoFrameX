@@ -3,23 +3,20 @@
 <suite name="Failed suite [Default suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="Default test(failed)">
     <classes>
-      <class name="com.leaftaps.testcases.TC001_VerifyLogin">
+      <class name="com.alfaDOCK.testcases.HomePage">
         <methods>
           <include name="startTestCase"/>
-          <include name="runLogin2"/>
           <include name="postCondition"/>
-          <include name="setUpClass"/>
-          <include name="browserObject"/>
+          <include name="tearDownTest"/>
+          <include name="initFromContext"/>
           <include name="startReport"/>
-          <include name="runLogin1"/>
-          <include name="browserClose"/>
-          <include name="tearDownClass"/>
-          <include name="setValues"/>
+          <include name="cleanupTestCase"/>
+          <include name="runLogin"/>
           <include name="setNode"/>
           <include name="endReport"/>
           <include name="preCondition"/>
         </methods>
-      </class> <!-- com.leaftaps.testcases.TC001_VerifyLogin -->
+      </class> <!-- com.alfaDOCK.testcases.HomePage -->
     </classes>
   </test> <!-- Default test(failed) -->
 </suite> <!-- Failed suite [Default suite] -->

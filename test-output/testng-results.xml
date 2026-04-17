@@ -1,361 +1,280 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testng-results ignored="0" total="2" passed="2" failed="0" skipped="0">
+<testng-results ignored="0" total="3" passed="3" failed="0" skipped="0">
   <reporter-output>
   </reporter-output>
-<<<<<<< HEAD
-  <suite started-at="2025-07-13T12:26:47 IST" name="Suite" finished-at="2025-07-13T12:26:58 IST" duration-ms="11653">
+  <suite started-at="2026-04-15T20:19:43 JST" name="AlfaDOCK Suite" finished-at="2026-04-15T20:22:32 JST" duration-ms="169505">
     <groups>
-      <group name="cucumber">
-        <method signature="AbstractTestNGCucumberTests.runScenario(cucumber.api.testng.PickleEventWrapper,cucumber.api.testng.CucumberFeatureWrapper)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@7dc3712]" name="runScenario" class="cucumber.api.testng.AbstractTestNGCucumberTests"/>
-        <method signature="AbstractTestNGCucumberTests.runScenario(cucumber.api.testng.PickleEventWrapper,cucumber.api.testng.CucumberFeatureWrapper)[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@6d5620ce]" name="runScenario" class="cucumber.api.testng.AbstractTestNGCucumberTests"/>
-      </group> <!-- cucumber -->
     </groups>
-    <test started-at="2025-07-13T12:26:47 IST" name="Test" finished-at="2025-07-13T12:26:58 IST" duration-ms="11653">
-      <class name="com.leaftaps.testcases.TC001_VerifyLogin">
-        <test-method is-config="true" signature="startReport()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@7dc3712]" started-at="2025-07-13T12:26:46 IST" name="startReport" finished-at="2025-07-13T12:26:47 IST" duration-ms="164" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- startReport -->
-        <test-method is-config="true" signature="setValues()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@7dc3712]" started-at="2025-07-13T12:26:47 IST" name="setValues" finished-at="2025-07-13T12:26:47 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setValues -->
-        <test-method is-config="true" signature="setUpClass()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@7dc3712]" started-at="2025-07-13T12:26:47 IST" name="setUpClass" finished-at="2025-07-13T12:26:47 IST" duration-ms="68" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setUpClass -->
-        <test-method is-config="true" signature="browserObject()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@7dc3712]" started-at="2025-07-13T12:26:47 IST" name="browserObject" finished-at="2025-07-13T12:26:50 IST" duration-ms="2858" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- browserObject -->
-        <test-method is-config="true" signature="startTestCase()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@7dc3712]" started-at="2025-07-13T12:26:50 IST" name="startTestCase" finished-at="2025-07-13T12:26:50 IST" duration-ms="5" status="PASS">
+    <test started-at="2026-04-15T20:19:43 JST" name="AlfaDOCK Smoke" finished-at="2026-04-15T20:22:32 JST" duration-ms="169505">
+      <class name="com.alfaDOCK.testcases.TC0002_Layer">
+        <test-method is-config="true" signature="startTestCase()[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf]" started-at="2026-04-15T20:20:39 JST" name="startTestCase" finished-at="2026-04-15T20:20:39 JST" duration-ms="0" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- startTestCase -->
-        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@7dc3712]" started-at="2025-07-13T12:26:50 IST" name="setNode" finished-at="2025-07-13T12:26:50 IST" duration-ms="0" status="PASS">
+        <test-method is-config="true" signature="setNode(java.lang.reflect.Method,org.testng.ITestContext)[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf]" started-at="2026-04-15T20:20:39 JST" name="setNode" finished-at="2026-04-15T20:20:39 JST" duration-ms="0" status="PASS">
+          <params>
+            <param index="0">
+              <value>
+                <![CDATA[public void com.alfaDOCK.testcases.TC0002_Layer.TC0001_ModelLayer()]]>
+              </value>
+            </param>
+            <param index="1">
+              <value>
+                <![CDATA[org.testng.TestRunner@78d73b1b]]>
+              </value>
+            </param>
+          </params>
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setNode -->
-        <test-method is-config="true" signature="preCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@7dc3712]" started-at="2025-07-13T12:26:50 IST" name="preCondition" finished-at="2025-07-13T12:26:56 IST" duration-ms="5757" status="PASS">
+        <test-method is-config="true" signature="preCondition(java.lang.reflect.Method,org.testng.ITestContext)[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf]" started-at="2026-04-15T20:20:39 JST" name="preCondition" finished-at="2026-04-15T20:20:42 JST" duration-ms="2748" status="PASS">
+          <params>
+            <param index="0">
+              <value>
+                <![CDATA[public void com.alfaDOCK.testcases.TC0002_Layer.TC0001_ModelLayer()]]>
+              </value>
+            </param>
+            <param index="1">
+              <value>
+                <![CDATA[org.testng.TestRunner@78d73b1b]]>
+              </value>
+            </param>
+          </params>
           <reporter-output>
           </reporter-output>
         </test-method> <!-- preCondition -->
-        <test-method signature="runLogin(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@7dc3712]" started-at="2025-07-13T12:26:56 IST" name="runLogin" data-provider="fetchData" finished-at="2025-07-13T12:26:57 IST" duration-ms="1351" status="PASS">
-=======
-  <suite started-at="2025-05-01T13:50:51 IST" name="Suite" finished-at="2025-05-01T13:52:33 IST" duration-ms="101243">
-    <groups>
-      <group name="cucumber">
-        <method signature="AbstractTestNGCucumberTests.runScenario(cucumber.api.testng.PickleEventWrapper,cucumber.api.testng.CucumberFeatureWrapper)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" name="runScenario" class="cucumber.api.testng.AbstractTestNGCucumberTests"/>
-      </group> <!-- cucumber -->
-    </groups>
-    <test started-at="2025-05-01T13:50:51 IST" name="Test" finished-at="2025-05-01T13:52:33 IST" duration-ms="101243">
-      <class name="com.leaftaps.testcases.TC001_VerifyLogin">
-        <test-method is-config="true" signature="startReport()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:50:51 IST" name="startReport" finished-at="2025-05-01T13:50:51 IST" duration-ms="286" status="PASS">
+        <test-method is-config="true" signature="login()[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf]" started-at="2026-04-15T20:20:42 JST" name="login" finished-at="2026-04-15T20:21:27 JST" duration-ms="45413" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- login -->
+        <test-method signature="TC0001_ModelLayer()[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf]" started-at="2026-04-15T20:21:27 JST" name="TC0001_ModelLayer" finished-at="2026-04-15T20:21:34 JST" duration-ms="6703" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- TC0001_ModelLayer -->
+        <test-method is-config="true" signature="postCondition(java.lang.reflect.Method,org.testng.ITestResult)[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf]" started-at="2026-04-15T20:21:34 JST" name="postCondition" finished-at="2026-04-15T20:21:35 JST" duration-ms="525" status="PASS">
+          <params>
+            <param index="0">
+              <value>
+                <![CDATA[public void com.alfaDOCK.testcases.TC0002_Layer.TC0001_ModelLayer()]]>
+              </value>
+            </param>
+            <param index="1">
+              <value>
+                <![CDATA[[TestResult name=TC0001_ModelLayer status=SUCCESS method=TC0002_Layer.TC0001_ModelLayer()[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf] output={null}]]]>
+              </value>
+            </param>
+          </params>
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- postCondition -->
+        <test-method is-config="true" signature="tearDownTest(java.lang.reflect.Method,org.testng.ITestResult)[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf]" started-at="2026-04-15T20:21:35 JST" name="tearDownTest" finished-at="2026-04-15T20:21:35 JST" duration-ms="0" status="PASS">
+          <params>
+            <param index="0">
+              <value>
+                <![CDATA[public void com.alfaDOCK.testcases.TC0002_Layer.TC0001_ModelLayer()]]>
+              </value>
+            </param>
+            <param index="1">
+              <value>
+                <![CDATA[[TestResult name=TC0001_ModelLayer status=SUCCESS method=TC0002_Layer.TC0001_ModelLayer()[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf] output={null}]]]>
+              </value>
+            </param>
+          </params>
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- tearDownTest -->
+        <test-method is-config="true" signature="setNode(java.lang.reflect.Method,org.testng.ITestContext)[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf]" started-at="2026-04-15T20:21:35 JST" name="setNode" finished-at="2026-04-15T20:21:35 JST" duration-ms="0" status="PASS">
+          <params>
+            <param index="0">
+              <value>
+                <![CDATA[public void com.alfaDOCK.testcases.TC0002_Layer.TC0002_ModelLayer()]]>
+              </value>
+            </param>
+            <param index="1">
+              <value>
+                <![CDATA[org.testng.TestRunner@78d73b1b]]>
+              </value>
+            </param>
+          </params>
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- setNode -->
+        <test-method is-config="true" signature="preCondition(java.lang.reflect.Method,org.testng.ITestContext)[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf]" started-at="2026-04-15T20:21:35 JST" name="preCondition" finished-at="2026-04-15T20:21:37 JST" duration-ms="2723" status="PASS">
+          <params>
+            <param index="0">
+              <value>
+                <![CDATA[public void com.alfaDOCK.testcases.TC0002_Layer.TC0002_ModelLayer()]]>
+              </value>
+            </param>
+            <param index="1">
+              <value>
+                <![CDATA[org.testng.TestRunner@78d73b1b]]>
+              </value>
+            </param>
+          </params>
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- preCondition -->
+        <test-method is-config="true" signature="login()[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf]" started-at="2026-04-15T20:21:37 JST" name="login" finished-at="2026-04-15T20:22:22 JST" duration-ms="44803" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- login -->
+        <test-method signature="TC0002_ModelLayer()[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf]" started-at="2026-04-15T20:22:22 JST" name="TC0002_ModelLayer" finished-at="2026-04-15T20:22:32 JST" duration-ms="9885" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- TC0002_ModelLayer -->
+        <test-method is-config="true" signature="postCondition(java.lang.reflect.Method,org.testng.ITestResult)[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf]" started-at="2026-04-15T20:22:32 JST" name="postCondition" finished-at="2026-04-15T20:22:32 JST" duration-ms="399" status="PASS">
+          <params>
+            <param index="0">
+              <value>
+                <![CDATA[public void com.alfaDOCK.testcases.TC0002_Layer.TC0002_ModelLayer()]]>
+              </value>
+            </param>
+            <param index="1">
+              <value>
+                <![CDATA[[TestResult name=TC0002_ModelLayer status=SUCCESS method=TC0002_Layer.TC0002_ModelLayer()[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf] output={null}]]]>
+              </value>
+            </param>
+          </params>
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- postCondition -->
+        <test-method is-config="true" signature="cleanupTestCase(org.testng.ITestContext)[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf]" started-at="2026-04-15T20:22:32 JST" name="cleanupTestCase" finished-at="2026-04-15T20:22:32 JST" duration-ms="3" status="PASS">
+          <params>
+            <param index="0">
+              <value>
+                <![CDATA[org.testng.TestRunner@78d73b1b]]>
+              </value>
+            </param>
+          </params>
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- cleanupTestCase -->
+        <test-method is-config="true" signature="tearDownTest(java.lang.reflect.Method,org.testng.ITestResult)[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf]" started-at="2026-04-15T20:22:32 JST" name="tearDownTest" finished-at="2026-04-15T20:22:32 JST" duration-ms="0" status="PASS">
+          <params>
+            <param index="0">
+              <value>
+                <![CDATA[public void com.alfaDOCK.testcases.TC0002_Layer.TC0002_ModelLayer()]]>
+              </value>
+            </param>
+            <param index="1">
+              <value>
+                <![CDATA[[TestResult name=TC0002_ModelLayer status=SUCCESS method=TC0002_Layer.TC0002_ModelLayer()[pri:0, instance:com.alfaDOCK.testcases.TC0002_Layer@329dbdbf] output={null}]]]>
+              </value>
+            </param>
+          </params>
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- tearDownTest -->
+      </class> <!-- com.alfaDOCK.testcases.TC0002_Layer -->
+      <class name="com.alfaDOCK.testcases.TC0001_OpenAssemblyTree">
+        <test-method is-config="true" signature="startReport()[pri:0, instance:com.alfaDOCK.testcases.TC0001_OpenAssemblyTree@2a7ed1f]" started-at="2026-04-15T20:19:43 JST" name="startReport" finished-at="2026-04-15T20:19:43 JST" duration-ms="186" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- startReport -->
-        <test-method is-config="true" signature="setValues()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:50:51 IST" name="setValues" finished-at="2025-05-01T13:50:51 IST" duration-ms="0" status="PASS">
+        <test-method is-config="true" signature="initFromContext(org.testng.ITestContext)[pri:0, instance:com.alfaDOCK.testcases.TC0001_OpenAssemblyTree@2a7ed1f]" started-at="2026-04-15T20:19:43 JST" name="initFromContext" finished-at="2026-04-15T20:19:43 JST" duration-ms="32" status="PASS">
+          <params>
+            <param index="0">
+              <value>
+                <![CDATA[org.testng.TestRunner@78d73b1b]]>
+              </value>
+            </param>
+          </params>
           <reporter-output>
           </reporter-output>
-        </test-method> <!-- setValues -->
-        <test-method is-config="true" signature="setUpClass()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:50:51 IST" name="setUpClass" finished-at="2025-05-01T13:50:51 IST" duration-ms="122" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setUpClass -->
-        <test-method is-config="true" signature="browserObject()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:50:51 IST" name="browserObject" finished-at="2025-05-01T13:50:51 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- browserObject -->
-        <test-method is-config="true" signature="startTestCase()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:50:51 IST" name="startTestCase" finished-at="2025-05-01T13:50:51 IST" duration-ms="8" status="PASS">
+        </test-method> <!-- initFromContext -->
+        <test-method is-config="true" signature="startTestCase()[pri:0, instance:com.alfaDOCK.testcases.TC0001_OpenAssemblyTree@2a7ed1f]" started-at="2026-04-15T20:19:43 JST" name="startTestCase" finished-at="2026-04-15T20:19:43 JST" duration-ms="6" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- startTestCase -->
-        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:50:53 IST" name="setNode" finished-at="2025-05-01T13:50:53 IST" duration-ms="1" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setNode -->
-        <test-method is-config="true" signature="preCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:50:53 IST" name="preCondition" finished-at="2025-05-01T13:52:32 IST" duration-ms="99371" status="FAIL">
-          <exception class="java.lang.RuntimeException">
-            <message>
-              <![CDATA[Test failed: See report for details.]]>
-            </message>
-            <full-stacktrace>
-              <![CDATA[java.lang.RuntimeException: Test failed: See report for details.
-at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:28)
-at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
-at java.base/java.lang.reflect.Method.invoke(Method.java:578)
-at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:133)
-at org.testng.internal.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:62)
-at org.testng.internal.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:385)
-at org.testng.internal.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:321)
-at org.testng.internal.TestInvoker.runConfigMethods(TestInvoker.java:700)
-at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:527)
-at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
-at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
-at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:824)
-at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
-at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
-at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
-at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
-at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
-at java.base/java.lang.Thread.run(Thread.java:1589)
-]]>
-            </full-stacktrace>
-          </exception> <!-- java.lang.RuntimeException -->
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- preCondition -->
-        <test-method signature="runLogin(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:32 IST" name="runLogin" data-provider="fetchData" finished-at="2025-05-01T13:52:32 IST" duration-ms="0" status="SKIP">
->>>>>>> f691fff8192d328d3892f0acff75713ff4e1cc3f
+        <test-method is-config="true" signature="setNode(java.lang.reflect.Method,org.testng.ITestContext)[pri:0, instance:com.alfaDOCK.testcases.TC0001_OpenAssemblyTree@2a7ed1f]" started-at="2026-04-15T20:19:43 JST" name="setNode" finished-at="2026-04-15T20:19:43 JST" duration-ms="1" status="PASS">
           <params>
             <param index="0">
               <value>
-                <![CDATA[Demosalesmanager]]>
+                <![CDATA[public void com.alfaDOCK.testcases.TC0001_OpenAssemblyTree.OpenAssemblyTree()]]>
               </value>
             </param>
             <param index="1">
               <value>
-                <![CDATA[crmsfa]]>
+                <![CDATA[org.testng.TestRunner@78d73b1b]]>
               </value>
             </param>
           </params>
-<<<<<<< HEAD
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- runLogin -->
-        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@7dc3712]" started-at="2025-07-13T12:26:57 IST" name="postCondition" finished-at="2025-07-13T12:26:57 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- postCondition -->
-        <test-method is-config="true" signature="tearDownClass()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@7dc3712]" started-at="2025-07-13T12:26:57 IST" name="tearDownClass" finished-at="2025-07-13T12:26:57 IST" duration-ms="2" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- tearDownClass -->
-        <test-method is-config="true" signature="endReport()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@7dc3712]" started-at="2025-07-13T12:26:58 IST" name="endReport" finished-at="2025-07-13T12:26:59 IST" duration-ms="205" status="PASS">
-=======
-          <exception class="java.lang.RuntimeException">
-            <message>
-              <![CDATA[Test failed: See report for details.]]>
-            </message>
-            <full-stacktrace>
-              <![CDATA[java.lang.RuntimeException: Test failed: See report for details.
-at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:28)
-at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
-at java.base/java.lang.reflect.Method.invoke(Method.java:578)
-at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:133)
-at org.testng.internal.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:62)
-at org.testng.internal.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:385)
-at org.testng.internal.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:321)
-at org.testng.internal.TestInvoker.runConfigMethods(TestInvoker.java:700)
-at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:527)
-at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
-at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
-at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:824)
-at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
-at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
-at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
-at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
-at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
-at java.base/java.lang.Thread.run(Thread.java:1589)
-]]>
-            </full-stacktrace>
-          </exception> <!-- java.lang.RuntimeException -->
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- runLogin -->
-        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:32 IST" name="postCondition" finished-at="1970-01-01T05:30:00 IST" duration-ms="-1746087752456" status="SKIP">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- postCondition -->
-        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:32 IST" name="setNode" finished-at="2025-05-01T13:52:32 IST" duration-ms="1" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setNode -->
-        <test-method is-config="true" signature="preCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:32 IST" name="preCondition" finished-at="1970-01-01T05:30:00 IST" duration-ms="-1746087752713" status="SKIP">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- preCondition -->
-        <test-method signature="runLogin1(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:32 IST" name="runLogin1" data-provider="fetchData" finished-at="2025-05-01T13:52:32 IST" duration-ms="0" status="SKIP">
+        <test-method is-config="true" signature="preCondition(java.lang.reflect.Method,org.testng.ITestContext)[pri:0, instance:com.alfaDOCK.testcases.TC0001_OpenAssemblyTree@2a7ed1f]" started-at="2026-04-15T20:19:43 JST" name="preCondition" finished-at="2026-04-15T20:19:47 JST" duration-ms="3637" status="PASS">
           <params>
             <param index="0">
               <value>
-                <![CDATA[Demosalesmanager]]>
+                <![CDATA[public void com.alfaDOCK.testcases.TC0001_OpenAssemblyTree.OpenAssemblyTree()]]>
               </value>
             </param>
             <param index="1">
               <value>
-                <![CDATA[crmsfa]]>
+                <![CDATA[org.testng.TestRunner@78d73b1b]]>
               </value>
             </param>
           </params>
-          <exception class="java.lang.RuntimeException">
-            <message>
-              <![CDATA[Test failed: See report for details.]]>
-            </message>
-            <full-stacktrace>
-              <![CDATA[java.lang.RuntimeException: Test failed: See report for details.
-at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:28)
-at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
-at java.base/java.lang.reflect.Method.invoke(Method.java:578)
-at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:133)
-at org.testng.internal.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:62)
-at org.testng.internal.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:385)
-at org.testng.internal.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:321)
-at org.testng.internal.TestInvoker.runConfigMethods(TestInvoker.java:700)
-at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:527)
-at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
-at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
-at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:824)
-at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
-at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
-at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
-at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
-at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
-at java.base/java.lang.Thread.run(Thread.java:1589)
-]]>
-            </full-stacktrace>
-          </exception> <!-- java.lang.RuntimeException -->
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- runLogin1 -->
-        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:32 IST" name="postCondition" finished-at="1970-01-01T05:30:00 IST" duration-ms="-1746087752723" status="SKIP">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- postCondition -->
-        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:33 IST" name="setNode" finished-at="2025-05-01T13:52:33 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setNode -->
-        <test-method is-config="true" signature="preCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:33 IST" name="preCondition" finished-at="1970-01-01T05:30:00 IST" duration-ms="-1746087753007" status="SKIP">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- preCondition -->
-        <test-method signature="runLogin2(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:33 IST" name="runLogin2" data-provider="fetchData" finished-at="2025-05-01T13:52:33 IST" duration-ms="0" status="SKIP">
+        <test-method is-config="true" signature="login()[pri:0, instance:com.alfaDOCK.testcases.TC0001_OpenAssemblyTree@2a7ed1f]" started-at="2026-04-15T20:19:47 JST" name="login" finished-at="2026-04-15T20:20:32 JST" duration-ms="45069" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- login -->
+        <test-method signature="OpenAssemblyTree()[pri:0, instance:com.alfaDOCK.testcases.TC0001_OpenAssemblyTree@2a7ed1f]" started-at="2026-04-15T20:20:32 JST" name="OpenAssemblyTree" finished-at="2026-04-15T20:20:39 JST" duration-ms="7033" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- OpenAssemblyTree -->
+        <test-method is-config="true" signature="postCondition(java.lang.reflect.Method,org.testng.ITestResult)[pri:0, instance:com.alfaDOCK.testcases.TC0001_OpenAssemblyTree@2a7ed1f]" started-at="2026-04-15T20:20:39 JST" name="postCondition" finished-at="2026-04-15T20:20:39 JST" duration-ms="484" status="PASS">
           <params>
             <param index="0">
               <value>
-                <![CDATA[Demosalesmanager]]>
+                <![CDATA[public void com.alfaDOCK.testcases.TC0001_OpenAssemblyTree.OpenAssemblyTree()]]>
               </value>
             </param>
             <param index="1">
               <value>
-                <![CDATA[crmsfa]]>
+                <![CDATA[[TestResult name=OpenAssemblyTree status=SUCCESS method=TC0001_OpenAssemblyTree.OpenAssemblyTree()[pri:0, instance:com.alfaDOCK.testcases.TC0001_OpenAssemblyTree@2a7ed1f] output={null}]]]>
               </value>
             </param>
           </params>
-          <exception class="java.lang.RuntimeException">
-            <message>
-              <![CDATA[Test failed: See report for details.]]>
-            </message>
-            <full-stacktrace>
-              <![CDATA[java.lang.RuntimeException: Test failed: See report for details.
-at com.framework.utils.Reporter.reportStep(Reporter.java:110)
-at com.framework.utils.Reporter.reportStep(Reporter.java:128)
-at com.framework.selenium.api.base.SeleniumBase.startApp(SeleniumBase.java:646)
-at com.framework.testng.api.base.ProjectSpecificMethods.preCondition(ProjectSpecificMethods.java:28)
-at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
-at java.base/java.lang.reflect.Method.invoke(Method.java:578)
-at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:133)
-at org.testng.internal.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:62)
-at org.testng.internal.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:385)
-at org.testng.internal.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:321)
-at org.testng.internal.TestInvoker.runConfigMethods(TestInvoker.java:700)
-at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:527)
-at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
-at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
-at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:824)
-at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
-at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
-at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
-at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
-at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
-at java.base/java.lang.Thread.run(Thread.java:1589)
-]]>
-            </full-stacktrace>
-          </exception> <!-- java.lang.RuntimeException -->
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- runLogin2 -->
-        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:33 IST" name="postCondition" finished-at="1970-01-01T05:30:00 IST" duration-ms="-1746087753019" status="SKIP">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- postCondition -->
-        <test-method is-config="true" signature="browserClose()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:33 IST" name="browserClose" finished-at="1970-01-01T05:30:00 IST" duration-ms="-1746087753021" status="SKIP">
+        <test-method is-config="true" signature="tearDownTest(java.lang.reflect.Method,org.testng.ITestResult)[pri:0, instance:com.alfaDOCK.testcases.TC0001_OpenAssemblyTree@2a7ed1f]" started-at="2026-04-15T20:20:39 JST" name="tearDownTest" finished-at="2026-04-15T20:20:39 JST" duration-ms="0" status="PASS">
+          <params>
+            <param index="0">
+              <value>
+                <![CDATA[public void com.alfaDOCK.testcases.TC0001_OpenAssemblyTree.OpenAssemblyTree()]]>
+              </value>
+            </param>
+            <param index="1">
+              <value>
+                <![CDATA[[TestResult name=OpenAssemblyTree status=SUCCESS method=TC0001_OpenAssemblyTree.OpenAssemblyTree()[pri:0, instance:com.alfaDOCK.testcases.TC0001_OpenAssemblyTree@2a7ed1f] output={null}]]]>
+              </value>
+            </param>
+          </params>
           <reporter-output>
           </reporter-output>
-        </test-method> <!-- browserClose -->
-        <test-method is-config="true" signature="tearDownClass()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:33 IST" name="tearDownClass" finished-at="2025-05-01T13:52:33 IST" duration-ms="7" status="PASS">
+        </test-method> <!-- tearDownTest -->
+        <test-method is-config="true" signature="cleanupTestCase(org.testng.ITestContext)[pri:0, instance:com.alfaDOCK.testcases.TC0001_OpenAssemblyTree@2a7ed1f]" started-at="2026-04-15T20:20:39 JST" name="cleanupTestCase" finished-at="2026-04-15T20:20:39 JST" duration-ms="0" status="PASS">
+          <params>
+            <param index="0">
+              <value>
+                <![CDATA[org.testng.TestRunner@78d73b1b]]>
+              </value>
+            </param>
+          </params>
           <reporter-output>
           </reporter-output>
-        </test-method> <!-- tearDownClass -->
-        <test-method is-config="true" signature="endReport()[pri:0, instance:com.leaftaps.testcases.TC001_VerifyLogin@36ebc363]" started-at="2025-05-01T13:52:34 IST" name="endReport" finished-at="2025-05-01T13:52:34 IST" duration-ms="502" status="PASS">
->>>>>>> f691fff8192d328d3892f0acff75713ff4e1cc3f
+        </test-method> <!-- cleanupTestCase -->
+        <test-method is-config="true" signature="endReport()[pri:0, instance:com.alfaDOCK.testcases.TC0001_OpenAssemblyTree@2a7ed1f]" started-at="2026-04-15T20:22:32 JST" name="endReport" finished-at="2026-04-15T20:22:33 JST" duration-ms="268" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- endReport -->
-      </class> <!-- com.leaftaps.testcases.TC001_VerifyLogin -->
-<<<<<<< HEAD
-      <class name="com.leaftaps.testcases.TC002_VerifyLogout">
-        <test-method is-config="true" signature="setValues()[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@6d5620ce]" started-at="2025-07-13T12:26:47 IST" name="setValues" finished-at="2025-07-13T12:26:47 IST" duration-ms="1" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setValues -->
-        <test-method is-config="true" signature="setUpClass()[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@6d5620ce]" started-at="2025-07-13T12:26:57 IST" name="setUpClass" finished-at="2025-07-13T12:26:57 IST" duration-ms="1" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setUpClass -->
-        <test-method is-config="true" signature="startTestCase()[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@6d5620ce]" started-at="2025-07-13T12:26:57 IST" name="startTestCase" finished-at="2025-07-13T12:26:57 IST" duration-ms="1" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- startTestCase -->
-        <test-method is-config="true" signature="browserObject()[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@6d5620ce]" started-at="2025-07-13T12:26:57 IST" name="browserObject" finished-at="2025-07-13T12:26:57 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- browserObject -->
-        <test-method is-config="true" signature="setNode()[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@6d5620ce]" started-at="2025-07-13T12:26:57 IST" name="setNode" finished-at="2025-07-13T12:26:57 IST" duration-ms="1" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- setNode -->
-        <test-method is-config="true" signature="preCondition()[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@6d5620ce]" started-at="2025-07-13T12:26:57 IST" name="preCondition" finished-at="2025-07-13T12:26:58 IST" duration-ms="248" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- preCondition -->
-        <test-method signature="runLogin(java.lang.String,java.lang.String)[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@6d5620ce]" started-at="2025-07-13T12:26:58 IST" name="runLogin" data-provider="fetchData" finished-at="2025-07-13T12:26:58 IST" duration-ms="719" status="PASS">
-          <params>
-            <param index="0">
-              <value>
-                <![CDATA[Demosalesmanager]]>
-              </value>
-            </param>
-            <param index="1">
-              <value>
-                <![CDATA[crmsfa]]>
-              </value>
-            </param>
-          </params>
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- runLogin -->
-        <test-method is-config="true" signature="postCondition()[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@6d5620ce]" started-at="2025-07-13T12:26:58 IST" name="postCondition" finished-at="2025-07-13T12:26:58 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- postCondition -->
-        <test-method is-config="true" signature="tearDownClass()[pri:0, instance:com.leaftaps.testcases.TC002_VerifyLogout@6d5620ce]" started-at="2025-07-13T12:26:58 IST" name="tearDownClass" finished-at="2025-07-13T12:26:58 IST" duration-ms="0" status="PASS">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- tearDownClass -->
-      </class> <!-- com.leaftaps.testcases.TC002_VerifyLogout -->
-=======
->>>>>>> f691fff8192d328d3892f0acff75713ff4e1cc3f
-    </test> <!-- Test -->
-  </suite> <!-- Suite -->
+      </class> <!-- com.alfaDOCK.testcases.TC0001_OpenAssemblyTree -->
+    </test> <!-- AlfaDOCK Smoke -->
+  </suite> <!-- AlfaDOCK Suite -->
 </testng-results>
