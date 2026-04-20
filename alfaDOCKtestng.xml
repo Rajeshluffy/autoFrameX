@@ -11,7 +11,7 @@
 	URL override (bypasses configClass / environment) <parameter name="baseUrl" 
 	value="https://www.alfadock-pack.com/"/> Currently active: APPROACH A (environment=dev) 
 	══════════════════════════════════════════════════════════════════ -->
-<suite name="AlfaDOCK Suite" thread-count="2" verbose="1">
+<suite name="AlfaDOCK Suite" parallel="classes" thread-count="2" verbose="1">
 
 	<!-- Which properties file to load -->
 	<parameter name="configClass"
