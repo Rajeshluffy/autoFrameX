@@ -6,19 +6,19 @@ import com.framework.testng.api.base.ProjectSpecificMethods;
 public class CompanyLogin extends ProjectSpecificMethods {
 
 	public CompanyLogin selectLanguage(String language) {
-		selectDropDownUsingValue(locateElement(Locators.ID, "mySelect", Locators.XPATH, "//div[@id='program']//select"), language);
+		selectDropDownUsingValue(locateElement(Locators.XPATH, "//select[@id='mySelect' or ancestor::div[@id='program']]"), language);
 		reportStep("Succesfully language changed","pass");
 		return this;
 	}
 
 	public CompanyLogin enterCompanyUserName(String username) {
-		clearAndType(locateElement(Locators.ID, "username", Locators.ID, "complogin_username"), username);
+		clearAndType(locateElement(Locators.XPATH, "//input[@id='username' or @id='complogin_username']"), username);
 		reportStep("Succesfully Entered the Comapny Username","pass");
 		return this;
 	}
 
 	public CompanyLogin enterCompanyPassword(String password) {
-		clearAndType(locateElement(Locators.ID, "password", Locators.ID, "complogin_password"), password);
+		clearAndType(locateElement(Locators.XPATH, "//input[@id='password' or @id='complogin_password']"), password);
 		reportStep("Succesfully Entered the Comapny password","pass");
 		return this;
 	}

@@ -7,13 +7,13 @@ public class UserLogin extends ProjectSpecificMethods {
 
 	
 	public UserLogin enterUserUserName(String username) {
-		clearAndType(locateElement(Locators.ID, "username", Locators.ID, "userlogin_username"), username);
+		clearAndType(locateElement(Locators.XPATH, "//input[@id='username' or @id='userlogin_username']"), username);
 		reportStep("Succesfully Enter the User Username","pass");
 		return this;
 	}
 
 	public UserLogin enterUserPassword(String password) {
-		clearAndType(locateElement(Locators.ID, "password", Locators.ID, "userlogin_password"), password);
+		clearAndType(locateElement(Locators.XPATH, "//input[@id='password' or @id='userlogin_password']"), password);
 		reportStep("Succesfully Enter the User Username","pass");
 		return this;
 	}
