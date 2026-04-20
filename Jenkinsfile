@@ -8,7 +8,7 @@ pipeline {
         // and override the properties file values.
         BROWSER = 'chrome'
         ENVIRONMENT = 'qa'
-        HEADLESS = 'true'
+        HEADLESS = 'false'
         // Define JAVA_HOME explicitly for the Jenkins environment
         JAVA_HOME = 'C:\\Program Files\\Java\\jdk-17'
     }
