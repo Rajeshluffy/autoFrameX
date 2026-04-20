@@ -1,6 +1,8 @@
 pipeline {
     agent any
 
+    // Parameters block removed since both suites are run concurrently now.
+
     environment {
         // These environment variables will be picked up by ProjectDirector
         // and override the properties file values.
@@ -16,16 +18,51 @@ pipeline {
             }
         }
 
-        stage('Build & Test') {
+        stage('Inject Configs') {
             steps {
-                // To safely pass credentials without exposing them in pipeline scripts:
-                // Use Jenkins Credentials Binding plugin
+                // Download Secret files and place them into the resource directory dynamically
                 withCredentials([
-                    usernamePassword(credentialsId: 'leaftaps-creds', passwordVariable: 'APP_PASSWORD', usernameVariable: 'APP_USERNAME'),
-                    usernamePassword(credentialsId: 'leaftaps-db-creds', passwordVariable: 'DB_PASSWORD', usernameVariable: 'DB_USERNAME')
+                    file(credentialsId: 'alfadock-config', variable: 'ALFA_CONFIG'),
+                    file(credentialsId: 'leaftap-config', variable: 'LEAF_CONFIG')
                 ]) {
-                    // Maven will run TestNG tests, dynamically using the environment variables
-                    sh 'mvn clean test -Dtestng.suite.file=testng-parallel.xml'
+                    script {
+                        if (isUnix()) {
+                            sh "mkdir -p src/main/resources"
+                            sh "cp \$ALFA_CONFIG src/main/resources/alfaDOCKConfig.properties"
+                            sh "cp \$LEAF_CONFIG src/main/resources/leafTapConfig.properties"
+                        } else {
+                            bat "if not exist src\\main\\resources mkdir src\\main\\resources"
+                            bat "copy /Y \"%ALFA_CONFIG%\" \"src\\main\\resources\\alfaDOCKConfig.properties\""
+                            bat "copy /Y \"%LEAF_CONFIG%\" \"src\\main\\resources\\leafTapConfig.properties\""
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Execute Test Suites') {
+            parallel {
+                stage('TestNG Suite') {
+                    steps {
+                        script {
+                            if (isUnix()) {
+                                sh "mvn test -Dtestng.suite.file=testng-test.xml"
+                            } else {
+                                bat "mvn test -Dtestng.suite.file=testng-test.xml"
+                            }
+                        }
+                    }
+                }
+                stage('AlfaDOCK Suite') {
+                    steps {
+                        script {
+                            if (isUnix()) {
+                                sh "mvn test -Dtestng.suite.file=alfaDOCKtestng.xml"
+                            } else {
+                                bat "mvn test -Dtestng.suite.file=alfaDOCKtestng.xml"
+                            }
+                        }
+                    }
                 }
             }
         }
