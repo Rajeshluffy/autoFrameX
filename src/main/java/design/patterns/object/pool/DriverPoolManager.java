@@ -387,6 +387,16 @@ public class DriverPoolManager {
 	private PoolConfig loadConfiguration(ConcurrentMap<String, String> testngParams) {
 		PoolConfig.Builder builder = new PoolConfig.Builder();
 
+		// ── Browser scope ─────────────────────────────────────────────────────
+		// Builder() defaults to both CHROME + FIREFOX.  Replace with only the
+		// browser configured for this suite run so pre-warm never launches a
+		// browser process that no test will ever borrow.
+		BrowserType configuredBrowser = parseBrowserType(
+				loadStringConfig("BROWSER", "browser", testngParams, config().getBrowserName()));
+		builder.clearSupportedBrowsers()
+		       .addSupportedBrowser(configuredBrowser);
+		logger.info("Pool will pre-warm: " + configuredBrowser);
+
 		// ── Size limits ───────────────────────────────────────────────────────
 		int maxPoolSize = loadIntConfig("MAX_POOL_SIZE", "maxPoolSize",
 				testngParams, config().getPoolMaxSize());
@@ -599,6 +609,19 @@ public class DriverPoolManager {
 			return Boolean.parseBoolean(sysValue);
 		}
 
+		return defaultValue;
+	}
+
+	private String loadStringConfig(String envKey, String paramKey,
+			ConcurrentMap<String, String> params, String defaultValue) {
+		if (params != null && params.containsKey(paramKey)) {
+			String v = params.get(paramKey);
+			if (v != null && !v.trim().isEmpty()) return v.trim();
+		}
+		String envValue = System.getenv(envKey);
+		if (envValue != null && !envValue.trim().isEmpty()) return envValue.trim();
+		String sysValue = System.getProperty(paramKey);
+		if (sysValue != null && !sysValue.trim().isEmpty()) return sysValue.trim();
 		return defaultValue;
 	}
 

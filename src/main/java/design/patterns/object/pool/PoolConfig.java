@@ -86,7 +86,7 @@ public class PoolConfig {
 
 		public Builder() {
 			supportedBrowsers.add(BrowserType.CHROME);
-			supportedBrowsers.add(BrowserType.FIREFOX);
+			// Removed automatic FIREFOX addition to stop eager invalid pre-warming
 		}
 
 		/**
@@ -175,12 +175,27 @@ public class PoolConfig {
 
 		/**
 		 * Adds a supported browser type.
-		 * 
+		 *
 		 * @param browserType browser type to support
 		 * @return this builder
 		 */
 		public Builder addSupportedBrowser(BrowserType browserType) {
 			this.supportedBrowsers.add(browserType);
+			return this;
+		}
+
+		/**
+		 * Removes all browser types from the supported set.
+		 *
+		 * <p>Use together with {@link #addSupportedBrowser} to replace the
+		 * constructor defaults (CHROME + FIREFOX) with only the browser
+		 * actually configured for this suite run — avoids launching browser
+		 * processes that no test will ever use.
+		 *
+		 * @return this builder
+		 */
+		public Builder clearSupportedBrowsers() {
+			this.supportedBrowsers.clear();
 			return this;
 		}
 
