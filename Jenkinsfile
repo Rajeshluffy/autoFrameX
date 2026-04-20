@@ -9,6 +9,8 @@ pipeline {
         BROWSER = 'chrome'
         ENVIRONMENT = 'qa'
         HEADLESS = 'true'
+        // Define JAVA_HOME explicitly for the Jenkins environment
+        JAVA_HOME = 'C:\\Program Files\\Java\\jdk-17'
     }
 
     stages {
