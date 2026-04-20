@@ -20,7 +20,7 @@
 	<!-- Which URL to open: dev | qa | prod -->
 	<parameter name="environment" value="dev" />
 
-	<parameter name="browser" value="chrome" />
+	<parameter name="browser" value="firefox" />
 	<parameter name="maxPoolSize" value="2" />
 
 	<test name="LeafTaps Smoke" >

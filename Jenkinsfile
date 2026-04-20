@@ -69,11 +69,25 @@ pipeline {
 
     post {
         always {
-            // Archive the Extent Reports HTML files natively bypassing nested folders issue
+            // Archive the Extent Reports HTML files
             archiveArtifacts artifacts: 'reports/**/*.html', allowEmptyArchive: true
-            
-            // Publish TestNG XML reports
-            junit 'target/surefire-reports/testng-results.xml'
+
+            // Publish JUnit XML results for BOTH suites.
+            //
+            // ── Why the old path failed ──────────────────────────────────────
+            // junit 'target/surefire-reports/testng-results.xml'  ← WRONG
+            //
+            // Maven Surefire does NOT create a file called testng-results.xml.
+            // It generates one XML per test class, named TEST-<fully.qualified.ClassName>.xml,
+            // inside target/surefire-reports/. Both mvn runs accumulate into that
+            // same directory (no clean between runs) because each suite tests
+            // different classes — the files are never overwritten.
+            //
+            // ── Correct pattern ──────────────────────────────────────────────
+            // target/surefire-reports/*.xml  →  picks up all TEST-*.xml files
+            //                                    from both suite runs.
+            junit testResults: 'target/surefire-reports/*.xml',
+                  allowEmptyResults: false
         }
     }
 }
