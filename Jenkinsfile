@@ -42,28 +42,25 @@ pipeline {
             }
         }
 
-        stage('Execute Test Suites') {
-            parallel {
-                stage('TestNG Suite') {
-                    steps {
-                        script {
-                            if (isUnix()) {
-                                sh "mvn test -Dtestng.suite.file=testng-test.xml"
-                            } else {
-                                bat "mvn test -Dtestng.suite.file=testng-test.xml"
-                            }
-                        }
+        stage('Execute TestNG Suite') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh "mvn test -Dtestng.suite.file=testng-test.xml"
+                    } else {
+                        bat "mvn test -Dtestng.suite.file=testng-test.xml"
                     }
                 }
-                stage('AlfaDOCK Suite') {
-                    steps {
-                        script {
-                            if (isUnix()) {
-                                sh "mvn test -Dtestng.suite.file=alfaDOCKtestng.xml"
-                            } else {
-                                bat "mvn test -Dtestng.suite.file=alfaDOCKtestng.xml"
-                            }
-                        }
+            }
+        }
+
+        stage('Execute AlfaDOCK Suite') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh "mvn test -Dtestng.suite.file=alfaDOCKtestng.xml"
+                    } else {
+                        bat "mvn test -Dtestng.suite.file=alfaDOCKtestng.xml"
                     }
                 }
             }
@@ -72,8 +69,8 @@ pipeline {
 
     post {
         always {
-            // Archive the Extent Reports HTML file
-            archiveArtifacts artifacts: 'reports/*.html', allowEmptyArchive: true
+            // Archive the Extent Reports HTML files natively bypassing nested folders issue
+            archiveArtifacts artifacts: 'reports/**/*.html', allowEmptyArchive: true
             
             // Publish TestNG XML reports
             junit 'target/surefire-reports/testng-results.xml'
