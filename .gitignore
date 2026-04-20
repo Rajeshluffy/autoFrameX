@@ -40,8 +40,10 @@ ScreenShots/
 # -----------------------------
 # User-Requested Resources
 # -----------------------------
-src/main/resources/
-src/test/resources/
+src/main/resources/alfaDOCKConfig.properties
+src/main/resources/leafTapConfig.properties
+src/test/resources/alfaDOCKConfig.properties
+src/test/resources/leafTapConfig.properties
 
 # -----------------------------
 # Operating System Files
