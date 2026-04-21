@@ -265,7 +265,8 @@ public abstract class Reporter {
 
                 if (imageFile.exists() && imageFile.length() > 0) {
                     // For ExtentReports, use the relative path it expects for HTML
-                    String reportPath = "./../../" + folderName + "/images/" + snapNumber + ".jpg";
+                    // The HTML file and images folder are stored in the same 'folderName' directory.
+                    String reportPath = "./images/" + snapNumber + ".jpg";
                     img = MediaEntityBuilder.createScreenCaptureFromPath(reportPath).build();
                 } else {
                     logger.warning("Screenshot not found at " + imageFile.getAbsolutePath() + " - skipping attachment to avoid NPE.");
