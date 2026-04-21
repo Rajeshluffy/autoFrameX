@@ -111,8 +111,8 @@ pipeline {
    
    post {
       always {
-         // Archive HTML reports
-         archiveArtifacts artifacts: 'reports/**/*.html', allowEmptyArchive: true
+         // Archive all HTML reports and supplementary files (images, css, etc.)
+         archiveArtifacts artifacts: 'reports/**/*', allowEmptyArchive: true
          
          // Publish all Surefire reports (from all suites)
          junit testResults: '**/surefire-reports/*.xml', allowEmptyResults: false
