@@ -1,8 +1,9 @@
-package com.alfaDOCK.testcases;
+package com.alfa3DViewer.testcases;
 
 import org.testng.annotations.Test;
 
 import com.alfa3DViewer.pages.AssemblyTree;
+import com.alfaDOCK.testcases.AlfaDockBaseTest;
 import com.framework.testng.api.base.TestMetadata;
 
 @TestMetadata(

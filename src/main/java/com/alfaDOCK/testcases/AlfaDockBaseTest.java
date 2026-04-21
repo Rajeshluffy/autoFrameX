@@ -43,6 +43,8 @@ public abstract class AlfaDockBaseTest extends ProjectSpecificMethods {
                 .selectUserLogin()
                 .verifyHomePage();
     }
+    
+    
 
     /**
      * Navigates from the home page to the 3D viewer for the given file type

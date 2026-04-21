@@ -19,6 +19,12 @@ public class AlfaDockHomePage extends ProjectSpecificMethods {
 		return this;
 	}
 
+	
+	public SoftwareLibary selectSoftwareLibary() {
+		clickWithJs(locateElement(Locators.XPATH,"//input[@src='assets/icons/Gaia.png']"));
+		reportStep("Succesfully select the User login button","pass");
+		return new SoftwareLibary();
+	}
 
 
 

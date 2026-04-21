@@ -26,9 +26,9 @@
 	<test name="AlfaDOCK Smoke">
 		<classes>
 		
-		    <class name="com.alfaDOCK.testcases.TC0001_OpenAssemblyTree" />
-			
-			<class name="com.alfaDOCK.testcases.TC0002_Layer" />
+		    <class name="com.alfa3DViewer.testcases.TC0001_OpenAssemblyTree" />
+
+			<class name="com.alfa3DViewer.testcases.TC0002_Layer" />
 		</classes>
 	</test>
 

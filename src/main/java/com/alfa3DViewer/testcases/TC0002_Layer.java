@@ -1,9 +1,10 @@
-package com.alfaDOCK.testcases;
+package com.alfa3DViewer.testcases;
 
 import org.testng.annotations.Test;
 
 import com.alfa3DViewer.pages.Layers;
 import com.alfa3DViewer.pages.Loading;
+import com.alfaDOCK.testcases.AlfaDockBaseTest;
 import com.framework.testng.api.base.TestMetadata;
 
 @TestMetadata(name = "Layer", description = "Verify the Layer Command", authors = "Rajesh", category = "Smoke")

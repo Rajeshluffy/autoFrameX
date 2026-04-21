@@ -205,6 +205,10 @@ public class PoolConfig {
 		 * @return configured PoolConfig instance
 		 */
 		public PoolConfig build() {
+			if (minPoolSize > maxPoolSize) {
+				// Prevent conflicting configuration from starting more instances than allowed
+				minPoolSize = maxPoolSize;
+			}
 			return new PoolConfig(this);
 		}
 	}
