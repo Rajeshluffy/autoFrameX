@@ -404,7 +404,8 @@ public class DriverPoolManager {
 
 		int minPoolSize = loadIntConfig("MIN_POOL_SIZE", "minPoolSize",
 				testngParams, config().getPoolMinSize());
-		builder.minPoolSize(minPoolSize);
+		// Cap minPoolSize at maxPoolSize to prevent creating extra empty browser instances
+		builder.minPoolSize(Math.min(minPoolSize, maxPoolSize));
 
 		// ── Idle eviction ─────────────────────────────────────────────────────
 		int maxIdleMinutes = loadIntConfig("MAX_IDLE_MINUTES", "maxIdleMinutes",

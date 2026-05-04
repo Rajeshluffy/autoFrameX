@@ -175,7 +175,15 @@ public interface Browser {
 	 * @return 
 	 * @throws NoSuchWindowException
 	 */
-	public boolean switchToWindow(String title);
+	public boolean switchToWindowByTitle(String title);
+	
+	/**
+	 * This method will switch to the Window of interest using its url
+	 * @param url The window url to be switched to first window 
+	 * @return 
+	 * @throws NoSuchWindowException
+	 */
+	public boolean switchToWindowByUrl(String url);
 	/**
 	 * This method will switch to the specific frame using index
 	 * @param index   - The int (frame) to be switched
@@ -215,6 +223,13 @@ public interface Browser {
      * @return true if the URL matches exactly.
      */
     boolean verifyUrl(String url);
+    
+    /**
+     * Verifies if the current browser URL matches the expected URL.
+     * @param url The expected URL string.
+     * @return true if the URL matches contains.
+     */
+    boolean verifyPartialUrl(String url);
 	
 	/**
 	 * This method will verify browser actual title with expected

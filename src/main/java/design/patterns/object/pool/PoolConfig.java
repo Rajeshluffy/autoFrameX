@@ -44,28 +44,52 @@ public class PoolConfig {
 		this.supportedBrowsers = Collections.unmodifiableSet(builder.supportedBrowsers);
 	}
 
-	public int getMaxPoolSize() { return maxPoolSize; }
-	public int getMinPoolSize() { return minPoolSize; }
-	public int getMaxIdleMinutes() { return maxIdleMinutes; }
-	public int getBorrowTimeoutSeconds() { return borrowTimeoutSeconds; }
-	public int getMaxReuseCount() { return maxReuseCount; }
-	public boolean isHealthCheckEnabled() { return healthCheckEnabled; }
-	public boolean isStateResetEnabled() { return stateResetEnabled; }
+	public int getMaxPoolSize() {
+		return maxPoolSize;
+	}
+
+	public int getMinPoolSize() {
+		return minPoolSize;
+	}
+
+	public int getMaxIdleMinutes() {
+		return maxIdleMinutes;
+	}
+
+	public int getBorrowTimeoutSeconds() {
+		return borrowTimeoutSeconds;
+	}
+
+	public int getMaxReuseCount() {
+		return maxReuseCount;
+	}
+
+	public boolean isHealthCheckEnabled() {
+		return healthCheckEnabled;
+	}
+
+	public boolean isStateResetEnabled() {
+		return stateResetEnabled;
+	}
 
 	/**
 	 * When {@code true} browser windows are closed after every {@code @Test}
 	 * (driver session kept alive for reuse). When {@code false} healthy drivers
 	 * are returned to the pool without closing the window.
 	 */
-	public boolean isCloseAfterEach() { return closeAfterEach; }
+	public boolean isCloseAfterEach() {
+		return closeAfterEach;
+	}
 
-	public Set<BrowserType> getSupportedBrowsers() { return supportedBrowsers; }
+	public Set<BrowserType> getSupportedBrowsers() {
+		return supportedBrowsers;
+	}
 
 	@Override
 	public String toString() {
 		return String.format(
 				"PoolConfig{min=%d, max=%d, maxIdle=%dmin, borrowTimeout=%ds, " +
-				"maxReuse=%d, healthCheck=%s, stateReset=%s, closeAfterEach=%s}",
+						"maxReuse=%d, healthCheck=%s, stateReset=%s, closeAfterEach=%s}",
 				minPoolSize, maxPoolSize, maxIdleMinutes, borrowTimeoutSeconds,
 				maxReuseCount, healthCheckEnabled, stateResetEnabled, closeAfterEach);
 	}
@@ -86,7 +110,6 @@ public class PoolConfig {
 
 		public Builder() {
 			supportedBrowsers.add(BrowserType.CHROME);
-			// Removed automatic FIREFOX addition to stop eager invalid pre-warming
 		}
 
 		/**
@@ -97,28 +120,36 @@ public class PoolConfig {
 		 * @throws IllegalArgumentException if size <= 0
 		 */
 		public Builder maxPoolSize(int maxPoolSize) {
-			if (maxPoolSize <= 0) throw new IllegalArgumentException("maxPoolSize must be positive");
+			if (maxPoolSize <= 0)
+				throw new IllegalArgumentException("maxPoolSize must be positive");
 			this.maxPoolSize = maxPoolSize;
 			return this;
 		}
 
 		/** Minimum drivers pre-warmed at startup per browser type. */
 		public Builder minPoolSize(int minPoolSize) {
-			if (minPoolSize < 0) throw new IllegalArgumentException("minPoolSize must be >= 0");
+			if (minPoolSize < 0)
+				throw new IllegalArgumentException("minPoolSize must be >= 0");
 			this.minPoolSize = minPoolSize;
 			return this;
 		}
 
-		/** Seconds a borrow blocks before throwing {@code DriverAcquisitionException}. */
+		/**
+		 * Seconds a borrow blocks before throwing {@code DriverAcquisitionException}.
+		 */
 		public Builder borrowTimeoutSeconds(int borrowTimeoutSeconds) {
-			if (borrowTimeoutSeconds <= 0) throw new IllegalArgumentException("borrowTimeoutSeconds must be positive");
+			if (borrowTimeoutSeconds <= 0)
+				throw new IllegalArgumentException("borrowTimeoutSeconds must be positive");
 			this.borrowTimeoutSeconds = borrowTimeoutSeconds;
 			return this;
 		}
 
-		/** Hard cap on uses per driver before it is retired (prevents memory/fd leaks). */
+		/**
+		 * Hard cap on uses per driver before it is retired (prevents memory/fd leaks).
+		 */
 		public Builder maxReuseCount(int maxReuseCount) {
-			if (maxReuseCount <= 0) throw new IllegalArgumentException("maxReuseCount must be positive");
+			if (maxReuseCount <= 0)
+				throw new IllegalArgumentException("maxReuseCount must be positive");
 			this.maxReuseCount = maxReuseCount;
 			return this;
 		}
@@ -175,7 +206,7 @@ public class PoolConfig {
 
 		/**
 		 * Adds a supported browser type.
-		 *
+		 * 
 		 * @param browserType browser type to support
 		 * @return this builder
 		 */
@@ -185,13 +216,8 @@ public class PoolConfig {
 		}
 
 		/**
-		 * Removes all browser types from the supported set.
-		 *
-		 * <p>Use together with {@link #addSupportedBrowser} to replace the
-		 * constructor defaults (CHROME + FIREFOX) with only the browser
-		 * actually configured for this suite run — avoids launching browser
-		 * processes that no test will ever use.
-		 *
+		 * Clears all supported browsers.
+		 * 
 		 * @return this builder
 		 */
 		public Builder clearSupportedBrowsers() {
@@ -205,11 +231,13 @@ public class PoolConfig {
 		 * @return configured PoolConfig instance
 		 */
 		public PoolConfig build() {
-			if (minPoolSize > maxPoolSize) {
-				// Prevent conflicting configuration from starting more instances than allowed
-				minPoolSize = maxPoolSize;
+			// Ensure minPoolSize does not exceed maxPoolSize
+			if (this.minPoolSize > this.maxPoolSize) {
+				this.minPoolSize = this.maxPoolSize;
 			}
 			return new PoolConfig(this);
 		}
+
+		
 	}
 }

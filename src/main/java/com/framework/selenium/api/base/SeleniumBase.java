@@ -23,7 +23,6 @@ import org.openqa.selenium.NoSuchFrameException;
 import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.StaleElementReferenceException;
-import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
@@ -274,15 +273,15 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 		}
 	}
 
-	
+
 	public void drinst() {
-		
+
 		System.out.println(getDriver().getSessionId());
 	}
 	public void refresh() {
-	
+
 		String script = "return document.readyState";
-		
+
 		try {
 			getDriver().navigate().refresh();
 			getWait(10).until(webDriver -> getDriver().executeScript(script)
@@ -785,25 +784,25 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 	public WebElement locateElement(Locators locatorType, String value) {
 		try {
 			switch (locatorType) {
-				case CLASS_NAME:
-					return getDriver().findElement(By.className(value));
-				case CSS:
-					return getDriver().findElement(By.cssSelector(value));
-				case ID:
-					return getDriver().findElement(By.id(value));
-				case LINK_TEXT:
-					return getDriver().findElement(By.linkText(value));
-				case NAME:
-					return getDriver().findElement(By.name(value));
-				case PARTIAL_LINKTEXT:
-					return getDriver().findElement(By.partialLinkText(value));
-				case TAGNAME:
-					return getDriver().findElement(By.tagName(value));
-				case XPATH:
-					return getDriver().findElement(By.xpath(value));
-				default:
-					reportStep("Invalid locator type: " + locatorType, "fail", false);
-					return null;
+			case CLASS_NAME:
+				return getDriver().findElement(By.className(value));
+			case CSS:
+				return getDriver().findElement(By.cssSelector(value));
+			case ID:
+				return getDriver().findElement(By.id(value));
+			case LINK_TEXT:
+				return getDriver().findElement(By.linkText(value));
+			case NAME:
+				return getDriver().findElement(By.name(value));
+			case PARTIAL_LINKTEXT:
+				return getDriver().findElement(By.partialLinkText(value));
+			case TAGNAME:
+				return getDriver().findElement(By.tagName(value));
+			case XPATH:
+				return getDriver().findElement(By.xpath(value));
+			default:
+				reportStep("Invalid locator type: " + locatorType, "fail", false);
+				return null;
 			}
 		} catch (NoSuchElementException e) {
 			reportStep("Element not found - " + locatorType + ": " + value, "fail", true);
@@ -846,24 +845,24 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 
 	private By getBy(Locators locatorType, String value) {
 		switch (locatorType) {
-			case CLASS_NAME:
-				return By.className(value);
-			case CSS:
-				return By.cssSelector(value);
-			case ID:
-				return By.id(value);
-			case LINK_TEXT:
-				return By.linkText(value);
-			case NAME:
-				return By.name(value);
-			case PARTIAL_LINKTEXT:
-				return By.partialLinkText(value);
-			case TAGNAME:
-				return By.tagName(value);
-			case XPATH:
-				return By.xpath(value);
-			default:
-				return null;
+		case CLASS_NAME:
+			return By.className(value);
+		case CSS:
+			return By.cssSelector(value);
+		case ID:
+			return By.id(value);
+		case LINK_TEXT:
+			return By.linkText(value);
+		case NAME:
+			return By.name(value);
+		case PARTIAL_LINKTEXT:
+			return By.partialLinkText(value);
+		case TAGNAME:
+			return By.tagName(value);
+		case XPATH:
+			return By.xpath(value);
+		default:
+			return null;
 		}
 	}
 
@@ -871,25 +870,25 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 	public List<WebElement> locateElements(Locators type, String value) {
 		try {
 			switch (type) {
-				case CLASS_NAME:
-					return getDriver().findElements(By.className(value));
-				case CSS:
-					return getDriver().findElements(By.cssSelector(value));
-				case ID:
-					return getDriver().findElements(By.id(value));
-				case LINK_TEXT:
-					return getDriver().findElements(By.linkText(value));
-				case NAME:
-					return getDriver().findElements(By.name(value));
-				case PARTIAL_LINKTEXT:
-					return getDriver().findElements(By.partialLinkText(value));
-				case TAGNAME:
-					return getDriver().findElements(By.tagName(value));
-				case XPATH:
-					return getDriver().findElements(By.xpath(value));
-				default:
-					reportStep("Invalid locator type: " + type, "fail", false);
-					return new ArrayList<>();
+			case CLASS_NAME:
+				return getDriver().findElements(By.className(value));
+			case CSS:
+				return getDriver().findElements(By.cssSelector(value));
+			case ID:
+				return getDriver().findElements(By.id(value));
+			case LINK_TEXT:
+				return getDriver().findElements(By.linkText(value));
+			case NAME:
+				return getDriver().findElements(By.name(value));
+			case PARTIAL_LINKTEXT:
+				return getDriver().findElements(By.partialLinkText(value));
+			case TAGNAME:
+				return getDriver().findElements(By.tagName(value));
+			case XPATH:
+				return getDriver().findElements(By.xpath(value));
+			default:
+				reportStep("Invalid locator type: " + type, "fail", false);
+				return new ArrayList<>();
 			}
 		} catch (NoSuchElementException e) {
 			reportStep("Elements not found - " + type + ": " + value, "warning", false);
@@ -938,6 +937,29 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 		}
 	}
 
+	public String getWindowName() {
+		String currWindowName = getDriver().getWindowHandle();
+		reportStep("Succesfully got the current window name","pass");
+		return currWindowName;
+
+	}
+
+	public List<String> getAllWindowName(){
+		List<String> allHandles = null;
+		try {
+			Set<String> allWindows = getDriver().getWindowHandles();
+			allHandles = new ArrayList<>(allWindows);
+			if (allHandles.size()>1) {
+				reportStep("Mutile Tab is be openned: ","pass");
+			} else {
+				reportStep("Only one Tab is be openned: ","pass");			}
+		} catch (NoSuchWindowException e) {
+			reportStep("Window not found" , "fail");
+		}
+		return allHandles;
+	}
+
+
 	@Override
 	public void switchToWindow(int index) {
 		try {
@@ -956,7 +978,7 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 	}
 
 	@Override
-	public boolean switchToWindow(String title) {
+	public boolean switchToWindowByTitle(String title) {
 		try {
 			Set<String> allWindows = getDriver().getWindowHandles();
 			for (String window : allWindows) {
@@ -972,6 +994,25 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 		}
 		return false;
 	}
+	
+	@Override
+	public boolean switchToWindowByUrl(String url) {
+		try {
+			Set<String> allWindows = getDriver().getWindowHandles();
+			for (String window : allWindows) {
+				getDriver().switchTo().window(window);
+				if (getDriver().getCurrentUrl().contains(url)) {
+					reportStep("Switched to window: " + url, "info", false);
+					return true;
+				}
+			}
+			reportStep("Window not found with title: " + url, "warning", false);
+		} catch (NoSuchWindowException e) {
+			reportStep("Window switch failed: " + e.getMessage(), "fail", false);
+		}
+		return false;
+	}
+	
 
 	@Override
 	public void switchToFrame(int index) {
@@ -1033,6 +1074,23 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 			return false;
 		}
 	}
+	@Override
+	public boolean verifyPartialUrl(String url) {
+		try {
+			String currentUrl = getDriver().getCurrentUrl();
+			if (currentUrl.contains(url)) {
+				reportStep("URL matched: " + currentUrl, "pass", false);
+				return true;
+			} else {
+				reportStep("URL mismatch - Expected: " + url + ", Actual: " + currentUrl,
+						"warning", false);
+				return false;
+			}
+		} catch (Exception e) {
+			reportStep("URL verification failed: " + e.getMessage(), "fail", false);
+			return false;
+		}
+	}
 
 	@Override
 	public boolean verifyTitle(String title) {
@@ -1067,6 +1125,19 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 		return number;
 	}
 
+	public void waitApiToLoad() {
+		try {
+			fluentWaitFor(driver -> {
+				Long activeRequests = (Long) getDriver().executeScript(
+						"return window.performance.getEntriesByType('resource').length;");
+				return activeRequests != null && activeRequests > 0; // customize logic
+			}, 30, 500); // 30 seconds timeout, 500ms polling interval
+			reportStep("API resources loaded successfully", "info", false);
+		} catch (Exception e) {
+			reportStep("Wait for API to load failed: " + e.getMessage(), "warning", false);
+		}
+	}
+	
 	@Override
 	public void executeTheScript(String js, WebElement ele) {
 		try {

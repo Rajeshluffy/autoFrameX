@@ -1,19 +1,17 @@
 pipeline {
    agent any
    
-   // Parameters block removed since both suites are run concurrently now.
-   
    environment {
-      // These environment variables will be picked up by ProjectDirector
-      // and override the properties file values.
       BROWSER = 'chrome'
       ENVIRONMENT = 'qa'
       HEADLESS = 'false'
-      // Define JAVA_HOME explicitly for the Jenkins environment
+      
       JAVA_HOME = 'C:\\Program Files\\Java\\jdk-17'
+      PATH = "${JAVA_HOME}\\bin;${env.PATH}"
    }
    
    stages {
+      
       stage('Checkout') {
          steps {
             checkout scm
@@ -22,68 +20,111 @@ pipeline {
       
       stage('Inject Configs') {
          steps {
-            // Download Secret files and place them into the resource directory dynamically
             withCredentials([
             file(credentialsId: 'alfadock-config', variable: 'ALFA_CONFIG'),
             file(credentialsId: 'leaftap-config', variable: 'LEAF_CONFIG')
             ]) {
                script {
                   if (isUnix()) {
-                     sh "mkdir -p src/main/resources"
-                     sh "cp \$ALFA_CONFIG src/main/resources/alfaDOCKConfig.properties"
-                     sh "cp \$LEAF_CONFIG src/main/resources/leafTapConfig.properties"
+                     sh '''
+                     mkdir -p src/main/resources
+                     cp $ALFA_CONFIG src/main/resources/alfaDOCKConfig.properties
+                     cp $LEAF_CONFIG src/main/resources/leafTapConfig.properties
+                     '''
                   } else {
-                     bat "if not exist src\\main\\resources mkdir src\\main\\resources"
-                     bat "copy /Y \"%ALFA_CONFIG%\" \"src\\main\\resources\\alfaDOCKConfig.properties\""
-                     bat "copy /Y \"%LEAF_CONFIG%\" \"src\\main\\resources\\leafTapConfig.properties\""
+                     bat '''
+                     if not exist src\\main\\resources mkdir src\\main\\resources
+                     copy /Y "%ALFA_CONFIG%" "src\\main\\resources\\alfaDOCKConfig.properties"
+                     copy /Y "%LEAF_CONFIG%" "src\\main\\resources\\leafTapConfig.properties"
+                     '''
                   }
                }
             }
          }
       }
       
-      stage('Execute TestNG Suite') {
-         steps {
-            script {
-               if (isUnix()) {
-                  sh "mvn test -Dtestng.suite.file=testng-test.xml"
-               } else {
-                  bat "mvn test -Dtestng.suite.file=testng-test.xml"
+      stage('Run Parallel Suites') {
+         parallel {
+            
+            stage('TestNG Suite') {
+               steps {
+                  script {
+                     if (isUnix()) {
+                        sh '''
+                        mvn clean test \
+                        -Dtestng.suite.file=testng-test.xml \
+                        -Dsurefire.reportNameSuffix=testng
+                        '''
+                     } else {
+                        bat '''
+                        mvn clean test ^
+                        -Dtestng.suite.file=testng-test.xml ^
+                        -Dsurefire.reportNameSuffix=testng
+                        '''
+                     }
+                  }
+               }
+            }
+            
+            stage('AlfaDOCK Suite') {
+               steps {
+                  script {
+                     if (isUnix()) {
+                        sh '''
+                        mvn clean test \
+                        -Dtestng.suite.file=alfaDOCKtestng.xml \
+                        -Dsurefire.reportNameSuffix=alfadock
+                        '''
+                     } else {
+                        bat '''
+                        mvn clean test ^
+                        -Dtestng.suite.file=alfaDOCKtestng.xml ^
+                        -Dsurefire.reportNameSuffix=alfadock
+                        '''
+                     }
+                  }
                }
             }
          }
       }
       
-      stage('Execute AlfaDOCK Suite') {
+      stage('GPN Suite') {
          steps {
             script {
                if (isUnix()) {
-                  sh "mvn test -Dtestng.suite.file=alfaDOCKtestng.xml"
+                  sh '''
+                  mvn test \
+                  -Dtestng.suite.file=gpn.xml \
+                  -Dsurefire.reportNameSuffix=gpn
+                  '''
                } else {
-                  bat "mvn test -Dtestng.suite.file=alfaDOCKtestng.xml"
+                  bat '''
+                  mvn test ^
+                  -Dtestng.suite.file=gpn.xml ^
+                  -Dsurefire.reportNameSuffix=gpn
+                  '''
                }
             }
          }
+      }
+   }
+   
+   post {
+      always {
+         // Archive HTML reports
+         archiveArtifacts artifacts: 'reports/**/*.html', allowEmptyArchive: true
          
+         
+         // Publish all Surefire reports (from all suites)
+         junit testResults: '**/surefire-reports/*.xml', allowEmptyResults: false
+      }
+      
+      success {
+         echo '✅ All test suites executed successfully!'
+      }
+      
+      failure {
+         echo '❌ Some tests failed. Check reports.'
       }
    }
 }
-
-post {
-   always {
-      // Archive all HTML reports and supplementary files (images, css, etc.)
-      archiveArtifacts artifacts: 'reports/**/*', allowEmptyArchive: true
-      
-      // Publish all Surefire reports (from all suites)
-      junit testResults: '**/surefire-reports/*.xml', allowEmptyResults: false
-   }
-   
-   success {
-      echo '✅ All test suites executed successfully!'
-   }
-   
-   failure {
-      echo '❌ Some tests failed. Check reports.'
-   }
-}
-

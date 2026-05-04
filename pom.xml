@@ -10,7 +10,7 @@
 	<properties>
 		<java.version>16</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<testng.suite.file>alfaDOCKtestng.xml</testng.suite.file>
+		<testng.suite.file>testng.xml</testng.suite.file>
 		<browser>chrome</browser>
 		<env>qa</env>
 		<headless>false</headless>
@@ -173,26 +173,7 @@
 				</executions>
 			</plugin>
 
-			<!-- Maven Jar Plugin to produce a project-independent framework jar -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.3.0</version>
-				<executions>
-					<execution>
-						<id>framework-jar</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-						<configuration>
-							<classifier>framework</classifier>
-							<excludes>
-								<exclude>com/leaftaps/**</exclude>
-							</excludes>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+			<!-- Maven Jar Plugin -> plugin removed as default generation is sufficient -->
 
 			<!-- Maven Surefire Plugin for TestNG -->
 			<plugin>
