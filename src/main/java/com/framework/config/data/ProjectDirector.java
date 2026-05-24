@@ -46,9 +46,18 @@ public class ProjectDirector {
 
     private static final Logger logger = Logger.getLogger(ProjectDirector.class.getName());
 
-    /** Fallback when no {@code configClass} parameter is present in the TestNG XML. */
+    /**
+     * Fallback when no {@code configClass} parameter is present in the TestNG XML.
+     *
+     * <p>Points to {@link AutoFrameXConfiguration} — the framework's own built-in
+     * implementation that loads sensible defaults from {@code frameworkConfig.properties}.
+     * Projects that run real applications should override this via their TestNG XML:
+     * <pre>
+     * &lt;parameter name="configClass" value="com.myapp.config.MyAppConfig"/&gt;
+     * </pre>
+     */
     private static final String DEFAULT_CONFIG_CLASS =
-            "com.leaftaps.config.data.LeafTapConfiguration";
+            "com.framework.config.data.AutoFrameXConfiguration";
 
     // =========================================================================
     // Public API
@@ -164,8 +173,10 @@ public class ProjectDirector {
                 "CONFIG_CLASS", "configClass", DEFAULT_CONFIG_CLASS);
 
         if (DEFAULT_CONFIG_CLASS.equals(className)) {
-            logger.warning("No 'configClass' parameter found — defaulting to LeafTapConfiguration. "
-                    + "Add <parameter name=\"configClass\" value=\"...\"/> to your TestNG XML.");
+            logger.info("No 'configClass' TestNG parameter found — using built-in AutoFrameXConfiguration. "
+                    + "For a project-specific config add: "
+                    + "<parameter name=\"configClass\" value=\"com.yourapp.config.YourConfig\"/> "
+                    + "to your testng.xml.");
         }
 
         try {

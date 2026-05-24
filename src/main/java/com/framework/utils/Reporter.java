@@ -22,10 +22,9 @@ import com.framework.testng.api.base.TestMetadata;
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.MediaEntityBuilder;
-import com.aventstack.extentreports.MediaEntityModelProvider;
 import com.aventstack.extentreports.Status;
-import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
-import com.aventstack.extentreports.reporter.configuration.ChartLocation;
+import com.aventstack.extentreports.model.Media;
+import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.aventstack.extentreports.reporter.configuration.Theme;
 import com.framework.config.data.ConfigManager;
 
@@ -253,28 +252,28 @@ public abstract class Reporter {
             return;
         }
 
-        MediaEntityModelProvider img = null;
+        // ExtentReports 5.x: MediaEntityBuilder.createScreenCaptureFromPath().build()
+        // returns Media directly (not a provider wrapper). The v3 getMedia()==null bug
+        // no longer exists; null-safety is sufficient.
+        Media img = null;
 
         if (bSnap && !status.equalsIgnoreCase("INFO")
                 && !status.equalsIgnoreCase("SKIPPED")) {
             long snapNumber = takeSnap();
             try {
-                // Determine absolute/relative path correctly
                 String imagePathStr = "./" + folderName + "/images/" + snapNumber + ".jpg";
                 File imageFile = new File(imagePathStr);
 
                 if (imageFile.exists() && imageFile.length() > 0) {
-                    // For ExtentReports, use the relative path it expects for HTML
-                    // The HTML file and images folder are stored in the same 'folderName' directory.
+                    // Relative path: HTML report and images/ folder share the same parent.
                     String reportPath = "./images/" + snapNumber + ".jpg";
                     img = MediaEntityBuilder.createScreenCaptureFromPath(reportPath).build();
                 } else {
-                    logger.warning("Screenshot not found at " + imageFile.getAbsolutePath() + " - skipping attachment to avoid NPE.");
-                    img = null;
+                    logger.warning("Screenshot not found at " + imageFile.getAbsolutePath()
+                            + " — screenshot attachment skipped.");
                 }
             } catch (Exception e) {
                 logger.warning("Screenshot entity creation failed: " + e.getMessage());
-                img = null; // Ensure img remains null so ExtentReports doesn't crash internally
             }
         }
 
@@ -376,18 +375,18 @@ public abstract class Reporter {
             images.mkdirs();
         }
 
-        // Configure HTML reporter
-        ExtentHtmlReporter htmlReporter = new ExtentHtmlReporter("./" + folderName + "/" + FILE_NAME);
-        htmlReporter.config().setTestViewChartLocation(ChartLocation.BOTTOM);
-        htmlReporter.config().setChartVisibilityOnOpen(false);
-        htmlReporter.config().setTheme(Theme.STANDARD);
-        htmlReporter.config().setDocumentTitle("Automation Test Report");
-        htmlReporter.config().setEncoding("utf-8");
-        htmlReporter.config().setReportName("Automation Test Results");
-        htmlReporter.setAppendExisting(false);
+        // Configure Spark reporter (ExtentReports 5.x replacement for ExtentHtmlReporter).
+        // ChartLocation and setChartVisibilityOnOpen are removed in v5 — the Spark
+        // template handles chart placement automatically.
+        // setAppendExisting is also gone; each run overwrites the file (fresh report).
+        ExtentSparkReporter sparkReporter = new ExtentSparkReporter("./" + folderName + "/" + FILE_NAME);
+        sparkReporter.config().setTheme(Theme.STANDARD);
+        sparkReporter.config().setDocumentTitle("Automation Test Report");
+        sparkReporter.config().setEncoding("utf-8");
+        sparkReporter.config().setReportName("Automation Test Results");
 
         extent = new ExtentReports();
-        extent.attachReporter(htmlReporter);
+        extent.attachReporter(sparkReporter);
 
         extent.setSystemInfo("Java Version", System.getProperty("java.version"));
         extent.setSystemInfo("OS", System.getProperty("os.name"));

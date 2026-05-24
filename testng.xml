@@ -1,0 +1,50 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+    autoFrameX master TestNG suite.
+
+    Run with Maven (default):
+        mvn test
+
+    Select a different suite at runtime:
+        mvn test -Dtestng.suite.file=testng-smoke.xml
+
+    Pass parameters that override frameworkConfig.properties:
+        mvn test -Dbrowser=firefox -Denv=staging -Dheadless=true
+-->
+<suite name="autoFrameX Suite" verbose="1" parallel="none">
+
+    <!--
+        TestAnnotationTransformer wires RetryEngine onto every @Test method
+        so that flaky tests are automatically retried without per-method config.
+    -->
+    <listeners>
+        <listener class-name="com.framework.testng.api.base.TestAnnotationTransformer"/>
+    </listeners>
+
+    <!--
+        configClass — tells ProjectDirector which ProjectAppConfiguration to load.
+        AutoFrameXConfiguration is the built-in default (reads frameworkConfig.properties).
+        For a real project swap this with your own implementation:
+            value="com.myapp.config.data.MyAppConfiguration"
+    -->
+    <parameter name="configClass" value="com.framework.config.data.AutoFrameXConfiguration"/>
+
+    <!--
+        Parameters here override the values read from frameworkConfig.properties.
+        Override any of these from the command line: -Dbrowser=firefox
+    -->
+    <parameter name="browser"   value="${browser}"/>
+    <parameter name="env"       value="${env}"/>
+    <parameter name="headless"  value="${headless}"/>
+
+    <!-- ── Smoke / unit tests (no browser required) ─────────────────────── -->
+    <test name="Framework Unit Tests">
+        <classes>
+            <class name="com.framework.testng.ExtentBugTest"/>
+            <class name="com.framework.testng.RetryTest"/>
+        </classes>
+    </test>
+
+
+</suite>

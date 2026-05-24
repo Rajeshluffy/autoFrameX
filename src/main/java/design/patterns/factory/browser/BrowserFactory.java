@@ -35,10 +35,22 @@ public class BrowserFactory implements WebDriverFactoryInterface {
 
 	private static final Logger logger = Logger.getLogger(BrowserFactory.class.getName());
 
-	// Timeout constants (seconds)
-	private static final int PAGE_LOAD_TIMEOUT = ConfigManager.getInstance().getConfig().getPageLoadTimeout();
-	private static final int SCRIPT_TIMEOUT = ConfigManager.getInstance().getConfig().getScriptTimeout();
-	private static final int IMPLICIT_WAIT = ConfigManager.getInstance().getConfig().getImplicit();
+	// Timeout constants — intentionally NOT static: reading config at class-load
+	// time (static field init) caused NPE when BrowserFactory was referenced before
+	// ConfigManager was initialized (e.g., during Spring/TestNG context startup).
+	// Reading lazily via instance methods defers the config lookup to driver-creation
+	// time, when ConfigManager is guaranteed to be ready.
+	private int pageLoadTimeout() {
+		return ConfigManager.getInstance().getConfig().getPageLoadTimeout();
+	}
+
+	private int scriptTimeout() {
+		return ConfigManager.getInstance().getConfig().getScriptTimeout();
+	}
+
+	private int implicitWait() {
+		return ConfigManager.getInstance().getConfig().getImplicit();
+	}
 
 	// -------------------------------------------------------------------------
 	// Primary factory method used by the pool
@@ -88,8 +100,8 @@ public class BrowserFactory implements WebDriverFactoryInterface {
 	 * @param driver the driver to configure
 	 */
 	private void configureTimeouts(RemoteWebDriver driver) {
-		driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(PAGE_LOAD_TIMEOUT));
-		driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(SCRIPT_TIMEOUT));
-		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(IMPLICIT_WAIT));
+		driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(pageLoadTimeout()));
+		driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(scriptTimeout()));
+		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(implicitWait()));
 	}
 }

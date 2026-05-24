@@ -274,10 +274,6 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 	}
 
 
-	public void drinst() {
-
-		System.out.println(getDriver().getSessionId());
-	}
 	public void refresh() {
 
 		String script = "return document.readyState";
@@ -434,7 +430,16 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 	@Override
 	public boolean verifyExactText(WebElement ele, String expectedText) {
 		try {
-			String actualText = waitForVisibility(ele).getText();
+			// waitForVisibility returns null when the element never becomes visible
+			// (the catch block inside it swallows the TimeoutException and returns null).
+			// Dereferencing null here caused a NullPointerException — fixed with an
+			// explicit null guard before calling getText().
+			WebElement visible = waitForVisibility(ele);
+			if (visible == null) {
+				reportStep("Element not visible — cannot verify text: '" + expectedText + "'", "fail", true);
+				return false;
+			}
+			String actualText = visible.getText();
 			if (actualText.equals(expectedText)) {
 				reportStep("Text matches: '" + expectedText + "'", "pass", false);
 				return true;

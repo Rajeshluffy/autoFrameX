@@ -8,6 +8,9 @@ import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.sql.rowset.CachedRowSet;
+import javax.sql.rowset.RowSetProvider;
+
 /**
  * Abstract implementation of {@link DatabaseConnection} providing boilerplate
  * logic for connection management, logging, and query execution.
@@ -64,12 +67,15 @@ public abstract class AbstractDatabaseConnection implements DatabaseConnection {
         }
 
         logger.fine("Executing query: " + query);
-        try {
-            // Note: Returning ResultSet leaves the Statement open.
-            // In a more advanced robust layer, we might map this to List<Map<String,
-            // Object>> or DTOs to close statements eagerly.
-            Statement statement = connection.createStatement();
-            return statement.executeQuery(query);
+        // CachedRowSet disconnects the data from the JDBC connection: the Statement
+        // and underlying ResultSet are closed inside the try-with-resources block
+        // while the populated CachedRowSet (which implements ResultSet) is returned
+        // to the caller without keeping any JDBC resource open.
+        try (Statement statement = connection.createStatement();
+             ResultSet rs = statement.executeQuery(query)) {
+            CachedRowSet crs = RowSetProvider.newFactory().createCachedRowSet();
+            crs.populate(rs);
+            return crs;
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Failed to execute query: " + query, e);
             throw e;
