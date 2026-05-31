@@ -1,6 +1,7 @@
 package com.api.rest.assured.base;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -12,7 +13,7 @@ import io.restassured.specification.FilterableResponseSpecification;
 
 public class RestAssuredListener implements Filter {
 
-    private static final Logger LOGGER = Logger.getLogger(RestAssuredListener.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(RestAssuredListener.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Override

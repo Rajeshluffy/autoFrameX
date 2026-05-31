@@ -5,8 +5,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.rowset.CachedRowSet;
 import javax.sql.rowset.RowSetProvider;
@@ -17,7 +17,7 @@ import javax.sql.rowset.RowSetProvider;
  */
 public abstract class AbstractDatabaseConnection implements DatabaseConnection {
 
-    private static final Logger logger = Logger.getLogger(AbstractDatabaseConnection.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(AbstractDatabaseConnection.class);
 
     protected Connection connection;
 
@@ -34,12 +34,12 @@ public abstract class AbstractDatabaseConnection implements DatabaseConnection {
 
         try {
             registerDriver();
-            logger.fine("Connecting to database: " + url);
+            logger.debug("Connecting to database: " + url);
             connection = DriverManager.getConnection(url, username, password);
             logger.info("Database connection established successfully.");
             return connection;
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Failed to connect to the database: " + url, e);
+            logger.error("Failed to connect to the database: " + url, e);
             throw e;
         }
     }
@@ -53,7 +53,7 @@ public abstract class AbstractDatabaseConnection implements DatabaseConnection {
                     logger.info("Database connection closed successfully.");
                 }
             } catch (SQLException e) {
-                logger.log(Level.WARNING, "Error occurred while closing the database connection.", e);
+                logger.warn("Error occurred while closing the database connection.", e);
             } finally {
                 connection = null; // Ensure the reference is cleared
             }
@@ -66,7 +66,7 @@ public abstract class AbstractDatabaseConnection implements DatabaseConnection {
             throw new SQLException("Cannot execute query. Not connected to the database.");
         }
 
-        logger.fine("Executing query: " + query);
+        logger.debug("Executing query: " + query);
         // CachedRowSet disconnects the data from the JDBC connection: the Statement
         // and underlying ResultSet are closed inside the try-with-resources block
         // while the populated CachedRowSet (which implements ResultSet) is returned
@@ -77,7 +77,7 @@ public abstract class AbstractDatabaseConnection implements DatabaseConnection {
             crs.populate(rs);
             return crs;
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Failed to execute query: " + query, e);
+            logger.error("Failed to execute query: " + query, e);
             throw e;
         }
     }
@@ -88,11 +88,11 @@ public abstract class AbstractDatabaseConnection implements DatabaseConnection {
             throw new SQLException("Cannot execute update. Not connected to the database.");
         }
 
-        logger.fine("Executing update: " + query);
+        logger.debug("Executing update: " + query);
         try (Statement statement = connection.createStatement()) {
             return statement.executeUpdate(query);
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Failed to execute update: " + query, e);
+            logger.error("Failed to execute update: " + query, e);
             throw e;
         }
     }

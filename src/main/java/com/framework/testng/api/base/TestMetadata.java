@@ -54,4 +54,21 @@ public @interface TestMetadata {
      * Maps to {@code ./data/<excelFile>.xlsx}. Leave empty for non-data-driven tests.
      */
     String excelFile() default "";
+
+    /**
+     * Controls how many Excel rows the {@code fetchData} DataProvider returns.
+     *
+     * <ul>
+     *   <li>{@code false} (default) — only the first row runs. Safe for smoke tests
+     *       where a single representative data set is enough.</li>
+     *   <li>{@code true} — every row in the sheet runs as a separate test invocation.
+     *       Use for full regression or boundary-value coverage.</li>
+     * </ul>
+     *
+     * <p>Example — run all rows:
+     * <pre>
+     * {@literal @}TestMetadata(name = "CreateLead", excelFile = "CreateLead", allRows = true)
+     * </pre>
+     */
+    boolean allRows() default false;
 }

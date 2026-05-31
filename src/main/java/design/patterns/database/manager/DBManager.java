@@ -4,8 +4,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.framework.config.data.DatabaseConfiguration;
 
@@ -20,7 +20,7 @@ import design.patterns.database.factory.DatabaseConnectionFactory;
  */
 public class DBManager {
 
-    private static final Logger logger = Logger.getLogger(DBManager.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(DBManager.class);
 
     // Map to hold different DBManager instances based on configuration class name
     private static final Map<String, DBManager> instances = new ConcurrentHashMap<>();
@@ -53,7 +53,7 @@ public class DBManager {
      */
     public synchronized DatabaseConnection getConnection() {
         if (connection == null || !connection.isConnected()) {
-            logger.fine("Initializing new database connection for " + config.getClass().getSimpleName() + "...");
+            logger.debug("Initializing new database connection for " + config.getClass().getSimpleName() + "...");
             try {
                 String dbUrl = config.dbUrl();
                 String dbUser = config.dbUserName();
@@ -62,7 +62,7 @@ public class DBManager {
                 connection = DatabaseConnectionFactory.createConnection(dbUrl);
                 connection.connect(dbUrl, dbUser, dbPassword);
             } catch (SQLException e) {
-                logger.log(Level.SEVERE, "Could not initialize standard database connection", e);
+                logger.error("Could not initialize standard database connection", e);
                 throw new RuntimeException("Database connection initialization failed", e);
             }
         }
@@ -89,7 +89,7 @@ public class DBManager {
         try {
             return getConnection().executeQuery(query);
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Failed executing DBManager query: " + query, e);
+            logger.error("Failed executing DBManager query: " + query, e);
             return null; // For backward compatibility with existing usages
         }
     }

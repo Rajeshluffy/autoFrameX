@@ -7,11 +7,12 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ChromeBrowser implements Browser {
 
-	private static final Logger logger = Logger.getLogger(ChromeBrowser.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(ChromeBrowser.class);
 
 	private static final ChromeBrowser INSTANCE = new ChromeBrowser();
 

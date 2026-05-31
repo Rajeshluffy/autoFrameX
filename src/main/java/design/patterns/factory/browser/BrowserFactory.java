@@ -1,7 +1,8 @@
 package design.patterns.factory.browser;
 
 import java.time.Duration;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -33,7 +34,7 @@ import design.patterns.object.pool.PoolConfig;
  */
 public class BrowserFactory implements WebDriverFactoryInterface {
 
-	private static final Logger logger = Logger.getLogger(BrowserFactory.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(BrowserFactory.class);
 
 	// Timeout constants — intentionally NOT static: reading config at class-load
 	// time (static field init) caused NPE when BrowserFactory was referenced before
@@ -66,7 +67,7 @@ public class BrowserFactory implements WebDriverFactoryInterface {
 	 * @return a new, maximized, timeout-configured WebDriver instance
 	 */
 	public RemoteWebDriver createDriver(BrowserType browserType, PoolConfig config) {
-		logger.fine("Creating driver via Enum Factory: " + browserType);
+		logger.debug("Creating driver via Enum Factory: " + browserType);
 		RemoteWebDriver driver = browserType.launchBrowser();
 		configureTimeouts(driver);
 		return driver;
@@ -86,7 +87,7 @@ public class BrowserFactory implements WebDriverFactoryInterface {
 	@Override
 	public RemoteWebDriver createDriver(BrowserType browserType, Capabilities capabilities) {
 		// For RemoteWebDriver / Selenium Grid support in future sprints
-		logger.warning("Capabilities-based driver creation not yet implemented; falling back to default.");
+		logger.warn("Capabilities-based driver creation not yet implemented; falling back to default.");
 		return createDriver(browserType, (PoolConfig) null);
 	}
 

@@ -6,7 +6,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import org.testng.ITestContext;
 import org.testng.ITestResult;
@@ -27,6 +29,13 @@ import com.aventstack.extentreports.model.Media;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.aventstack.extentreports.reporter.configuration.Theme;
 import com.framework.config.data.ConfigManager;
+
+import com.framework.observability.CorrelationContext;
+import com.framework.observability.FailureCategorizer;
+import com.framework.observability.FlakyTestTracker;
+import com.framework.observability.ResourceUsageAccumulator;
+import com.framework.observability.TestEvent;
+import com.framework.observability.TestEventCollector;
 
 import design.patterns.object.pool.DriverPoolManager;
 
@@ -52,7 +61,7 @@ import design.patterns.object.pool.DriverPoolManager;
  */
 public abstract class Reporter {
 
-    private static final Logger logger = Logger.getLogger(Reporter.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(Reporter.class);
 
     // ExtentReports instances
     private static volatile ExtentReports extent;
@@ -75,6 +84,9 @@ public abstract class Reporter {
     // Driver manager reference
     protected DriverPoolManager driverManager;
 
+    // Observability — per-test start time (ThreadLocal, matches pattern of other TLs)
+    private static final ThreadLocal<Long> testStartTimeMs = new ThreadLocal<>();
+
     // =========================================================================
     // STEP 1 — @BeforeSuite: NO parameters allowed here by TestNG
     // Only set up the report folder and ExtentReports object.
@@ -92,6 +104,12 @@ public abstract class Reporter {
      */
     @BeforeSuite(alwaysRun = true)
     public synchronized void startReport() {
+        // Route any remaining java.util.logging calls (Selenium internals, etc.) through Logback
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
+
+        TestEventCollector.getInstance().init("logs");
+
         logger.info("========================================");
         logger.info("=== @BeforeSuite: Initializing Report ===");
         logger.info("========================================");
@@ -153,7 +171,7 @@ public abstract class Reporter {
     public void startTestCase() {
         // Guard: if extent failed to initialize, log and skip
         if (extent == null) {
-            logger.severe("ExtentReports not initialized - @BeforeSuite may have failed.");
+            logger.error("ExtentReports not initialized - @BeforeSuite may have failed.");
             return;
         }
 
@@ -173,7 +191,7 @@ public abstract class Reporter {
         // Final fallback: if neither annotation nor setValues() provided a name
         if (testcaseName == null || testcaseName.isEmpty()) {
             testcaseName = this.getClass().getSimpleName();
-            logger.warning("testcaseName not set, defaulting to: " + testcaseName);
+            logger.warn("testcaseName not set, defaulting to: " + testcaseName);
         }
 
         logger.info("Creating test case node: " + testcaseName);
@@ -207,7 +225,7 @@ public abstract class Reporter {
     public void setNode(Method method, ITestContext context) {
         // Guard: if extent failed to initialize, skip node creation
         if (extent == null) {
-            logger.severe("ExtentReports not initialized - skipping node creation.");
+            logger.error("ExtentReports not initialized - skipping node creation.");
             return;
         }
 
@@ -218,7 +236,7 @@ public abstract class Reporter {
 
         // Fallback: if parent node missing, create a default one
         if (parent == null) {
-            logger.warning("Parent node not found for " + methodName + ", creating default.");
+            logger.warn("Parent node not found for " + methodName + ", creating default.");
             synchronized (extent) {
                 String name = (testcaseName != null) ? testcaseName
                         : this.getClass().getSimpleName();
@@ -230,7 +248,10 @@ public abstract class Reporter {
         ExtentTest child = parent.createNode(methodName);
         test.set(child);
 
-        logger.fine("✓ Method node created: " + methodName);
+        CorrelationContext.init();
+        testStartTimeMs.set(System.currentTimeMillis());
+
+        logger.debug("✓ Method node created: " + methodName);
     }
 
     // =========================================================================
@@ -248,7 +269,7 @@ public abstract class Reporter {
         ExtentTest currentTest = test.get();
 
         if (currentTest == null) {
-            logger.warning("No test node - cannot report: " + desc);
+            logger.warn("No test node - cannot report: " + desc);
             return;
         }
 
@@ -269,11 +290,11 @@ public abstract class Reporter {
                     String reportPath = "./images/" + snapNumber + ".jpg";
                     img = MediaEntityBuilder.createScreenCaptureFromPath(reportPath).build();
                 } else {
-                    logger.warning("Screenshot not found at " + imageFile.getAbsolutePath()
+                    logger.warn("Screenshot not found at " + imageFile.getAbsolutePath()
                             + " — screenshot attachment skipped.");
                 }
             } catch (Exception e) {
-                logger.warning("Screenshot entity creation failed: " + e.getMessage());
+                logger.warn("Screenshot entity creation failed: " + e.getMessage());
             }
         }
 
@@ -316,8 +337,53 @@ public abstract class Reporter {
      */
     @AfterMethod(alwaysRun = true)
     public void tearDownTest(Method method, ITestResult result) {
+        // --- Observability: build and publish test event ---
+        try {
+            long startMs = testStartTimeMs.get() != null ? testStartTimeMs.get() : System.currentTimeMillis();
+            long endMs   = System.currentTimeMillis();
+            String testName = method.getDeclaringClass().getSimpleName() + "#" + method.getName();
+            boolean passed  = result.isSuccess();
+            int     status  = result.getStatus();
+
+            FlakyTestTracker.getInstance().record(testName, passed);
+
+            CorrelationContext.Context ctx = CorrelationContext.get();
+            TestEvent event = TestEvent.builder()
+                .testId(testName)
+                .suite(result.getTestContext().getSuite().getName())
+                .feature(testcaseName != null ? testcaseName : "")
+                .severity("")
+                .owner(authors != null ? authors : "")
+                .environment(ctx.getEnvironmentId())
+                .browser(ConfigManager.getInstance().getConfig().getBrowserName())
+                .startTimeMs(startMs)
+                .endTimeMs(endMs)
+                .durationMs(endMs - startMs)
+                .status(passed ? "PASS" : status == ITestResult.SKIP ? "SKIP" : "FAIL")
+                .failureCategory(FailureCategorizer.categorize(result.getThrowable()))
+                .failureMessage(result.getThrowable() != null ? result.getThrowable().getMessage() : null)
+                .retryCount(result.getMethod().getCurrentInvocationCount() - 1)
+                .flakyScore(FlakyTestTracker.getInstance().getFlakyScore(testName))
+                .traceId(ctx.getTraceId())
+                .buildId(ctx.getBuildId())
+                .gitCommit(ctx.getCommitId())
+                .containerId(ctx.getContainerId())
+                .executionId(ctx.getExecutionId())
+                .sessionId(ctx.getSessionId())
+                .threadId(ctx.getThreadId())
+                .resourceUsage(ResourceUsageAccumulator.drain())
+                .build();
+
+            TestEventCollector.getInstance().publish(event);
+        } catch (Exception e) {
+            logger.warn("Failed to publish test event for {}: {}", method.getName(), e.getMessage());
+        } finally {
+            CorrelationContext.clear();
+            testStartTimeMs.remove();
+        }
+
         test.remove();
-        logger.fine("Method completed: " + method.getName());
+        logger.debug("Method completed: " + method.getName());
     }
 
     /**
@@ -328,12 +394,20 @@ public abstract class Reporter {
     public synchronized void endReport() {
         logger.info("=== @AfterSuite: Finalizing ===");
 
+        TestEventCollector.getInstance().flush();
+        logger.info("Flaky test summary: {}", FlakyTestTracker.getInstance().getSummary());
+
         if (extent != null) {
             synchronized (extent) {
+                FlakyTestTracker.getInstance().getSummary().forEach((name, score) ->
+                    extent.setSystemInfo("Flaky: " + name,
+                            String.format("%.0f%% failure rate", score * 100)));
                 extent.flush();
             }
             logger.info("✓ Report flushed: " + folderName + "/" + FILE_NAME);
         }
+
+        FlakyTestTracker.getInstance().reset();
 
         DriverPoolManager dm = getDriverManager();
         if (dm != null) {
@@ -356,7 +430,7 @@ public abstract class Reporter {
      */
     private synchronized void setupReporting() {
         if (extent != null) {
-            logger.fine("ExtentReports already initialized, skipping.");
+            logger.debug("ExtentReports already initialized, skipping.");
             return;
         }
 
@@ -406,7 +480,7 @@ public abstract class Reporter {
         ConcurrentMap<String, String> params = new ConcurrentHashMap<>();
 
         if (context == null) {
-            logger.warning("ITestContext is null, using defaults.");
+            logger.warn("ITestContext is null, using defaults.");
             return params;
         }
 
@@ -465,6 +539,8 @@ public abstract class Reporter {
         parentTest.remove();
         test.remove();
         testName.remove();
+        testStartTimeMs.remove();
+        ResourceUsageAccumulator.clear();
     }
 }
 

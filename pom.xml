@@ -23,6 +23,7 @@
 		<commons.io.version>2.15.1</commons.io.version>
 		<cucumber.jvm.version>7.21.1</cucumber.jvm.version>
 		<cucumber.jvm.testng.version>7.21.1</cucumber.jvm.testng.version>
+		<cucumber.picocontainer.version>7.21.1</cucumber.picocontainer.version>
 		<jackson.databind.version>2.18.0</jackson.databind.version>
 		<owner.version>1.0.12</owner.version>
 		<faker.version>1.0.2</faker.version>
@@ -30,6 +31,14 @@
 		<snakeyaml.version>2.6</snakeyaml.version>
 		<protobuf.version>4.34.1</protobuf.version>
 		<jsoup.version>1.22.1</jsoup.version>
+		<slf4j.version>2.0.5</slf4j.version>
+		<logback.version>1.4.7</logback.version>
+		<logstash.encoder.version>7.4</logstash.encoder.version>
+		<sonar.projectKey>autoFrameX</sonar.projectKey>
+		<sonar.projectName>autoFrameX</sonar.projectName>
+		<sonar.java.source>16</sonar.java.source>
+		<sonar.sources>src/main/java</sonar.sources>
+		<sonar.tests>src/test/java</sonar.tests>
 
 	</properties>
 
@@ -100,6 +109,14 @@
 			<artifactId>cucumber-testng</artifactId>
 			<version>${cucumber.jvm.testng.version}</version>
 		</dependency>
+		<!-- Cucumber PicoContainer — enables constructor injection in step definitions.
+		     Shared state between step classes flows through plain Java objects
+		     (ScenarioContext, etc.) instead of static fields.           -->
+		<dependency>
+			<groupId>io.cucumber</groupId>
+			<artifactId>cucumber-picocontainer</artifactId>
+			<version>${cucumber.picocontainer.version}</version>
+		</dependency>
 
 		<!-- Commons IO -->
 		<dependency>
@@ -156,12 +173,47 @@
 			<version>${mysql.version}</version>
 		</dependency>
 
+		<!-- SLF4J API -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+
+		<!-- Logback — SLF4J implementation -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${logback.version}</version>
+		</dependency>
+
+		<!-- JUL-to-SLF4J bridge — routes java.util.logging through Logback -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+
+		<!-- Logstash encoder — JSON log format for ELK Stack ingestion -->
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>${logstash.encoder.version}</version>
+		</dependency>
+
 		<!-- WireMock — test-scoped; WireMockManager lives in src/test/java -->
 		<dependency>
 			<groupId>org.wiremock</groupId>
 			<artifactId>wiremock-standalone</artifactId>
 			<version>3.9.1</version>
 			<scope>test</scope>
+		</dependency>
+
+		<!-- Monte Screen Recorder — pure-Java AVI screen capture for test video recording -->
+		<dependency>
+			<groupId>com.github.stephenc.monte</groupId>
+			<artifactId>monte-screen-recorder</artifactId>
+			<version>0.7.7.0</version>
 		</dependency>
 
 	</dependencies>
@@ -210,6 +262,31 @@
 						<testng.suite.file>${testng.suite.file}</testng.suite.file>
 					</systemPropertyVariables>
 				</configuration>
+			</plugin>
+
+			<!-- JaCoCo — generates coverage data consumed by SonarQube -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.12</version>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals><goal>prepare-agent</goal></goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals><goal>report</goal></goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- SonarQube static analysis — run with: mvn sonar:sonar -Dsonar.host.url=... -Dsonar.login=... -->
+			<plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>3.11.0.3922</version>
 			</plugin>
 		</plugins>
 	</build>

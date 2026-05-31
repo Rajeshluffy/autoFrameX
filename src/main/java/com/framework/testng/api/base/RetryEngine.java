@@ -1,5 +1,6 @@
 package com.framework.testng.api.base;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -11,25 +12,28 @@ import com.framework.config.data.ConfigManager;
 /**
  * Decides whether a failing test should be retried.
  *
- * <p>Retry logic:
+ * <h3>Retry limit resolution (highest → lowest priority)</h3>
+ * <ol>
+ *   <li>{@link Retry#limit()} on the test method</li>
+ *   <li>{@link Retry#limit()} on the test class</li>
+ *   <li>{@code autoFrameX.test.retry.max.limit} in {@code frameworkConfig.properties}</li>
+ * </ol>
+ *
+ * <h3>Safety guards</h3>
  * <ul>
- *   <li>Retries up to {@code ConfigManager.getConfig().getRetryLimit()} times.</li>
- *   <li>If the same source line fails twice in a row, retrying is stopped
- *       immediately — this prevents infinite retry loops when the failure is
- *       deterministic (e.g. a missing element, not a transient network issue).</li>
- *   <li>Both the retry count and the previous failing line are keyed by
+ *   <li>If the same source line fails twice in a row, retrying stops immediately
+ *       (deterministic failure — no point retrying).</li>
+ *   <li>Retry count and previous failing line are keyed by
  *       {@code qualifiedMethodName + paramHash} so parallel and data-driven
  *       tests are tracked independently.</li>
  * </ul>
  *
- * <p>Wired to every {@code @Test} method by {@link TestAnnotationTransformer},
- * which is registered as a TestNG listener via the service-loader file
- * {@code META-INF/services/org.testng.ITestNGListener}.
+ * <p>Wired to every {@code @Test} by {@link TestAnnotationTransformer}.
  */
 public class RetryEngine implements IRetryAnalyzer {
 
     // Thread-safe maps — one entry per unique test invocation key
-    private final Map<String, Integer> countMap       = new ConcurrentHashMap<>();
+    private final Map<String, Integer> countMap        = new ConcurrentHashMap<>();
     private final Map<String, Integer> previousLineMap = new ConcurrentHashMap<>();
 
     @Override
@@ -39,9 +43,9 @@ public class RetryEngine implements IRetryAnalyzer {
             return false;
         }
 
-        int maxTry  = ConfigManager.getInstance().getConfig().getRetryLimit();
-        String key  = buildKey(result);
-        int count   = countMap.getOrDefault(key, 0);
+        int maxTry   = resolveLimit(result);
+        String key   = buildKey(result);
+        int count    = countMap.getOrDefault(key, 0);
         int prevLine = previousLineMap.getOrDefault(key, -1);
         int currLine = extractFailingLine(result);
 
@@ -60,6 +64,25 @@ public class RetryEngine implements IRetryAnalyzer {
 
         result.setStatus(ITestResult.FAILURE);
         return false;
+    }
+
+    /**
+     * Resolves the effective retry limit for a test result.
+     * Checks method annotation, then class annotation, then global config.
+     */
+    private int resolveLimit(ITestResult result) {
+        Method method = result.getMethod().getConstructorOrMethod().getMethod();
+        if (method != null) {
+            Retry methodAnnotation = method.getAnnotation(Retry.class);
+            if (methodAnnotation != null) {
+                return Math.max(0, methodAnnotation.limit());
+            }
+            Retry classAnnotation = method.getDeclaringClass().getAnnotation(Retry.class);
+            if (classAnnotation != null) {
+                return Math.max(0, classAnnotation.limit());
+            }
+        }
+        return ConfigManager.getInstance().getConfig().getRetryLimit();
     }
 
     // -------------------------------------------------------------------------

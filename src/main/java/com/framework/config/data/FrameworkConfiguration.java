@@ -143,4 +143,27 @@ public interface FrameworkConfiguration extends Config {
     @Key("autoFrameX.pool.close.after.each")
     @DefaultValue("true")
     boolean closeAfterEach();
+
+    // ------------------------------------------------------------------
+    // Selenium Grid / Remote Execution
+    // ------------------------------------------------------------------
+
+    /**
+     * When {@code true} driver creation is routed through the Selenium Grid hub.
+     * Use the {@code GRID_CHROME}, {@code GRID_FIREFOX}, or {@code GRID_EDGE}
+     * {@code BrowserType} values to target the grid explicitly, or enable this
+     * flag to auto-redirect all browser types to the grid hub.
+     */
+    @Key("autoFrameX.grid.enabled")
+    @DefaultValue("false")
+    boolean gridEnabled();
+
+    /**
+     * Selenium Grid hub URL.  Selenium 4 standalone/hub accepts requests at the
+     * root path; legacy Grid 3 requires the {@code /wd/hub} suffix.
+     * Example: {@code http://selenium-hub:4444/wd/hub}
+     */
+    @Key("autoFrameX.grid.hub.url")
+    @DefaultValue("http://localhost:4444/wd/hub")
+    String gridHubUrl();
 }

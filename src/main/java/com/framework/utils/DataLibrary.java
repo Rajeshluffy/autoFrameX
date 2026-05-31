@@ -1,31 +1,40 @@
 package com.framework.utils;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
- * Reads test data from Excel files under the {@code ./data/} folder.
+ * Reads test data from Excel (.xlsx) and delimited text (CSV/TSV) files
+ * under the {@code ./data/} folder.
  *
- * <p>Parsed workbooks are cached in a {@link ConcurrentHashMap} so that
- * multiple test classes sharing the same Excel file (e.g. "Login.xlsx" used
- * by both TC001 and TC002) only pay the I/O cost once per JVM run.
+ * <p>Parsed data is cached in a {@link ConcurrentHashMap} so multiple test
+ * classes sharing the same file only pay the I/O cost once per JVM run.
  *
  * <p>Cache eviction is not needed for test runs — the JVM exits after the
  * suite finishes, clearing all state automatically.
  */
 public class DataLibrary {
 
-    private static final Logger logger = Logger.getLogger(DataLibrary.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(DataLibrary.class);
 
-    /** Cache: file base-name → parsed data grid. */
+    /** Cache: cache-key → parsed data grid. */
     private static final ConcurrentMap<String, Object[][]> cache = new ConcurrentHashMap<>();
 
     private DataLibrary() { /* utility class — no instances */ }
+
+    // =========================================================================
+    // EXCEL
+    // =========================================================================
 
     /**
      * Returns test data from {@code ./data/<excelFileName>.xlsx}.
@@ -40,18 +49,84 @@ public class DataLibrary {
      *         or an empty array if the file cannot be read
      */
     public static Object[][] readExcelData(String excelFileName) {
-        return cache.computeIfAbsent(excelFileName, DataLibrary::loadFromDisk);
+        return cache.computeIfAbsent("xlsx:" + excelFileName, k -> loadFromDisk(excelFileName));
+    }
+
+    // =========================================================================
+    // CSV / TSV
+    // =========================================================================
+
+    /**
+     * Returns test data from {@code ./data/<fileName>.csv} using comma as the
+     * delimiter. The first row (headers) is skipped.
+     *
+     * @param fileName base name without the {@code .csv} extension
+     * @return two-dimensional array, or an empty array if the file cannot be read
+     */
+    public static Object[][] readCsvData(String fileName) {
+        return cache.computeIfAbsent("csv:" + fileName, k -> loadDelimited(fileName + ".csv", ","));
+    }
+
+    /**
+     * Returns test data from {@code ./data/<fileName>.tsv} using tab as the
+     * delimiter. The first row (headers) is skipped.
+     *
+     * @param fileName base name without the {@code .tsv} extension
+     * @return two-dimensional array, or an empty array if the file cannot be read
+     */
+    public static Object[][] readTsvData(String fileName) {
+        return cache.computeIfAbsent("tsv:" + fileName, k -> loadDelimited(fileName + ".tsv", "\t"));
+    }
+
+    /**
+     * Returns test data from a delimited file with a custom separator.
+     * The first row (headers) is skipped.
+     *
+     * @param fileName  file name relative to {@code ./data/} (including extension)
+     * @param delimiter column separator (e.g. {@code ","}, {@code ";"}, {@code "\t"})
+     * @return two-dimensional array, or an empty array if the file cannot be read
+     */
+    public static Object[][] readDelimitedData(String fileName, String delimiter) {
+        return cache.computeIfAbsent("delimited:" + delimiter + ":" + fileName,
+                k -> loadDelimited(fileName, delimiter));
     }
 
     /** Clears the in-memory cache. Useful between suite runs in long-lived JVMs. */
     public static void clearCache() {
         cache.clear();
-        logger.fine("DataLibrary cache cleared");
+        logger.debug("DataLibrary cache cleared");
     }
 
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
+
+    private static Object[][] loadDelimited(String fileName, String delimiter) {
+        String path = "./data/" + fileName;
+        logger.info("Loading delimited data from: " + path + " (delimiter: [" + delimiter + "])");
+
+        List<Object[]> rows = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+            String line;
+            boolean firstLine = true;
+            while ((line = reader.readLine()) != null) {
+                if (firstLine) { firstLine = false; continue; } // skip header
+                if (line.trim().isEmpty()) continue;
+                rows.add(line.split(delimiter, -1));
+            }
+        } catch (IOException e) {
+            logger.error("Failed to read delimited file '" + path + "': " + e.getMessage());
+            return new Object[0][0];
+        }
+
+        if (rows.isEmpty()) {
+            logger.warn("Delimited file has no data rows: " + path);
+            return new Object[0][0];
+        }
+
+        logger.info("Loaded " + rows.size() + " data row(s) from: " + path);
+        return rows.toArray(new Object[0][]);
+    }
 
     private static Object[][] loadFromDisk(String excelFileName) {
         String path = "./data/" + excelFileName + ".xlsx";
@@ -63,7 +138,7 @@ public class DataLibrary {
             int colCount = sheet.getRow(0).getLastCellNum();
 
             if (rowCount < 1) {
-                logger.warning("Excel file has no data rows: " + path);
+                logger.warn("Excel file has no data rows: " + path);
                 return new Object[0][0];
             }
 
@@ -78,7 +153,7 @@ public class DataLibrary {
             return data;
 
         } catch (IOException e) {
-            logger.severe("Failed to read Excel file '" + path + "': " + e.getMessage());
+            logger.error("Failed to read Excel file '" + path + "': " + e.getMessage());
             return new Object[0][0];
         }
     }

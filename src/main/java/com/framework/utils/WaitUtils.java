@@ -227,11 +227,12 @@ public final class WaitUtils {
 	}
 
 	/**
-	 * Retries a runnable action until it succeeds or max attempts are reached.
+	 * Retries a runnable action until it succeeds or max attempts are reached,
+	 * sleeping a fixed interval between attempts.
 	 *
-	 * @param context          optional context object (can be null)
-	 * @param action           action to execute
-	 * @param maxAttempts      maximum number of attempts
+	 * @param context           optional context object (can be null)
+	 * @param action            action to execute
+	 * @param maxAttempts       maximum number of attempts
 	 * @param pollingIntervalMs wait time between attempts in milliseconds
 	 * @return true if successful, false if all attempts fail
 	 */
@@ -247,14 +248,70 @@ public final class WaitUtils {
 				if (attempt == maxAttempts) {
 					return false;
 				}
-				try {
-					Thread.sleep(pollingIntervalMs);
-				} catch (InterruptedException ie) {
-					Thread.currentThread().interrupt();
-					return false;
-				}
+				sleep(pollingIntervalMs);
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Convenience overload — uses config defaults for max attempts and polling.
+	 *
+	 * @param context optional context object (can be null)
+	 * @param action  action to execute
+	 * @return true if successful, false if all attempts fail
+	 */
+	public static boolean retryAction(Object context, Runnable action) {
+		return retryAction(context, action, getMaxRetryAttempts(), getPollingIntervalMs());
+	}
+
+	/**
+	 * Retries an action using <b>exponential backoff</b>.
+	 *
+	 * <p>Backoff schedule (milliseconds): 100 → 200 → 500 → 1000 → 2000 → 5000 (cap).
+	 * This strategy is preferred over fixed polling for transient failures (network
+	 * blips, stale DOM updates) because it gives the system more recovery time on
+	 * successive failures without hammering it with rapid retries.
+	 *
+	 * @param action      action to execute
+	 * @param maxAttempts maximum number of attempts (must be &ge; 1)
+	 * @return {@code true} if the action succeeded on any attempt
+	 */
+	public static boolean retryWithExponentialBackoff(Runnable action, int maxAttempts) {
+		if (action == null || maxAttempts <= 0) {
+			return false;
+		}
+
+		// Backoff steps in ms: 100, 200, 500, 1000, 2000 — then capped at 5000
+		long[] backoffMs = {100, 200, 500, 1000, 2000};
+		long capMs = 5_000;
+
+		for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+			try {
+				action.run();
+				return true;
+			} catch (Exception e) {
+				if (attempt == maxAttempts) {
+					return false;
+				}
+				long delay = attempt <= backoffMs.length
+						? backoffMs[attempt - 1]
+						: capMs;
+				sleep((int) delay);
+			}
+		}
+		return false;
+	}
+
+	// ========================================================================
+	// INTERNAL HELPERS
+	// ========================================================================
+
+	private static void sleep(int millis) {
+		try {
+			Thread.sleep(millis);
+		} catch (InterruptedException ie) {
+			Thread.currentThread().interrupt();
+		}
 	}
 }

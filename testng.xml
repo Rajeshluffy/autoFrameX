@@ -46,5 +46,32 @@
         </classes>
     </test>
 
+    <!-- ── Cucumber PicoContainer DI examples ────────────────────────────── -->
+    <test name="Cucumber PicoContainer DI">
+        <classes>
+            <class name="runners.CucumberRunner"/>
+        </classes>
+    </test>
+
+    <!-- ── Performance tests (no browser required) ───────────────────────── -->
+    <test name="Performance Tests">
+        <groups>
+            <run><include name="performance"/></run>
+        </groups>
+        <packages>
+            <package name="com.framework.performance"/>
+        </packages>
+    </test>
+
+    <!-- ── Security tests (no browser required) ──────────────────────────── -->
+    <test name="Security Tests">
+        <groups>
+            <run><include name="security"/></run>
+        </groups>
+        <packages>
+            <package name="com.framework.security"/>
+        </packages>
+    </test>
+
 
 </suite>

@@ -29,6 +29,8 @@ public class ProjectConfigBuilder {
 	private int poolMinSize = 2;
 	private int poolBorrowTimeoutSeconds = 30;
 	private int poolMaxReuseCount = 75;
+	private boolean gridEnabled = false;
+	private String gridHubUrl = "http://localhost:4444/wd/hub";
 
 	public ProjectConfigBuilder setBrowserName(String browserName) {
 		this.browserName = browserName;
@@ -149,6 +151,16 @@ public class ProjectConfigBuilder {
 		return this;
 	}
 
+	public ProjectConfigBuilder setGridEnabled(boolean gridEnabled) {
+		this.gridEnabled = gridEnabled;
+		return this;
+	}
+
+	public ProjectConfigBuilder setGridHubUrl(String gridHubUrl) {
+		this.gridHubUrl = gridHubUrl;
+		return this;
+	}
+
 	public ProjectConfig build() {
 		return new ProjectConfig(
 			browserName, remote, implicit, explicit, shortWait, pollingIntervalMs,
@@ -156,7 +168,7 @@ public class ProjectConfigBuilder {
 			poolMaxIdleMinutes, serverUrl, devUrl, qaUrl, appUrl, userName,
 			password, dbUrl, dbUserName, dbPassword, dbQuery, scriptTimeout,
 			pageLoadTimeout, closeAfterEach, poolMinSize, poolBorrowTimeoutSeconds,
-			poolMaxReuseCount
+			poolMaxReuseCount, gridEnabled, gridHubUrl
 		);
 	}
 }

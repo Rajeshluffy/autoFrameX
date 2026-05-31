@@ -18,8 +18,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Production-grade, thread-safe WebDriver object pool.
@@ -57,7 +57,7 @@ import java.util.logging.Logger;
  */
 public class WebDriverPoolFactory implements AutoCloseable {
 
-    private static final Logger logger = Logger.getLogger(WebDriverPoolFactory.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(WebDriverPoolFactory.class);
 
     private static final int HEALTH_CHECK_TIMEOUT_SECONDS = 5;
     private static final int CLEANUP_INTERVAL_MINUTES     = 5;
@@ -139,9 +139,9 @@ public class WebDriverPoolFactory implements AutoCloseable {
                     RemoteWebDriver driver = createNewDriver(bt);
                     PooledDriver pd = new PooledDriver(driver, bt); // state = IDLE
                     availableDrivers.get(bt).offer(pd);
-                    logger.fine("Pre-warmed driver " + (i + 1) + "/" + min + " for " + bt);
+                    logger.debug("Pre-warmed driver " + (i + 1) + "/" + min + " for " + bt);
                 } catch (Exception e) {
-                    logger.warning("Pre-warm failed for " + bt + " (" + (i + 1) + "): " + e.getMessage());
+                    logger.warn("Pre-warm failed for " + bt + " (" + (i + 1) + "): " + e.getMessage());
                 }
             }
         }
@@ -190,7 +190,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
                 int currentTotal = poolSizeCounters.get(browserType).get();
                 if (currentTotal < config.getMaxPoolSize()) {
                     driver = createNewDriver(browserType);
-                    logger.fine("Created new driver: " + browserType
+                    logger.debug("Created new driver: " + browserType
                             + " [ID: " + System.identityHashCode(driver) + "]");
                 } else {
                     // ── Step 3: pool full — blocking poll with timeout ────────
@@ -223,7 +223,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
             if (driver != null) safelyDestroyAsync(driver, browserType);
             throw e;
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Failed to acquire driver: " + browserType, e);
+            logger.error("Failed to acquire driver: " + browserType, e);
             if (driver != null) safelyDestroyAsync(driver, browserType);
             throw new DriverAcquisitionException("Cannot acquire driver: " + browserType, e);
         }
@@ -246,7 +246,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
             }
             // Health-check the driver we just borrowed under timeout
             if (!performHealthCheck(pd.getDriver())) {
-                logger.warning("Timeout-borrowed driver failed health check, destroying");
+                logger.warn("Timeout-borrowed driver failed health check, destroying");
                 safelyDestroyAsync(pd.getDriver(), browserType);
                 decrementPoolSize(browserType);
                 return borrowWithTimeout(browserType); // try again (recursive — guarded by timeout)
@@ -285,7 +285,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
         PooledDriver pd = activeDrivers.remove(driver);
 
         if (pd == null) {
-            logger.warning("Releasing unknown driver [ID: " + System.identityHashCode(driver) + "], destroying");
+            logger.warn("Releasing unknown driver [ID: " + System.identityHashCode(driver) + "], destroying");
             safelyDestroyAsync(driver, null);
             return;
         }
@@ -295,7 +295,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
             try {
                 pd.transitionTo(DriverState.IN_USE, DriverState.POISONED);
             } catch (IllegalStateException e) {
-                logger.fine("State transition warning during poison: " + e.getMessage());
+                logger.debug("State transition warning during poison: " + e.getMessage());
             }
             safelyDestroyAsync(driver, pd.getBrowserType());
             decrementPoolSize(pd.getBrowserType());
@@ -315,7 +315,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
             int totalSize = poolSizeCounters.get(pd.getBrowserType()).get();
 
             if (totalSize > config.getMaxPoolSize()) {
-                logger.fine("Pool over capacity (" + totalSize + "/" + config.getMaxPoolSize()
+                logger.debug("Pool over capacity (" + totalSize + "/" + config.getMaxPoolSize()
                         + ") — retiring driver [ID: " + System.identityHashCode(driver) + "]");
                 safelyDestroyAsync(driver, pd.getBrowserType());
                 decrementPoolSize(pd.getBrowserType());
@@ -325,11 +325,11 @@ public class WebDriverPoolFactory implements AutoCloseable {
             pd.markReturned();
             pd.transitionTo(DriverState.IN_USE, DriverState.IDLE);
             queue.offer(pd);
-            logger.fine(String.format("Driver returned to pool: %s [IDLE=%d, ID=%d]",
+            logger.debug(String.format("Driver returned to pool: %s [IDLE=%d, ID=%d]",
                     pd.getBrowserType(), queue.size(), System.identityHashCode(driver)));
 
         } catch (Exception e) {
-            logger.log(Level.WARNING, "Error releasing driver — destroying", e);
+            logger.warn("Error releasing driver — destroying", e);
             safelyDestroyAsync(driver, pd.getBrowserType());
             decrementPoolSize(pd.getBrowserType());
         }
@@ -389,7 +389,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
             driver.get("about:blank"); // visually "closes" the page; session alive
 
         } catch (Exception e) {
-            logger.warning("closeWindowsAndRelease failed — falling back to poison release: " + e.getMessage());
+            logger.warn("closeWindowsAndRelease failed — falling back to poison release: " + e.getMessage());
             release(driver, true);
             return;
         }
@@ -412,7 +412,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
 
         // ── Health-check on borrow ────────────────────────────────────────────
         if (!performHealthCheck(pd.getDriver())) {
-            logger.warning("Driver failed health-check on borrow — retiring [ID: "
+            logger.warn("Driver failed health-check on borrow — retiring [ID: "
                     + System.identityHashCode(pd.getDriver()) + "]");
             safelyDestroyAsync(pd.getDriver(), browserType);
             decrementPoolSize(browserType);
@@ -466,7 +466,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
                 return;
             } catch (Exception e) {
                 last = e;
-                logger.warning("Navigation attempt " + attempt + " failed: " + url);
+                logger.warn("Navigation attempt " + attempt + " failed: " + url);
                 if (attempt < maxRetries) sleep(1000);
             }
         }
@@ -480,17 +480,17 @@ public class WebDriverPoolFactory implements AutoCloseable {
      */
     private void resetDriverState(RemoteWebDriver driver) {
         try { driver.manage().deleteAllCookies(); }
-        catch (Exception e) { logger.fine("Cookie clear failed: " + e.getMessage()); }
+        catch (Exception e) { logger.debug("Cookie clear failed: " + e.getMessage()); }
 
         if (driver instanceof JavascriptExecutor) {
             JavascriptExecutor js = (JavascriptExecutor) driver;
             try { js.executeScript("window.localStorage.clear();"); }
-            catch (Exception e) { logger.fine("localStorage clear failed: " + e.getMessage()); }
+            catch (Exception e) { logger.debug("localStorage clear failed: " + e.getMessage()); }
 
             try { js.executeScript("window.sessionStorage.clear();"); }
-            catch (Exception e) { logger.fine("sessionStorage clear failed: " + e.getMessage()); }
+            catch (Exception e) { logger.debug("sessionStorage clear failed: " + e.getMessage()); }
         }
-        logger.finest("State reset complete");
+        logger.trace("State reset complete");
     }
 
     /** Health-check on borrow — ~50 ms cost prevents zombie sessions reaching test code. */
@@ -501,7 +501,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
             exec.submit(driver::getCurrentUrl).get(HEALTH_CHECK_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             return true;
         } catch (Exception e) {
-            logger.fine("Health check failed: " + e.getMessage());
+            logger.debug("Health check failed: " + e.getMessage());
             return false;
         } finally {
             exec.shutdownNow();
@@ -524,9 +524,9 @@ public class WebDriverPoolFactory implements AutoCloseable {
                 }
             }
             driver.switchTo().window(primary);
-            logger.fine("Closed " + (handles.size() - 1) + " extra window(s)");
+            logger.debug("Closed " + (handles.size() - 1) + " extra window(s)");
         } catch (Exception e) {
-            logger.warning("Extra-window cleanup failed: " + e.getMessage());
+            logger.warn("Extra-window cleanup failed: " + e.getMessage());
         }
     }
 
@@ -539,10 +539,10 @@ public class WebDriverPoolFactory implements AutoCloseable {
             try {
                 driver.quit();
                 statistics.incrementDestroyed();
-                logger.fine("Driver quit (async): " + (browserType != null ? browserType : "unknown")
+                logger.debug("Driver quit (async): " + (browserType != null ? browserType : "unknown")
                         + " [ID: " + System.identityHashCode(driver) + "]");
             } catch (Exception e) {
-                logger.log(Level.FINE, "Async quit error", e);
+                logger.debug("Async quit error", e);
             }
         });
     }
@@ -647,7 +647,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
         exec.shutdown();
         try {
             if (!exec.awaitTermination(30, TimeUnit.SECONDS)) {
-                logger.warning(name + " did not terminate in 30 s — forcing shutdown");
+                logger.warn(name + " did not terminate in 30 s — forcing shutdown");
                 exec.shutdownNow();
             }
         } catch (InterruptedException e) {

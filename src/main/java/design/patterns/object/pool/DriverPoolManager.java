@@ -14,7 +14,8 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Central manager for WebDriver pool lifecycle with improved thread safety.
@@ -46,7 +47,7 @@ import java.util.logging.Logger;
  */
 public class DriverPoolManager {
 
-	private static final Logger logger = Logger.getLogger(DriverPoolManager.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(DriverPoolManager.class);
 
 	// Singleton instance with volatile for thread safety
 	private static volatile DriverPoolManager instance;
@@ -76,7 +77,7 @@ public class DriverPoolManager {
 	 * Private constructor for singleton.
 	 */
 	private DriverPoolManager() {
-		logger.fine("DriverPoolManager instance created");
+		logger.debug("DriverPoolManager instance created");
 	}
 
 	/**
@@ -118,7 +119,7 @@ public class DriverPoolManager {
 	 */
 	public synchronized void initializePool(ConcurrentMap<String, String> testngParams) {
 		if (poolInitialized) {
-			logger.warning("Pool already initialized, skipping re-initialization");
+			logger.warn("Pool already initialized, skipping re-initialization");
 			return;
 		}
 
@@ -144,13 +145,13 @@ public class DriverPoolManager {
 					try {
 						driverPool.close();
 					} catch (Exception ex) {
-						logger.warning("Error in shutdown hook: " + ex.getMessage());
+					logger.warn("Error in shutdown hook: " + ex.getMessage());
 					}
 				}
 			}, "DriverPool-ShutdownHook"));
 
 		} catch (Exception e) {
-			logger.severe("Failed to initialize pool: " + e.getMessage());
+			logger.error("Failed to initialize pool: " + e.getMessage());
 			throw new RuntimeException("Pool initialization failed", e);
 		}
 	}
@@ -179,7 +180,7 @@ public class DriverPoolManager {
 			BrowserType browserType = determineBrowserType(method, methodParams);
 			String url = determineUrl(method, methodParams);
 
-			logger.fine(String.format("Acquiring driver: browser=%s, url=%s",
+			logger.debug(String.format("Acquiring driver: browser=%s, url=%s",
 					browserType, url));
 
 			// Acquire driver from pool (thread-safe operation)
@@ -202,7 +203,7 @@ public class DriverPoolManager {
 					System.identityHashCode(driver)));
 
 		} catch (Exception e) {
-			logger.severe("Failed to setup driver for " + testName + ": " + e.getMessage());
+			logger.error("Failed to setup driver for " + testName + ": " + e.getMessage());
 			cleanupContext(testName);
 			throw new RuntimeException("Driver setup failed for: " + testName, e);
 		}
@@ -224,7 +225,7 @@ public class DriverPoolManager {
 		long threadId = Thread.currentThread().getId();
 
 		if (context == null || context.getDriver() == null) {
-			logger.warning(String.format("No driver to teardown for: %s [Thread: %d]",
+			logger.warn(String.format("No driver to teardown for: %s [Thread: %d]",
 					testName, threadId));
 			return;
 		}
@@ -263,7 +264,7 @@ public class DriverPoolManager {
 			}
 
 		} catch (Exception e) {
-			logger.warning("Error during teardown for " + testName + ": " + e.getMessage());
+			logger.warn("Error during teardown for " + testName + ": " + e.getMessage());
 		} finally {
 			// Always cleanup context to prevent thread-local leaks
 			cleanupContext(testName);
@@ -278,7 +279,7 @@ public class DriverPoolManager {
 	 */
 	public void destroy(RemoteWebDriver driver) {
 		if (driver == null) {
-			logger.warning("Cannot destroy null driver");
+			logger.warn("Cannot destroy null driver");
 			return;
 		}
 
@@ -294,7 +295,7 @@ public class DriverPoolManager {
 				contextThreadLocal.remove();
 			}
 		} catch (Exception e) {
-			logger.warning("Error destroying driver: " + e.getMessage());
+			logger.warn("Error destroying driver: " + e.getMessage());
 		}
 	}
 
@@ -307,7 +308,7 @@ public class DriverPoolManager {
 	 */
 	public synchronized void shutdownPool() {
 		if (!poolInitialized || driverPool == null) {
-			logger.warning("Pool not initialized or already shutdown");
+			logger.warn("Pool not initialized or already shutdown");
 			return;
 		}
 
@@ -318,7 +319,7 @@ public class DriverPoolManager {
 			driverPool.close();
 			poolInitialized = false;
 		} catch (Exception e) {
-			logger.severe("Error during pool shutdown: " + e.getMessage());
+			logger.error("Error during pool shutdown: " + e.getMessage());
 		} finally {
 			driverPool = null;
 			poolConfig = null;
@@ -555,7 +556,7 @@ public class DriverPoolManager {
 		try {
 			return BrowserType.valueOf(browserName.toUpperCase().trim());
 		} catch (IllegalArgumentException e) {
-			logger.warning("Invalid browser type: '" + browserName + "', defaulting to CHROME");
+		logger.warn("Invalid browser type: '" + browserName + "', defaulting to CHROME");
 			return BrowserType.CHROME; // built-in fallback; property file default preferred
 		}
 	}
@@ -567,7 +568,7 @@ public class DriverPoolManager {
 			try {
 				return Integer.parseInt(params.get(paramKey));
 			} catch (NumberFormatException e) {
-				logger.warning("Invalid " + paramKey + ": " + params.get(paramKey));
+				logger.warn("Invalid " + paramKey + ": " + params.get(paramKey));
 			}
 		}
 
@@ -577,7 +578,7 @@ public class DriverPoolManager {
 			try {
 				return Integer.parseInt(envValue);
 			} catch (NumberFormatException e) {
-				logger.warning("Invalid " + envKey + ": " + envValue);
+				logger.warn("Invalid " + envKey + ": " + envValue);
 			}
 		}
 
@@ -587,7 +588,7 @@ public class DriverPoolManager {
 			try {
 				return Integer.parseInt(sysValue);
 			} catch (NumberFormatException e) {
-				logger.warning("Invalid " + paramKey + ": " + sysValue);
+				logger.warn("Invalid " + paramKey + ": " + sysValue);
 			}
 		}
 
@@ -651,7 +652,7 @@ public class DriverPoolManager {
 	private void cleanupContext(String testName) {
 		contextThreadLocal.remove();
 		testMetadata.remove(testName);
-		logger.fine("Cleaned up context for: " + testName);
+			logger.debug("Cleaned up context for: " + testName);
 	}
 
 	private String getTestName(Method method) {

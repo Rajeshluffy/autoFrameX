@@ -36,6 +36,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import com.framework.selenium.api.design.Browser;
 import com.framework.selenium.api.design.Element;
 import com.framework.selenium.api.design.Locators;
+import com.framework.selenium.exception.ElementNotFoundException;
 import com.framework.utils.Reporter;
 import com.framework.utils.WaitUtils;
 
@@ -787,31 +788,20 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 
 	@Override
 	public WebElement locateElement(Locators locatorType, String value) {
+		// Validate locator type first to avoid generic NoSuchElementException
+		By by = getBy(locatorType, value);
+		if (by == null) {
+			String errorMsg = "Invalid locator type: " + locatorType;
+			reportStep(errorMsg, "fail", false);
+			throw new ElementNotFoundException(errorMsg);
+		}
+
 		try {
-			switch (locatorType) {
-			case CLASS_NAME:
-				return getDriver().findElement(By.className(value));
-			case CSS:
-				return getDriver().findElement(By.cssSelector(value));
-			case ID:
-				return getDriver().findElement(By.id(value));
-			case LINK_TEXT:
-				return getDriver().findElement(By.linkText(value));
-			case NAME:
-				return getDriver().findElement(By.name(value));
-			case PARTIAL_LINKTEXT:
-				return getDriver().findElement(By.partialLinkText(value));
-			case TAGNAME:
-				return getDriver().findElement(By.tagName(value));
-			case XPATH:
-				return getDriver().findElement(By.xpath(value));
-			default:
-				reportStep("Invalid locator type: " + locatorType, "fail", false);
-				return null;
-			}
+			return getDriver().findElement(by);
 		} catch (NoSuchElementException e) {
-			reportStep("Element not found - " + locatorType + ": " + value, "fail", true);
-			return null;
+			String errorMsg = "Element not found - " + locatorType + ": " + value;
+			reportStep(errorMsg, "fail", true);
+			throw new ElementNotFoundException(errorMsg, e);
 		}
 	}
 
@@ -820,31 +810,54 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 		try {
 			return getDriver().findElement(By.id(value));
 		} catch (NoSuchElementException e) {
-			reportStep("Element not found with ID: " + value, "fail", true);
-			return null;
+			String errorMsg = "Element not found with ID: " + value;
+			reportStep(errorMsg, "fail", true);
+			throw new ElementNotFoundException(errorMsg, e);
 		}
 	}
 
 	@Override
 	public WebElement locateElement(Locators locatorType1, String value1, Locators locatorType2, String value2) {
+		By by1 = getBy(locatorType1, value1);
+		By by2 = getBy(locatorType2, value2);
+
+		// Validate both locator types
+		if (by1 == null || by2 == null) {
+			String errorMsg = "Invalid locator type(s): " +
+				(by1 == null ? locatorType1 : "") +
+				(by2 == null ? " " + locatorType2 : "");
+			reportStep(errorMsg.trim(), "fail", false);
+			throw new ElementNotFoundException(errorMsg.trim());
+		}
+
 		try {
-			WebElement element = null;
-			By by1 = getBy(locatorType1, value1);
-			if (by1 != null && !getDriver().findElements(by1).isEmpty()) {
-				element = getDriver().findElement(by1);
-			} else {
-				By by2 = getBy(locatorType2, value2);
-				if (by2 != null && !getDriver().findElements(by2).isEmpty()) {
-					element = getDriver().findElement(by2);
-				} else {
-					reportStep("Element not found with either locator - " + locatorType1 + ": " + value1 + " OR "
-							+ locatorType2 + ": " + value2, "fail", true);
-				}
+			// Try first locator
+			if (!getDriver().findElements(by1).isEmpty()) {
+				reportStep("Element found using primary locator - " + locatorType1 + ": " + value1,
+					"pass", false);
+				return getDriver().findElement(by1);
 			}
-			return element;
+
+			// Try second locator
+			if (!getDriver().findElements(by2).isEmpty()) {
+				reportStep("Element found using fallback locator - " + locatorType2 + ": " + value2,
+					"pass", false);
+				return getDriver().findElement(by2);
+			}
+
+			// Neither locator found
+			String errorMsg = "Element not found with either locator - " + locatorType1 + ": " + value1 +
+				" OR " + locatorType2 + ": " + value2;
+			reportStep(errorMsg, "fail", true);
+			throw new ElementNotFoundException(errorMsg);
+
 		} catch (Exception e) {
-			reportStep("Error locating element with multiple locators: " + e.getMessage(), "fail", true);
-			return null;
+			if (e instanceof ElementNotFoundException) {
+				throw (ElementNotFoundException) e;  // Re-throw our custom exception
+			}
+			String errorMsg = "Error locating element with multiple locators: " + e.getMessage();
+			reportStep(errorMsg, "fail", true);
+			throw new ElementNotFoundException(errorMsg, e);
 		}
 	}
 
@@ -873,28 +886,13 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 
 	@Override
 	public List<WebElement> locateElements(Locators type, String value) {
+		By by = getBy(type, value);
+		if (by == null) {
+			reportStep("Invalid locator type: " + type, "fail", false);
+			return new ArrayList<>();
+		}
 		try {
-			switch (type) {
-			case CLASS_NAME:
-				return getDriver().findElements(By.className(value));
-			case CSS:
-				return getDriver().findElements(By.cssSelector(value));
-			case ID:
-				return getDriver().findElements(By.id(value));
-			case LINK_TEXT:
-				return getDriver().findElements(By.linkText(value));
-			case NAME:
-				return getDriver().findElements(By.name(value));
-			case PARTIAL_LINKTEXT:
-				return getDriver().findElements(By.partialLinkText(value));
-			case TAGNAME:
-				return getDriver().findElements(By.tagName(value));
-			case XPATH:
-				return getDriver().findElements(By.xpath(value));
-			default:
-				reportStep("Invalid locator type: " + type, "fail", false);
-				return new ArrayList<>();
-			}
+			return getDriver().findElements(by);
 		} catch (NoSuchElementException e) {
 			reportStep("Elements not found - " + type + ": " + value, "warning", false);
 			return new ArrayList<>();
@@ -999,7 +997,7 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public boolean switchToWindowByUrl(String url) {
 		try {
@@ -1017,7 +1015,7 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 		}
 		return false;
 	}
-	
+
 
 	@Override
 	public void switchToFrame(int index) {
@@ -1142,7 +1140,7 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 			reportStep("Wait for API to load failed: " + e.getMessage(), "warning", false);
 		}
 	}
-	
+
 	@Override
 	public void executeTheScript(String js, WebElement ele) {
 		try {
@@ -1321,33 +1319,5 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 
 	}
 
-	@Override
-	public void startApp(WebDriverPoolFactory pool, BrowserType browserType, boolean headless, String url) {
-		try {
-			RemoteWebDriver driver = pool.acquire(browserType, null);
-			driver.manage().window().maximize();
-			driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(WaitUtils.getDefaultWaitTime()));
-			if (url != null && !url.isEmpty()) {
-				driver.get(url);
-			}
-			reportStep("The browser: " + browserType + " launched successfully", "pass", false);
-		} catch (Exception e) {
-			reportStep("The browser: " + browserType + " could not be launched", "fail", true);
-		}
-	}
 
-	@Override
-	public void startApp(WebDriverPoolFactory pool, String url, boolean headless) {
-		try {
-			RemoteWebDriver driver = pool.acquire(BrowserType.CHROME, null);
-			driver.manage().window().maximize();
-			driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(WaitUtils.getDefaultWaitTime()));
-			if (url != null && !url.isEmpty()) {
-				driver.get(url);
-			}
-			reportStep("The browser: CHROME launched successfully", "pass", false);
-		} catch (Exception e) {
-			reportStep("The browser: CHROME could not be launched", "fail", true);
-		}
-	}
 }

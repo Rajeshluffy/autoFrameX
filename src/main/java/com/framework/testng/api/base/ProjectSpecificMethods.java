@@ -5,7 +5,8 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -19,8 +20,11 @@ import org.testng.annotations.DataProvider;
 import com.framework.config.data.ConfigManager;
 import com.framework.selenium.api.base.SeleniumBase;
 import com.framework.utils.DataLibrary;
+import com.framework.utils.EncryptionUtils;
 import com.framework.utils.FakerDataFactory;
 import com.framework.utils.Reporter;
+import com.framework.utils.ValidationUtils;
+import com.framework.utils.VideoRecorder;
 
 import design.patterns.factory.browser.BrowserConfig;
 import design.patterns.object.pool.DriverPoolManager;
@@ -55,7 +59,10 @@ import design.patterns.object.pool.DriverPoolManager;
  */
 public class ProjectSpecificMethods extends SeleniumBase {
 
-	private static final Logger logger = Logger.getLogger(ProjectSpecificMethods.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(ProjectSpecificMethods.class);
+
+	// ThreadLocal so each parallel test thread has its own recorder instance
+	private static final ThreadLocal<VideoRecorder> videoRecorder = new ThreadLocal<>();
 
 	// =========================================================================
 	// DATA PROVIDER
@@ -64,14 +71,25 @@ public class ProjectSpecificMethods extends SeleniumBase {
 	/**
 	 * Reads test data from the Excel file named in {@link #excelFileName}.
 	 * Set {@code excelFileName} in your child class {@code @BeforeClass}.
+	 *
+	 * <p>Row selection is controlled by {@link TestMetadata#allRows()}:
+	 * <ul>
+	 *   <li>{@code allRows = false} (default) — only the first row runs.</li>
+	 *   <li>{@code allRows = true} — every row runs as a separate invocation.</li>
+	 * </ul>
 	 */
-	@DataProvider(name = "fetchData", indices = 0)
+	@DataProvider(name = "fetchData")
 	public Object[][] fetchData() throws IOException {
 		if (excelFileName == null || excelFileName.isEmpty()) {
-			logger.warning("excelFileName not set — returning empty data set.");
+			logger.warn("excelFileName not set — returning empty data set.");
 			return new Object[0][0];
 		}
-		return DataLibrary.readExcelData(excelFileName);
+		Object[][] data = DataLibrary.readExcelData(excelFileName);
+		TestMetadata meta = this.getClass().getAnnotation(TestMetadata.class);
+		if (meta != null && meta.allRows()) {
+			return data;
+		}
+		return data.length > 0 ? new Object[][]{data[0]} : data;
 	}
 
 	// =========================================================================
@@ -108,7 +126,16 @@ public class ProjectSpecificMethods extends SeleniumBase {
 			String currentUrl = getDriver().getCurrentUrl();
 			reportStep("Browser opened: " + currentUrl, "INFO", false);
 		} catch (Exception e) {
-			logger.warning("Could not read current URL after driver setup: " + e.getMessage());
+			logger.warn("Could not read current URL after driver setup: " + e.getMessage());
+		}
+
+		// 5. Start video recording — no-op on headless, never fails the test
+		try {
+			VideoRecorder vr = new VideoRecorder();
+			vr.start(method.getName());
+			videoRecorder.set(vr);
+		} catch (Exception e) {
+			logger.warn("Video recording could not start for {}: {}", method.getName(), e.getMessage());
 		}
 
 		logger.info("Driver ready for: " + method.getName());
@@ -130,10 +157,31 @@ public class ProjectSpecificMethods extends SeleniumBase {
 		logger.info("@AfterMethod: " + method.getName()
 				+ " [" + (result.isSuccess() ? "PASSED" : "FAILED") + "]");
 
+		// Stop video recording — delete on pass, keep on failure
+		VideoRecorder vr = videoRecorder.get();
+		if (vr != null) {
+			try {
+				java.io.File videoFile = vr.stop();
+				if (videoFile != null) {
+					if (result.isSuccess()) {
+						videoFile.delete();
+						logger.debug("Video deleted (test passed): {}", videoFile.getName());
+					} else {
+						logger.info("Video kept (test failed): {}", videoFile.getAbsolutePath());
+						reportStep("Video recorded: " + videoFile.getName(), "info", false);
+					}
+				}
+			} catch (Exception e) {
+				logger.warn("Video recording stop failed for {}: {}", method.getName(), e.getMessage());
+			} finally {
+				videoRecorder.remove();
+			}
+		}
+
 		try {
 			getDriverManager().teardownDriver(method, result.isSuccess());
 		} catch (Exception e) {
-			logger.severe("Teardown error for " + method.getName() + ": " + e.getMessage());
+			logger.error("Teardown error for " + method.getName() + ": " + e.getMessage());
 		}
 
 		// Release the thread-local Faker instance to prevent memory leaks
@@ -259,6 +307,79 @@ public class ProjectSpecificMethods extends SeleniumBase {
 		} catch (Exception e) {
 			return "";
 		}
+	}
+
+	// =========================================================================
+	// TEST DATA HELPERS — Faker, Validation, Encryption
+	// =========================================================================
+
+	/**
+	 * Returns the thread-local {@link FakerDataFactory} static accessor namespace.
+	 * Use for generating realistic test data without importing FakerDataFactory:
+	 * <pre>
+	 *   String name    = FakerDataFactory.getFullName();
+	 *   String email   = FakerDataFactory.getEmail();
+	 *   String company = FakerDataFactory.getCompanyName();
+	 * </pre>
+	 */
+	protected static FakerDataFactory faker() {
+		return null; // static methods only — use FakerDataFactory.getXxx() directly
+	}
+
+	/**
+	 * Asserts that {@code actual} equals {@code expected}, logging the comparison.
+	 * Delegates to {@link ValidationUtils#assertTextEquals}.
+	 */
+	protected static void assertTextEquals(String actual, String expected, String message) {
+		ValidationUtils.assertTextEquals(actual, expected, message);
+	}
+
+	/**
+	 * Asserts that {@code actual} contains {@code substring}.
+	 * Delegates to {@link ValidationUtils#assertTextContains}.
+	 */
+	protected static void assertTextContains(String actual, String substring, String message) {
+		ValidationUtils.assertTextContains(actual, substring, message);
+	}
+
+	/**
+	 * Asserts that {@code actualCode} equals {@code expectedCode}.
+	 * Delegates to {@link ValidationUtils#assertResponseCode}.
+	 */
+	protected static void assertResponseCode(int actualCode, int expectedCode, String message) {
+		ValidationUtils.assertResponseCode(actualCode, expectedCode, message);
+	}
+
+	/**
+	 * Returns a soft-assertion collector for the current test method.
+	 * Call {@code soft.assertAll()} at the end of the test to throw on any failures:
+	 * <pre>
+	 *   ValidationUtils.SoftAssert soft = softAssert();
+	 *   soft.assertEquals(actual, expected, "field check");
+	 *   soft.assertAll();
+	 * </pre>
+	 */
+	protected static ValidationUtils.SoftAssert softAssert() {
+		return new ValidationUtils.SoftAssert();
+	}
+
+	/**
+	 * Masks a sensitive value for safe logging (shows first 2 and last 2 chars).
+	 * Delegates to {@link EncryptionUtils#mask}.
+	 * <pre>
+	 *   reportStep("Password used: " + mask(password), "info", false);
+	 * </pre>
+	 */
+	protected static String mask(String sensitiveValue) {
+		return EncryptionUtils.mask(sensitiveValue);
+	}
+
+	/**
+	 * Masks all credential patterns in a log string (password=, Bearer token, etc.).
+	 * Delegates to {@link EncryptionUtils#maskSensitiveValues}.
+	 */
+	protected static String maskLog(String logLine) {
+		return EncryptionUtils.maskSensitiveValues(logLine);
 	}
 
 	// =========================================================================

@@ -2,7 +2,8 @@ package com.framework.config.data;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Thread-safe configuration manager implementing Singleton pattern.
@@ -21,7 +22,7 @@ import java.util.logging.Logger;
  */
 public class ConfigManager {
     
-    private static final Logger logger = Logger.getLogger(ConfigManager.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
     private static volatile ConfigManager instance;
     
     private volatile ProjectConfig config;
@@ -57,7 +58,7 @@ public class ConfigManager {
      */
     public synchronized void initializeConfig() {
         if (initialized) {
-            logger.fine("Configuration already initialized, skipping");
+            logger.debug("Configuration already initialized, skipping");
             return;
         }
         
@@ -75,7 +76,7 @@ public class ConfigManager {
      */
     public synchronized void initializeConfig(ConcurrentMap<String, String> testngParams) {
         if (initialized) {
-            logger.fine("Configuration already initialized, applying overrides only");
+            logger.debug("Configuration already initialized, applying overrides only");
             applyOverrides(testngParams);
             return;
         }
@@ -100,7 +101,7 @@ public class ConfigManager {
      */
     public ProjectConfig getConfig() {
         if (!initialized) {
-            logger.warning("Configuration not initialized, auto-initializing with defaults");
+            logger.warn("Configuration not initialized, auto-initializing with defaults");
             initializeConfig();
         }
         return config;
@@ -163,7 +164,7 @@ public class ConfigManager {
         config = null;
         initialized = false;
         runtimeOverrides.clear();
-        logger.warning("Configuration reset");
+        logger.warn("Configuration reset");
     }
     
     /**

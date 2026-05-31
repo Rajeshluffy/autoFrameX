@@ -1,7 +1,8 @@
 package com.framework.config.data;
 
 import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Director in the Builder pattern — constructs a fully resolved {@link ProjectConfig}
@@ -44,7 +45,7 @@ import java.util.logging.Logger;
  */
 public class ProjectDirector {
 
-    private static final Logger logger = Logger.getLogger(ProjectDirector.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(ProjectDirector.class);
 
     /**
      * Fallback when no {@code configClass} parameter is present in the TestNG XML.
@@ -130,6 +131,12 @@ public class ProjectDirector {
                 resolveInt("maxReuseCount",           testngParams, "MAX_REUSE_COUNT",  "maxReuseCount",           cfg.poolMaxReuseCount()));
         builder.setCloseAfterEach(
                 resolveBoolean("closeAfterEach",      testngParams, "CLOSE_AFTER_EACH", "closeAfterEach",          cfg.closeAfterEach()));
+
+        // ── Selenium Grid ─────────────────────────────────────────────────────
+        builder.setGridEnabled(
+                resolveBoolean("gridEnabled",  testngParams, "GRID_ENABLED",  "gridEnabled",  cfg.gridEnabled()));
+        builder.setGridHubUrl(
+                resolve("gridHubUrl",          testngParams, "GRID_HUB_URL",  "gridHubUrl",   cfg.gridHubUrl()));
 
         // ── Credentials ───────────────────────────────────────────────────────
         builder.setCredentials(
@@ -232,13 +239,13 @@ public class ProjectDirector {
             case "production":
                 String prodUrl = cfg.prodUrl();
                 if (prodUrl == null || prodUrl.isEmpty()) {
-                    logger.warning("prodUrl not configured — falling back to qaUrl.");
+                    logger.warn("prodUrl not configured — falling back to qaUrl.");
                     return cfg.qaUrl();
                 }
                 return prodUrl;
 
             default:
-                logger.warning("Unknown environment '" + env + "' — defaulting to dev.");
+                logger.warn("Unknown environment '" + env + "' — defaulting to dev.");
                 return cfg.devUrl();
         }
     }
@@ -269,7 +276,7 @@ public class ProjectDirector {
         String v = resolve(testngKey, params, envKey, sysPropKey, String.valueOf(defaultValue));
         try { return Short.parseShort(v); }
         catch (NumberFormatException e) {
-            logger.warning("Invalid short for '" + testngKey + "': " + v + " → using " + defaultValue);
+            logger.warn("Invalid short for '" + testngKey + "': " + v + " → using " + defaultValue);
             return defaultValue;
         }
     }
@@ -279,7 +286,7 @@ public class ProjectDirector {
         String v = resolve(testngKey, params, envKey, sysPropKey, String.valueOf(defaultValue));
         try { return Integer.parseInt(v); }
         catch (NumberFormatException e) {
-            logger.warning("Invalid int for '" + testngKey + "': " + v + " → using " + defaultValue);
+            logger.warn("Invalid int for '" + testngKey + "': " + v + " → using " + defaultValue);
             return defaultValue;
         }
     }

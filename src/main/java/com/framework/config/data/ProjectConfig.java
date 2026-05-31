@@ -32,6 +32,8 @@ public class ProjectConfig {
 	private final int poolMinSize;
 	private final int poolBorrowTimeoutSeconds;
 	private final int poolMaxReuseCount;
+	private final boolean gridEnabled;
+	private final String gridHubUrl;
 
 	// -------------------------------------------------------------------------
 	// Constructor (package-private, intended for ProjectConfigBuilder only)
@@ -44,8 +46,9 @@ public class ProjectConfig {
 			String appUrl, String userName, String password, String dbUrl,
 			String dbUserName, String dbPassword, String dbQuery,
 			int scriptTimeout, int pageLoadTimeout, boolean closeAfterEach,
-			int poolMinSize, int poolBorrowTimeoutSeconds, int poolMaxReuseCount) {
-		
+			int poolMinSize, int poolBorrowTimeoutSeconds, int poolMaxReuseCount,
+			boolean gridEnabled, String gridHubUrl) {
+
 		this.browserName = browserName;
 		this.remote = remote;
 		this.implicit = implicit;
@@ -73,6 +76,8 @@ public class ProjectConfig {
 		this.poolMinSize = poolMinSize;
 		this.poolBorrowTimeoutSeconds = poolBorrowTimeoutSeconds;
 		this.poolMaxReuseCount = poolMaxReuseCount;
+		this.gridEnabled = gridEnabled;
+		this.gridHubUrl = gridHubUrl;
 	}
 
 	// -------------------------------------------------------------------------
@@ -105,5 +110,7 @@ public class ProjectConfig {
 	public int getPoolMinSize() { return poolMinSize; }
 	public int getPoolBorrowTimeoutSeconds() { return poolBorrowTimeoutSeconds; }
 	public int getPoolMaxReuseCount() { return poolMaxReuseCount; }
+	public boolean isGridEnabled() { return gridEnabled; }
+	public String getGridHubUrl() { return gridHubUrl; }
 
 }
