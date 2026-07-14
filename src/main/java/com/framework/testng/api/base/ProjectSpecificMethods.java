@@ -18,6 +18,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 
 import com.framework.config.data.ConfigManager;
+import com.framework.config.data.ExecutionMode;
 import com.framework.selenium.api.base.SeleniumBase;
 import com.framework.utils.DataLibrary;
 import com.framework.utils.EncryptionUtils;
@@ -64,32 +65,60 @@ public class ProjectSpecificMethods extends SeleniumBase {
 	// ThreadLocal so each parallel test thread has its own recorder instance
 	private static final ThreadLocal<VideoRecorder> videoRecorder = new ThreadLocal<>();
 
+	// Current account bound to this thread during @BeforeMethod
+	private static final ThreadLocal<AccountData> currentAccount = new ThreadLocal<>();
+
 	// =========================================================================
 	// DATA PROVIDER
 	// =========================================================================
 
 	/**
-	 * Reads test data from the Excel file named in {@link #excelFileName}.
-	 * Set {@code excelFileName} in your child class {@code @BeforeClass}.
+	 * Mode-aware DataProvider for all test methods that declare
+	 * {@code @Test(dataProvider = "fetchData")}.
 	 *
-	 * <p>Row selection is controlled by {@link TestMetadata#allRows()}:
 	 * <ul>
-	 *   <li>{@code allRows = false} (default) — only the first row runs.</li>
-	 *   <li>{@code allRows = true} — every row runs as a separate invocation.</li>
+	 *   <li><b>DATA_PROVIDER mode</b> — reads every account row from the Excel
+	 *       file configured via {@code excel.data.file} in the TestNG XML. Each
+	 *       row is returned as a single {@link AccountData} element so the test
+	 *       method receives exactly one typed argument.</li>
+	 *   <li><b>TARGETED mode</b> — builds a single {@link AccountData} from the
+	 *       global config (credentials + URL already resolved by
+	 *       {@link ConfigManager}). The test method runs exactly once.</li>
 	 * </ul>
+	 *
+	 * <p>Test methods annotated with {@link TestMetadata#allRows()} = false and
+	 * running in DATA_PROVIDER mode still receive all rows — the {@code allRows}
+	 * flag is honoured only when {@code excelFileName} is set directly on the
+	 * class (legacy behaviour). Prefer the XML param approach for new tests.
 	 */
-	@DataProvider(name = "fetchData")
+	@DataProvider(name = "fetchData", parallel = true)
 	public Object[][] fetchData() throws IOException {
-		if (excelFileName == null || excelFileName.isEmpty()) {
-			logger.warn("excelFileName not set — returning empty data set.");
-			return new Object[0][0];
+		ExecutionMode mode = ConfigManager.getInstance().getConfig().getExecutionMode();
+
+		if (mode == ExecutionMode.DATA_PROVIDER) {
+			String dataFile = ConfigManager.getInstance().getConfig().getExcelDataFile();
+			if (dataFile == null || dataFile.isEmpty()) {
+				// Fallback: honour the legacy excelFileName field set in @BeforeClass
+				dataFile = excelFileName;
+			}
+			if (dataFile == null || dataFile.isEmpty()) {
+				logger.warn("DATA_PROVIDER mode active but no Excel file configured."
+						+ " Set 'excel.data.file' in your testng.xml.");
+				return new AccountData[0][0];
+			}
+			logger.info("DATA_PROVIDER mode — loading accounts from: " + dataFile);
+			return DataLibrary.readExcelAsAccounts(dataFile);
 		}
-		Object[][] data = DataLibrary.readExcelData(excelFileName);
-		TestMetadata meta = this.getClass().getAnnotation(TestMetadata.class);
-		if (meta != null && meta.allRows()) {
-			return data;
-		}
-		return data.length > 0 ? new Object[][]{data[0]} : data;
+
+		// TARGETED mode: single account from config
+		logger.info("TARGETED mode — using single account from config.");
+		var cfg = ConfigManager.getInstance().getConfig();
+		AccountData account = new AccountData(
+				"targeted",
+				cfg.getUserName(),
+				cfg.getPassword(),
+				cfg.getAppUrl());
+		return new AccountData[][]{{account}};
 	}
 
 	// =========================================================================
@@ -97,29 +126,35 @@ public class ProjectSpecificMethods extends SeleniumBase {
 	// =========================================================================
 
 	/**
-	 * Acquires a WebDriver from the pool and binds it to the current thread.
-	 * Also creates the Extent report node for this method.
+	 * Sets up the WebDriver for this test method.
 	 *
-	 * <p>
-	 * {@code ITestContext} is supported in {@code @BeforeMethod} and is
-	 * auto-injected by TestNG — no manual lookup required.
+	 * <p>If the test method declares a parameter of type {@link AccountData} (i.e.
+	 * it uses the {@code fetchData} DataProvider), that account is injected into
+	 * the thread-local so page objects can retrieve it via {@link #getAccount()}.
+	 * When the account carries its own URL it overrides the global {@code appUrl}.
 	 *
-	 * @param method  current test method (auto-injected)
-	 * @param context TestNG context (auto-injected)
+	 * @param method     current test method (auto-injected by TestNG)
+	 * @param context    TestNG suite context (auto-injected by TestNG)
+	 * @param parameters test parameters injected by the DataProvider (may be empty)
 	 */
 	@BeforeMethod(alwaysRun = true)
-	public void preCondition(Method method, ITestContext context) {
+	public void preCondition(Method method, ITestContext context, Object[] parameters) {
 		logger.info("▶ @BeforeMethod: " + method.getDeclaringClass().getSimpleName()
 				+ "#" + method.getName());
 
-		// 1. Collect any method / test-level parameter overrides
+		// 1. Bind account from DataProvider parameters (if present)
+		AccountData account = extractAccount(parameters, context);
+		currentAccount.set(account);
+		logger.info("Account bound: " + account);
+
+		// 2. Collect method / test-level parameter overrides; inject account URL if set
 		ConcurrentMap<String, String> methodParams = extractMethodParameters(context, method);
+		if (account.hasUrl()) {
+			methodParams.put("url", account.getUrl());
+		}
 
-		// 2. Acquire driver from pool and store in ThreadLocal
+		// 3. Acquire driver from pool and store in ThreadLocal
 		getDriverManager().setupDriver(method, methodParams);
-
-		// 3. Create the Extent report child-node for this method
-		// removed setNode(method, context); as it is handled by TestNG via @BeforeMethod in Reporter.java
 
 		// 4. Log the URL the browser was navigated to — visible in the HTML report
 		try {
@@ -129,10 +164,10 @@ public class ProjectSpecificMethods extends SeleniumBase {
 			logger.warn("Could not read current URL after driver setup: " + e.getMessage());
 		}
 
-		// 5. Start video recording — no-op on headless, never fails the test
+		// 5. Start video recording — WebDriver screenshot based, works in headless CI
 		try {
 			VideoRecorder vr = new VideoRecorder();
-			vr.start(method.getName());
+			vr.start(method.getName(), getDriver());
 			videoRecorder.set(vr);
 		} catch (Exception e) {
 			logger.warn("Video recording could not start for {}: {}", method.getName(), e.getMessage());
@@ -155,24 +190,24 @@ public class ProjectSpecificMethods extends SeleniumBase {
 	@AfterMethod(alwaysRun = true)
 	public void postCondition(Method method, ITestResult result) {
 		logger.info("@AfterMethod: " + method.getName()
-				+ " [" + (result.isSuccess() ? "PASSED" : "FAILED") + "]");
+		+ " [" + (result.isSuccess() ? "PASSED" : "FAILED") + "]");
 
-		// Stop video recording — delete on pass, keep on failure
+		// Stop video recording.
+		// stop(passed) owns the full lifecycle:
+		//   passed=true  → AVI deleted immediately, no MP4, returns null
+		//   passed=false → AVI converted to MP4, kept for analysis, returns File
 		VideoRecorder vr = videoRecorder.get();
 		if (vr != null) {
 			try {
-				java.io.File videoFile = vr.stop();
+				java.io.File videoFile = vr.stop(result.isSuccess());
 				if (videoFile != null) {
-					if (result.isSuccess()) {
-						videoFile.delete();
-						logger.debug("Video deleted (test passed): {}", videoFile.getName());
-					} else {
-						logger.info("Video kept (test failed): {}", videoFile.getAbsolutePath());
-						reportStep("Video recorded: " + videoFile.getName(), "info", false);
-					}
+					// Only reached on failure — log and attach to the Extent report
+					logger.info("[Thread-{}] Video retained for failed test {}: {}",
+							Thread.currentThread().getId(), method.getName(), videoFile.getAbsolutePath());
+					reportStep("Failure video: " + videoFile.getName(), "info", false);
 				}
 			} catch (Exception e) {
-				logger.warn("Video recording stop failed for {}: {}", method.getName(), e.getMessage());
+				logger.warn("Video stop failed for {}: {}", method.getName(), e.getMessage());
 			} finally {
 				videoRecorder.remove();
 			}
@@ -184,8 +219,9 @@ public class ProjectSpecificMethods extends SeleniumBase {
 			logger.error("Teardown error for " + method.getName() + ": " + e.getMessage());
 		}
 
-		// Release the thread-local Faker instance to prevent memory leaks
+		// Release the thread-local Faker instance and account to prevent memory leaks
 		FakerDataFactory.cleanup();
+		currentAccount.remove();
 
 		// Flush the Extent report node (defined in Reporter)
 		tearDownTest(method, result);
@@ -217,7 +253,7 @@ public class ProjectSpecificMethods extends SeleniumBase {
 		}
 	}
 
-	   // ========================================================================
+	// ========================================================================
 	// RETRY OPERATIONS
 	// ========================================================================
 
@@ -257,7 +293,7 @@ public class ProjectSpecificMethods extends SeleniumBase {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Returns the {@link WebDriverWait} bound to the current thread.
 	 * Falls back to creating a new wait with default timeout if needed.
@@ -291,7 +327,8 @@ public class ProjectSpecificMethods extends SeleniumBase {
 	 * Convenience: returns the current page URL.
 	 */
 	protected String getCurrentUrl() {
-		try {
+		try {	
+			waitForPageAndApiReady();
 			return getDriver().getCurrentUrl();
 		} catch (Exception e) {
 			return "";
@@ -383,8 +420,59 @@ public class ProjectSpecificMethods extends SeleniumBase {
 	}
 
 	// =========================================================================
+	// ACCOUNT ACCESS
+	// =========================================================================
+
+	/**
+	 * Returns the {@link AccountData} bound to the current test thread.
+	 *
+	 * <p>Available from {@code @BeforeMethod} onwards. Page objects and test
+	 * classes call this to retrieve per-account credentials without importing
+	 * {@link ConfigManager} directly:
+	 * <pre>
+	 *   loginPage.enterCredentials(getAccount().getUserName(), getAccount().getPassword());
+	 * </pre>
+	 *
+	 * @throws IllegalStateException if called before {@code preCondition} has run
+	 */
+	protected AccountData getAccount() {
+		AccountData account = currentAccount.get();
+		if (account == null) {
+			throw new IllegalStateException(
+					"No AccountData bound — ensure @BeforeMethod (preCondition) has executed.");
+		}
+		return account;
+	}
+
+	// =========================================================================
 	// PRIVATE HELPERS
 	// =========================================================================
+
+	/**
+	 * Extracts an {@link AccountData} from the DataProvider parameters array.
+	 * Falls back to building one from the global config when none is present
+	 * (e.g. tests that do not use the {@code fetchData} DataProvider).
+	 */
+	private AccountData extractAccount(Object[] parameters, ITestContext context) {
+		if (parameters != null) {
+			for (Object param : parameters) {
+				if (param instanceof AccountData) {
+					return (AccountData) param;
+				}
+			}
+		}
+		// No AccountData in parameters — build from global config (TARGETED fallback)
+		var cfg = ConfigManager.getInstance().getConfig();
+		String url = null;
+		if (context != null && context.getCurrentXmlTest() != null) {
+			url = context.getCurrentXmlTest().getParameter("url");
+		}
+		return new AccountData(
+				"targeted",
+				cfg.getUserName(),
+				cfg.getPassword(),
+				url != null ? url : cfg.getAppUrl());
+	}
 
 
 

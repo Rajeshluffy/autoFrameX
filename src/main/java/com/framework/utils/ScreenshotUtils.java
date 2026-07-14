@@ -79,6 +79,30 @@ public final class ScreenshotUtils {
     }
 
     /**
+     * Captures a screenshot of {@code element} and saves it with a fixed caller-supplied
+     * filename rather than a generated timestamp name.  Use this when QA and DEV runs must
+     * produce identically-named files so they can be matched for visual comparison.
+     *
+     * @param element   the target WebElement
+     * @param outputDir directory to write the image into (created if absent)
+     * @param fileName  exact file name including extension, e.g. {@code "okabe_canvas.jpg"}
+     * @return absolute path of the saved file, or {@code null} on failure
+     */
+    public static String captureElement(WebElement element, String outputDir, String fileName) {
+        try {
+            File src = element.getScreenshotAs(OutputType.FILE);
+            ensureDir(outputDir);
+            String path = outputDir + File.separator + fileName;
+            FileUtils.copyFile(src, new File(path));
+            logger.debug("Element screenshot saved: " + path);
+            return path;
+        } catch (IOException e) {
+            logger.warn("Element screenshot (fixed-name) failed: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Locates an element by {@code locator} and captures its screenshot.
      *
      * @param driver    WebDriver for the current thread

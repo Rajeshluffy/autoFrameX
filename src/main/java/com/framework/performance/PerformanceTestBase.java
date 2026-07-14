@@ -65,7 +65,7 @@ public abstract class PerformanceTestBase extends ProjectSpecificMethods {
 
     @Override
     @BeforeMethod(alwaysRun = true)
-    public void preCondition(Method method, ITestContext context) {
+    public void preCondition(Method method, ITestContext context, Object[] parameters) {
         logger.info("PerformanceTestBase: skipping driver setup for {}", method.getName());
     }
 

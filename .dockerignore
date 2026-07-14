@@ -1,0 +1,34 @@
+# Files and directories to exclude from the Docker build context.
+# Keeping the context small speeds up docker build and avoids leaking
+# sensitive files or large binary artifacts into the image.
+
+# Build output
+target/
+
+# Version control
+.git/
+.github/
+
+# Test artifacts (generated at runtime, not needed at build time)
+reports/
+logs/
+test-output/
+*.log
+
+# IDE and OS metadata
+.idea/
+.vscode/
+.settings/
+.classpath
+.project
+*.iml
+.DS_Store
+Thumbs.db
+
+# Documentation (not needed inside the image)
+docs/
+
+# Sensitive config files (injected at runtime via env vars or volume mounts)
+src/main/resources/alfaDOCKConfig.properties
+src/main/resources/leafTapConfig.properties
+src/test/resources/Config.properties

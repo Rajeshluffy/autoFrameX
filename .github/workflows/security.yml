@@ -1,0 +1,91 @@
+name: Security — OWASP ZAP Scan (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Base URL to scan (e.g. https://qa.example.com)'
+        required: true
+        default: 'http://localhost:8080'
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        default: qa
+        type: choice
+        options: [qa, staging]
+      scan_type:
+        description: 'Scan depth'
+        required: true
+        default: passive
+        type: choice
+        options: [passive, active]
+
+jobs:
+  security-scan:
+    name: ZAP ${{ inputs.scan_type }} scan — ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+
+    services:
+      zap:
+        image: ghcr.io/zaproxy/zaproxy:stable
+        ports:
+          - 8080:8080
+        options: >-
+          --health-cmd "curl -sf http://localhost:8080/JSON/core/view/version/ || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Compile
+        run: mvn clean compile -q
+
+      - name: Run security tests
+        run: |
+          mvn test \
+            -Dtestng.suite.file=testng-ci.xml \
+            -Dgroups=security \
+            -Denv=${{ inputs.environment }} \
+            -Dheadless=true \
+            -Dzap.base.url=http://localhost:8080 \
+            -Dsecurity.target.url=${{ inputs.target_url }} \
+            -Dscan.type=${{ inputs.scan_type }} \
+            -Dsurefire.reportNameSuffix=security
+        continue-on-error: true
+
+      - name: Upload ZAP HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report-${{ inputs.scan_type }}-${{ inputs.environment }}
+          path: reports/zap-report.html
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Upload Surefire XML results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-results-security
+          path: target/surefire-reports/
+          retention-days: 30
+
+      - name: Upload observability events
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-events-security
+          path: logs/test-events.json
+          if-no-files-found: ignore
+          retention-days: 30

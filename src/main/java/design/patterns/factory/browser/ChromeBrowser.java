@@ -49,7 +49,23 @@ public class ChromeBrowser implements Browser {
 		Map<String, Object> prefs = new HashMap<>();
 		prefs.put("credentials_enable_service", false);
 		prefs.put("profile.password_manager_enabled", false);
+		prefs.put("profile.password_manager_leak_detection", false); // Suppress "Change your password" breach popup
 		prefs.put("profile.default_content_setting_values.notifications", 2); // 2 means Block
+		
+		// Configure default download directory to a "downloads" folder in your project workspace
+		String downloadPath = System.getProperty("user.dir") + "\\downloads";
+		prefs.put("download.default_directory", downloadPath);
+		prefs.put("download.prompt_for_download", false); // Automatically download without prompting
+		prefs.put("download.directory_upgrade", true);
+		prefs.put("safebrowsing.enabled", true);
+		prefs.put("safebrowsing.disable_download_protection", true); // Bypasses Chrome's dangerous file warnings
+		prefs.put("profile.default_content_settings.popups", 0); // Disable Save As popups
+		
+		// Handle Multiple Downloads permission for different Chrome versions
+		prefs.put("profile.default_content_setting_values.automatic_downloads", 1); 
+		prefs.put("profile.default_content_settings.automatic_downloads", 1); 
+		prefs.put("profile.content_settings.exceptions.automatic_downloads.*.setting", 1);
+
 		options.setExperimentalOption("prefs", prefs);
 
 		// 3. Remove "Chrome is being controlled by automated test software" bar
@@ -63,13 +79,17 @@ public class ChromeBrowser implements Browser {
 		options.addArguments("--disable-dev-shm-usage");
 		options.addArguments("--no-sandbox");
 		options.addArguments("--remote-allow-origins=*"); // Fixes ConnectionFailedException in newer Selenium versions
-		options.addArguments("--guest"); // Log in as guest (prevents profile conflicts)
+		// --guest removed: guest mode bypasses setExperimentalOption("prefs") settings,
+		// which breaks download.prompt_for_download and automatic_downloads preferences
 
 		// Headless mode from environment
 		if (isHeadlessMode()) {
 			options.addArguments("--headless=new");
 			options.addArguments("--window-size=1920,1080");
 		}
+
+		// Disable password breach detection popup ("Change your password — found in data breach")
+		options.addArguments("--disable-features=PasswordLeakDetection");
 
 		// Logging
 		options.addArguments("--log-level=3");

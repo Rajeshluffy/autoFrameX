@@ -1,17 +1,23 @@
 package com.framework.utils;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import com.framework.testng.api.base.AccountData;
 
 /**
  * Reads test data from Excel (.xlsx) and delimited text (CSV/TSV) files
@@ -30,7 +36,7 @@ public class DataLibrary {
     /** Cache: cache-key → parsed data grid. */
     private static final ConcurrentMap<String, Object[][]> cache = new ConcurrentHashMap<>();
 
-    private DataLibrary() { /* utility class — no instances */ }
+    public DataLibrary() { /* utility class — no instances */ }
 
     // =========================================================================
     // EXCEL
@@ -90,6 +96,89 @@ public class DataLibrary {
         return cache.computeIfAbsent("delimited:" + delimiter + ":" + fileName,
                 k -> loadDelimited(fileName, delimiter));
     }
+
+    // =========================================================================
+    // ACCOUNT DATA (typed Excel rows)
+    // =========================================================================
+
+    /**
+     * Returns all account rows from {@code ./data/<excelFileName>.xlsx} as typed
+     * {@link AccountData} objects, suitable for injection via a TestNG DataProvider.
+     *
+     * <p>Column convention: col 0 = accountId, col 1 = userName, col 2 = password,
+     * col 3 = url (optional). Results are cached after the first read.
+     *
+     * @param excelFileName base name without the {@code .xlsx} extension
+     * @return two-dimensional array where each inner array contains one {@link AccountData}
+     */
+    public static AccountData[][] readExcelAsAccounts(String excelFileName) {
+        Object[][] raw = readExcelData(excelFileName);
+        if (raw.length == 0) {
+            logger.warn("No account rows found in: " + excelFileName + ".xlsx");
+            return new AccountData[0][0];
+        }
+        AccountData[][] accounts = new AccountData[raw.length][1];
+        for (int i = 0; i < raw.length; i++) {
+            accounts[i][0] = AccountData.fromRow(raw[i]);
+        }
+        logger.info("Resolved " + accounts.length + " AccountData row(s) from: " + excelFileName);
+        return accounts;
+    }
+    
+    
+    /**
+     * Loads all valid account rows from the Excel file.
+     * Row 0 (header) is skipped. Rows where {@code companyUser} or
+     * {@code userUser} is blank are skipped.
+     *
+     * @return ordered list of {@code [companyUser, companyPass, userUser, userPass]};
+     *         empty list if the file is missing or unreadable.
+     */
+    
+    public static List<Object[]> readExcelAsAccount(String excelPath) {
+        String path = System.getProperty("user.dir") + File.separator + excelPath;
+        File file = new File(path);
+        
+        if (!file.exists()) {
+            logger.warn("Excel file not found: " + file.getAbsolutePath());
+            return Collections.emptyList();
+        }
+
+        logger.info("Loading Excel account data from: " + path);
+        List<Object[]> accounts = new ArrayList<>();
+        DataFormatter fmt = new DataFormatter();
+
+        try (FileInputStream fis = new FileInputStream(file);
+             XSSFWorkbook wb = new XSSFWorkbook(fis)) {
+
+            XSSFSheet sheet = wb.getSheetAt(0);
+            int rowCount = sheet.getLastRowNum();
+            for (int i = 1; i <= rowCount; i++) {
+                XSSFRow row = sheet.getRow(i);
+                if (row == null) continue;
+
+                String companyUser = fmt.formatCellValue(row.getCell(0)).trim();
+                String companyPass = fmt.formatCellValue(row.getCell(1)).trim();
+                String userUser    = fmt.formatCellValue(row.getCell(2)).trim();
+                String userPass    = fmt.formatCellValue(row.getCell(3)).trim();
+
+                if (companyUser.isEmpty() || userUser.isEmpty()) continue;
+
+                accounts.add(new Object[]{ companyUser, companyPass, userUser, userPass });
+            }
+
+            logger.info("Loaded " + accounts.size() + " account row(s) from: " + path);
+
+        } catch (Exception e) {
+            logger.error("Failed to read Excel file '" + path + "': " + e.getMessage());
+        }
+
+        return accounts;
+    }
+    
+    
+    
+    
 
     /** Clears the in-memory cache. Useful between suite runs in long-lived JVMs. */
     public static void clearCache() {

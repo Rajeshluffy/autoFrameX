@@ -31,6 +31,8 @@ public class ProjectConfigBuilder {
 	private int poolMaxReuseCount = 75;
 	private boolean gridEnabled = false;
 	private String gridHubUrl = "http://localhost:4444/wd/hub";
+	private ExecutionMode executionMode = ExecutionMode.TARGETED;
+	private String excelDataFile = "";
 
 	public ProjectConfigBuilder setBrowserName(String browserName) {
 		this.browserName = browserName;
@@ -161,6 +163,16 @@ public class ProjectConfigBuilder {
 		return this;
 	}
 
+	public ProjectConfigBuilder setExecutionMode(ExecutionMode executionMode) {
+		this.executionMode = executionMode;
+		return this;
+	}
+
+	public ProjectConfigBuilder setExcelDataFile(String excelDataFile) {
+		this.excelDataFile = excelDataFile;
+		return this;
+	}
+
 	public ProjectConfig build() {
 		return new ProjectConfig(
 			browserName, remote, implicit, explicit, shortWait, pollingIntervalMs,
@@ -168,7 +180,7 @@ public class ProjectConfigBuilder {
 			poolMaxIdleMinutes, serverUrl, devUrl, qaUrl, appUrl, userName,
 			password, dbUrl, dbUserName, dbPassword, dbQuery, scriptTimeout,
 			pageLoadTimeout, closeAfterEach, poolMinSize, poolBorrowTimeoutSeconds,
-			poolMaxReuseCount, gridEnabled, gridHubUrl
+			poolMaxReuseCount, gridEnabled, gridHubUrl, executionMode, excelDataFile
 		);
 	}
 }

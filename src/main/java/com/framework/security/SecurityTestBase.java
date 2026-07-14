@@ -102,7 +102,7 @@ public abstract class SecurityTestBase extends ProjectSpecificMethods {
 
     @Override
     @BeforeMethod(alwaysRun = true)
-    public void preCondition(Method method, ITestContext context) {
+    public void preCondition(Method method, ITestContext context, Object[] parameters) {
         logger.info("SecurityTestBase: skipping driver setup for {}", method.getName());
     }
 

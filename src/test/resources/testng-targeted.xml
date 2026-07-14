@@ -1,0 +1,52 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  TARGETED MODE
+  =============
+  Runs all test classes against a SINGLE explicitly configured account.
+  Intended for smoke testing, debugging, and environment-specific validation.
+
+  Required parameters:
+    execution.mode → "targeted"
+    username       → login username / email
+    password       → login password
+    url            → application URL (overrides environment-based resolution)
+    configClass    → fully-qualified ProjectAppConfiguration implementation
+
+  Optional:
+    accountId → human-readable label for this account in reports
+
+  Expected behaviour (example):
+    testng.xml has 5 test classes → all 5 classes run once against the single account
+-->
+<suite name="TargetedSuite" parallel="classes" thread-count="3">
+
+    <!-- Execution mode -->
+    <parameter name="execution.mode" value="targeted"/>
+
+    <!-- Account under test -->
+    <parameter name="accountId" value="ACC001"/>
+    <parameter name="username"  value="user@example.com"/>
+    <parameter name="password"  value="secret"/>
+    <parameter name="url"       value="https://www.alfadock-pack.com/ver10/#/home"/>
+
+    <!-- Framework config selection -->
+    <parameter name="configClass"
+               value="com.framework.config.data.AutoFrameXConfiguration"/>
+
+    <listeners>
+        <listener class-name="com.framework.testng.api.base.TestAnnotationTransformer"/>
+    </listeners>
+
+    <test name="TargetedAccountTests">
+        <classes>
+            <!--
+              Add your test classes here.
+              Test methods may or may not use the fetchData DataProvider.
+              Without the DataProvider they still receive the account via getAccount().
+            -->
+            <!-- <class name="com.alfadock.tests.LoginTest"/> -->
+            <!-- <class name="com.alfadock.tests.DashboardTest"/> -->
+        </classes>
+    </test>
+
+</suite>

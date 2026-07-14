@@ -34,6 +34,8 @@ public class ProjectConfig {
 	private final int poolMaxReuseCount;
 	private final boolean gridEnabled;
 	private final String gridHubUrl;
+	private final ExecutionMode executionMode;
+	private final String excelDataFile;
 
 	// -------------------------------------------------------------------------
 	// Constructor (package-private, intended for ProjectConfigBuilder only)
@@ -47,7 +49,8 @@ public class ProjectConfig {
 			String dbUserName, String dbPassword, String dbQuery,
 			int scriptTimeout, int pageLoadTimeout, boolean closeAfterEach,
 			int poolMinSize, int poolBorrowTimeoutSeconds, int poolMaxReuseCount,
-			boolean gridEnabled, String gridHubUrl) {
+			boolean gridEnabled, String gridHubUrl,
+			ExecutionMode executionMode, String excelDataFile) {
 
 		this.browserName = browserName;
 		this.remote = remote;
@@ -78,6 +81,8 @@ public class ProjectConfig {
 		this.poolMaxReuseCount = poolMaxReuseCount;
 		this.gridEnabled = gridEnabled;
 		this.gridHubUrl = gridHubUrl;
+		this.executionMode = executionMode != null ? executionMode : ExecutionMode.TARGETED;
+		this.excelDataFile = excelDataFile != null ? excelDataFile : "";
 	}
 
 	// -------------------------------------------------------------------------
@@ -112,5 +117,7 @@ public class ProjectConfig {
 	public int getPoolMaxReuseCount() { return poolMaxReuseCount; }
 	public boolean isGridEnabled() { return gridEnabled; }
 	public String getGridHubUrl() { return gridHubUrl; }
+	public ExecutionMode getExecutionMode() { return executionMode; }
+	public String getExcelDataFile() { return excelDataFile; }
 
 }

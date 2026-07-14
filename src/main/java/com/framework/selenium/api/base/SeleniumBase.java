@@ -274,6 +274,133 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 		}
 	}
 
+	public  void waitForPageToLoad() {
+
+		String script = "return document.readyState";
+		try {
+
+			getWait(10).until(webDriver -> getDriver().executeScript(script)
+					.equals("complete"));
+		} catch (Exception e) {
+			reportStep("JavaScript click failed: " + e.getMessage(), "fail", true);
+		}
+
+	}
+
+	public void waitForSpinnerDisappear() {
+		String script = ".loading-spinner";
+		getWait(30).until(ExpectedConditions.invisibilityOfElementLocated(
+				By.cssSelector(".loading-spinner")));
+	}
+
+	// ========================================================================
+	// NETWORK & PAGE READINESS WAIT
+	// ========================================================================
+
+	/**
+	 * Injects a lightweight JavaScript interceptor once per page to count
+	 * in-flight XHR and Fetch requests.
+	 *
+	 * <p>The guard {@code window.__networkTrackerInjected} makes this safe to
+	 * call multiple times on the same page — the monkey-patch is applied only
+	 * once and survives across multiple {@link #waitForPageAndApiReady()} calls.</p>
+	 *
+	 * <p><b>What it patches:</b></p>
+	 * <ul>
+	 *   <li>{@code XMLHttpRequest.prototype.send} — increments the counter on
+	 *       send, decrements on the {@code loadend} event (fires for success,
+	 *       error, and abort).</li>
+	 *   <li>{@code window.fetch} — increments on call, decrements in both the
+	 *       resolved and rejected branches of the returned Promise.</li>
+	 * </ul>
+	 */
+	private void injectNetworkTracker() {
+		String script =
+			"if (!window.__networkTrackerInjected) {" +
+			"  window.__pendingRequests = 0;" +
+			"  window.__networkTrackerInjected = true;" +
+
+			// ── XHR interceptor ──────────────────────────────────────────────
+			"  var origSend = XMLHttpRequest.prototype.send;" +
+			"  XMLHttpRequest.prototype.send = function() {" +
+			"    window.__pendingRequests++;" +
+			"    this.addEventListener('loadend', function() {" +
+			"      window.__pendingRequests = Math.max(0, window.__pendingRequests - 1);" +
+			"    });" +
+			"    return origSend.apply(this, arguments);" +
+			"  };" +
+
+			// ── Fetch interceptor ─────────────────────────────────────────────
+			"  var origFetch = window.fetch;" +
+			"  if (origFetch) {" +
+			"    window.fetch = function() {" +
+			"      window.__pendingRequests++;" +
+			"      return origFetch.apply(this, arguments).then(" +
+			"        function(r) { window.__pendingRequests = Math.max(0, window.__pendingRequests - 1); return r; }," +
+			"        function(e) { window.__pendingRequests = Math.max(0, window.__pendingRequests - 1); throw e; }" +
+			"      );" +
+			"    };" +
+			"  }" +
+			"}";
+		try {
+			getDriver().executeScript(script);
+		} catch (Exception e) {
+			reportStep("Network tracker injection failed: " + e.getMessage(), "warning", false);
+		}
+	}
+
+	/**
+	 * Waits up to <b>30 seconds</b> until all of the following are true:
+	 * <ol>
+	 *   <li><b>DOM ready</b> — {@code document.readyState === 'complete'}
+	 *       (HTML parsed, stylesheets, images, and sub-frames loaded)</li>
+	 *   <li><b>No pending XHR</b> — counter injected by {@link #injectNetworkTracker()}
+	 *       reaches zero</li>
+	 *   <li><b>No pending Fetch</b> — same injected counter covers Fetch API calls</li>
+	 *   <li><b>No jQuery AJAX</b> — {@code jQuery.active === 0}
+	 *       (check is skipped automatically when jQuery is not on the page)</li>
+	 * </ol>
+	 *
+	 * <p>Polls every 300 ms. Logs a <em>warning</em> (non-failing) if the timeout
+	 * is reached so the test can continue and decide whether to fail itself.</p>
+	 *
+	 * <p><b>Usage:</b></p>
+	 * <pre>
+	 *   click(searchButton);
+	 *   waitForPageAndApiReady();        // default 30 s
+	 *   waitForPageAndApiReady(60);      // heavy page — allow 60 s
+	 * </pre>
+	 */
+	public void waitForPageAndApiReady() {
+		waitForPageAndApiReady(30);
+	}
+
+	/**
+	 * Overload of {@link #waitForPageAndApiReady()} with a configurable timeout.
+	 *
+	 * @param timeoutSeconds maximum seconds to wait before logging a warning and returning
+	 */
+	public void waitForPageAndApiReady(int timeoutSeconds) {
+		injectNetworkTracker();
+
+		// Single JS call evaluated on every poll — all four conditions in one round-trip
+		String checkScript =
+			"var domReady   = (document.readyState === 'complete');" +
+			"var noXhrFetch = (typeof window.__pendingRequests === 'undefined'" +
+			"                  || window.__pendingRequests === 0);" +
+			"var noJQuery   = (typeof jQuery === 'undefined' || jQuery.active === 0);" +
+			"return domReady && noXhrFetch && noJQuery;";
+
+		try {
+			fluentWaitFor(driver -> {
+				Object result = getDriver().executeScript(checkScript);
+				return result instanceof Boolean && (Boolean) result;
+			}, timeoutSeconds, 300);
+			reportStep("Page and all API calls are fully loaded", "info", false);
+		} catch (Exception e) {
+			reportStep("Timed out waiting for page/API to be ready: " + e.getMessage(), "warning", false);
+		}
+	}
 
 	public void refresh() {
 
@@ -374,7 +501,7 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 	 * @param ele element to get text from
 	 * @return element text or empty string
 	 */
-	private String safeGetText(WebElement ele) {
+	public String safeGetText(WebElement ele) {
 		try {
 			String text = ele.getText();
 			return text != null && !text.isEmpty() ? text : ele.getAttribute("value");
@@ -824,8 +951,8 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 		// Validate both locator types
 		if (by1 == null || by2 == null) {
 			String errorMsg = "Invalid locator type(s): " +
-				(by1 == null ? locatorType1 : "") +
-				(by2 == null ? " " + locatorType2 : "");
+					(by1 == null ? locatorType1 : "") +
+					(by2 == null ? " " + locatorType2 : "");
 			reportStep(errorMsg.trim(), "fail", false);
 			throw new ElementNotFoundException(errorMsg.trim());
 		}
@@ -834,20 +961,20 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 			// Try first locator
 			if (!getDriver().findElements(by1).isEmpty()) {
 				reportStep("Element found using primary locator - " + locatorType1 + ": " + value1,
-					"pass", false);
+						"pass", false);
 				return getDriver().findElement(by1);
 			}
 
 			// Try second locator
 			if (!getDriver().findElements(by2).isEmpty()) {
 				reportStep("Element found using fallback locator - " + locatorType2 + ": " + value2,
-					"pass", false);
+						"pass", false);
 				return getDriver().findElement(by2);
 			}
 
 			// Neither locator found
 			String errorMsg = "Element not found with either locator - " + locatorType1 + ": " + value1 +
-				" OR " + locatorType2 + ": " + value2;
+					" OR " + locatorType2 + ": " + value2;
 			reportStep(errorMsg, "fail", true);
 			throw new ElementNotFoundException(errorMsg);
 
@@ -1004,7 +1131,7 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 			Set<String> allWindows = getDriver().getWindowHandles();
 			for (String window : allWindows) {
 				getDriver().switchTo().window(window);
-				if (getDriver().getCurrentUrl().contains(url)) {
+				if (getDriver().getCurrentUrl().equals(url)) {
 					reportStep("Switched to window: " + url, "info", false);
 					return true;
 				}
@@ -1126,6 +1253,20 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 			reportStep("Screenshot save failed: " + e.getMessage(), "warning", false);
 		}
 		return number;
+	}
+	
+	public void screenShotByELement(String name){
+		try {
+			WebElement canvas = getDriver().findElement(By.cssSelector("canvas"));
+			File sourceFile = canvas.getScreenshotAs(OutputType.FILE);
+			File destination = new File("./Temp/"+name+ ".jpg");
+			FileUtils.copyFile(sourceFile, destination);
+		} catch (WebDriverException e) {
+			reportStep("Screenshot failed: " + e.getMessage(), "warning", false);
+		} catch (IOException e) {
+			reportStep("Screenshot save failed: " + e.getMessage(), "warning", false);
+		}
+		
 	}
 
 	public void waitApiToLoad() {

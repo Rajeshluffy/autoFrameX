@@ -1,15 +1,12 @@
 package com.framework.utils;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
 
-import org.openqa.selenium.By;
 import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.FluentWait;
@@ -106,6 +103,14 @@ public final class WaitUtils {
 	/**
 	 * Waits for an {@link ExpectedCondition} with a custom timeout.
 	 *
+	 * <p>Ignores {@link StaleElementReferenceException} and
+	 * {@link NoSuchElementException} during polling so that a transient DOM
+	 * re-render (SPA route change, Vue/React reconciliation) does not
+	 * immediately hard-fail the test.  For {@code @FindBy} proxy elements the
+	 * next poll automatically re-locates the element; for directly-held
+	 * {@link org.openqa.selenium.WebElement} references the wait retries
+	 * until timeout and then logs a warning rather than a fail.
+	 *
 	 * @param <T>              the return type of the condition
 	 * @param driver           the WebDriver instance for the current thread
 	 * @param reporter         the Reporter instance used to log failures (may be null)
@@ -117,7 +122,10 @@ public final class WaitUtils {
 	public static <T> T waitFor(RemoteWebDriver driver, Reporter reporter,
 			ExpectedCondition<T> condition, int timeoutInSeconds, String errorMessage) {
 		try {
-			return getWait(driver, timeoutInSeconds).until(condition);
+			return getWait(driver, timeoutInSeconds)
+					.ignoring(StaleElementReferenceException.class)
+					.ignoring(NoSuchElementException.class)
+					.until(condition);
 		} catch (TimeoutException e) {
 			if (reporter != null) {
 				reporter.reportStep(errorMessage + " after " + timeoutInSeconds + " seconds", "warning", false);

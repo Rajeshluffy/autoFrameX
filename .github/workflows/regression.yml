@@ -1,0 +1,94 @@
+name: Regression — Full Suite (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: 'Browser to use'
+        required: true
+        default: chrome
+        type: choice
+        options: [chrome, firefox, edge]
+      environment:
+        description: 'Target environment'
+        required: true
+        default: qa
+        type: choice
+        options: [qa, staging, prod]
+      headless:
+        description: 'Run browser in headless mode'
+        required: true
+        default: 'true'
+        type: boolean
+      suite_file:
+        description: 'TestNG suite XML file (relative to project root)'
+        required: true
+        default: testng.xml
+        type: string
+
+jobs:
+  regression:
+    name: Full Regression — ${{ inputs.browser }} / ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
+      - name: Verify Chrome installation
+        run: |
+          google-chrome --version
+          chromedriver --version
+
+      - name: Compile
+        run: mvn clean compile -q
+
+      - name: Run regression suite
+        run: |
+          mvn test \
+            -Dtestng.suite.file=${{ inputs.suite_file }} \
+            -Dbrowser=${{ inputs.browser }} \
+            -Denv=${{ inputs.environment }} \
+            -Dheadless=${{ inputs.headless }} \
+            -Dsurefire.reportNameSuffix=regression
+        continue-on-error: true
+
+      - name: Upload HTML reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-reports-${{ inputs.browser }}-${{ inputs.environment }}
+          path: |
+            reports/**/*.html
+            target/cucumber-reports/
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Upload observability events (NDJSON)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-events-${{ inputs.browser }}-${{ inputs.environment }}
+          path: logs/test-events.json
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Upload Surefire XML results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-results-regression
+          path: target/surefire-reports/
+          retention-days: 30

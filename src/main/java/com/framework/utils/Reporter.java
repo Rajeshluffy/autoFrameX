@@ -70,9 +70,10 @@ public abstract class Reporter {
     private static final ThreadLocal<String> testName = new ThreadLocal<>();
 
     // Report configuration
-    private static final String FILE_NAME = "result.html";
+    private static final String DEFAULT_FILE_NAME = "result.html";
     private static final String DATE_PATTERN = "dd-MMM-yyyy HH-mm-ss";
     public static volatile String folderName = "";
+    private static volatile String reportFileName = DEFAULT_FILE_NAME;
 
     // Test metadata (set by child class in @BeforeClass)
     public String testcaseName;
@@ -93,14 +94,15 @@ public abstract class Reporter {
     // =========================================================================
 
     /**
-     * Initializes the report infrastructure ONLY.
+     * Initializes logging/event infrastructure ONLY.
      *
      * CRITICAL: TestNG does NOT support ITestContext injection in @BeforeSuite.
      * Attempting to inject it causes:
      * "Native Injection is NOT supported for @BeforeSuite annotated startReport"
      *
-     * Pool and config initialization is deferred to @BeforeTest where
-     * ITestContext IS supported.
+     * The suite name is required to name the report file, so the report
+     * folder/file itself is created in @BeforeTest (see {@link #initFromContext}),
+     * where ITestContext IS supported.
      */
     @BeforeSuite(alwaysRun = true)
     public synchronized void startReport() {
@@ -113,9 +115,6 @@ public abstract class Reporter {
         logger.info("========================================");
         logger.info("=== @BeforeSuite: Initializing Report ===");
         logger.info("========================================");
-
-        setupReporting();
-
         logger.info("=== @BeforeSuite Complete ===");
     }
 
@@ -139,6 +138,10 @@ public abstract class Reporter {
     @BeforeTest(alwaysRun = true)
     public synchronized void initFromContext(ITestContext context) {
         logger.info("=== @BeforeTest: Initializing Pool & Config ===");
+
+        String suiteName = (context != null && context.getSuite() != null)
+                ? context.getSuite().getName() : null;
+        initReportInfrastructure(suiteName);
 
         // Extract parameters from TestNG XML
         ConcurrentMap<String, String> suiteParams = extractSuiteParameters(context);
@@ -404,7 +407,7 @@ public abstract class Reporter {
                             String.format("%.0f%% failure rate", score * 100)));
                 extent.flush();
             }
-            logger.info("✓ Report flushed: " + folderName + "/" + FILE_NAME);
+            logger.info("✓ Report flushed: " + folderName + "/" + reportFileName);
         }
 
         FlakyTestTracker.getInstance().reset();
@@ -425,10 +428,18 @@ public abstract class Reporter {
     // =========================================================================
 
     /**
-     * Sets up the ExtentReports HTML reporter.
-     * Creates report and images directories.
+     * Creates the shared per-run report folder (with {@code images/} and
+     * {@code videos/} subfolders) and the ExtentReports HTML reporter, naming
+     * the report file after the test suite instead of a static name.
+     *
+     * <p>Public and static so non-TestNG runners (e.g. the Cucumber runner,
+     * which cannot extend this class) can trigger the same folder layout
+     * before their own scenarios run. Idempotent — the first caller wins.
+     *
+     * @param suiteName the TestNG suite name (falls back to a static name if
+     *                  null/blank, e.g. when no suite context is available)
      */
-    private synchronized void setupReporting() {
+    public static synchronized void initReportInfrastructure(String suiteName) {
         if (extent != null) {
             logger.debug("ExtentReports already initialized, skipping.");
             return;
@@ -449,11 +460,22 @@ public abstract class Reporter {
             images.mkdirs();
         }
 
+        // Create videos folder (VideoRecorder also lazily creates per-test
+        // subfolders here, but the parent should exist from run start).
+        File videos = new File("./" + folderName + "/videos");
+        if (!videos.exists()) {
+            videos.mkdirs();
+        }
+
+        reportFileName = (suiteName != null && !suiteName.isBlank())
+                ? sanitizeFileName(suiteName) + ".html"
+                : DEFAULT_FILE_NAME;
+
         // Configure Spark reporter (ExtentReports 5.x replacement for ExtentHtmlReporter).
         // ChartLocation and setChartVisibilityOnOpen are removed in v5 — the Spark
         // template handles chart placement automatically.
         // setAppendExisting is also gone; each run overwrites the file (fresh report).
-        ExtentSparkReporter sparkReporter = new ExtentSparkReporter("./" + folderName + "/" + FILE_NAME);
+        ExtentSparkReporter sparkReporter = new ExtentSparkReporter("./" + folderName + "/" + reportFileName);
         sparkReporter.config().setTheme(Theme.STANDARD);
         sparkReporter.config().setDocumentTitle("Automation Test Report");
         sparkReporter.config().setEncoding("utf-8");
@@ -466,7 +488,12 @@ public abstract class Reporter {
         extent.setSystemInfo("OS", System.getProperty("os.name"));
         extent.setSystemInfo("User", System.getProperty("user.name"));
 
-        logger.info("ExtentReports initialized at: " + folderName);
+        logger.info("ExtentReports initialized at: " + folderName + "/" + reportFileName);
+    }
+
+    /** Replaces characters invalid in file names with '_'. */
+    private static String sanitizeFileName(String value) {
+        return value.replaceAll("[^a-zA-Z0-9_-]", "_");
     }
 
     /**
@@ -529,6 +556,11 @@ public abstract class Reporter {
 
     public String getReportFolder() {
         return folderName;
+    }
+
+    /** Suite-name-based HTML report file name (e.g. {@code MySuite.html}), resolved by {@link #initReportInfrastructure}. */
+    public static String getReportFileName() {
+        return reportFileName;
     }
 
     public boolean isReportingInitialized() {

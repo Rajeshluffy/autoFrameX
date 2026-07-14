@@ -138,6 +138,12 @@ public class ProjectDirector {
         builder.setGridHubUrl(
                 resolve("gridHubUrl",          testngParams, "GRID_HUB_URL",  "gridHubUrl",   cfg.gridHubUrl()));
 
+        // ── Execution Mode ────────────────────────────────────────────────────
+        builder.setExecutionMode(ExecutionMode.from(
+                resolve("execution.mode", testngParams, "EXECUTION_MODE", "execution.mode", "targeted")));
+        builder.setExcelDataFile(
+                resolve("excel.data.file", testngParams, "EXCEL_DATA_FILE", "excel.data.file", ""));
+
         // ── Credentials ───────────────────────────────────────────────────────
         builder.setCredentials(
                 resolve("username",  testngParams, "APP_USERNAME", "username",  cfg.primaryUserName()),

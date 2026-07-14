@@ -209,11 +209,13 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- Monte Screen Recorder — pure-Java AVI screen capture for test video recording -->
+		<!-- JAVE2 — bundles platform FFmpeg binaries used by VideoRecorder.
+		     No system FFmpeg install required; the binary is extracted from this jar at runtime.
+		     Override the path with -Dffmpeg.path=/custom/ffmpeg if needed. -->
 		<dependency>
-			<groupId>com.github.stephenc.monte</groupId>
-			<artifactId>monte-screen-recorder</artifactId>
-			<version>0.7.7.0</version>
+			<groupId>ws.schild</groupId>
+			<artifactId>jave-all-deps</artifactId>
+			<version>3.5.0</version>
 		</dependency>
 
 	</dependencies>
