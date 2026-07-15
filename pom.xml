@@ -4,8 +4,36 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>autoFrameX</groupId>
-	<artifactId>autoFrameX</artifactId>
+	<artifactId>autoframex-parent</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<!--
+	    Reactor parent for the TD-20 multi-module split (see
+	    docs/TECHNICAL_DEBT_REGISTER.md and docs/ARCHITECTURE.md). A team depends
+	    on only the module(s) it needs instead of pulling all ~24 dependencies
+	    transitively — e.g. an API-only team takes autoframex-core +
+	    autoframex-api, never Selenium/JMeter-adjacent/ZAP-adjacent code.
+
+	    Module dependency order (no cycles): core has zero dependencies on any
+	    other module; every other module depends on core (directly or
+	    transitively); selenium/api/database sit beside each other; cucumber
+	    depends on core+selenium+api; performance depends on core+selenium+api;
+	    security depends on core+api; testkit depends on everything (it hosts
+	    the one suite — testng.xml — that spans selenium+cucumber+performance+
+	    security via <packages>, which no single non-aggregator module's
+	    classpath can satisfy).
+	-->
+	<modules>
+		<module>autoframex-core</module>
+		<module>autoframex-selenium</module>
+		<module>autoframex-api</module>
+		<module>autoframex-database</module>
+		<module>autoframex-cucumber</module>
+		<module>autoframex-performance</module>
+		<module>autoframex-security</module>
+		<module>autoframex-testkit</module>
+	</modules>
 
 	<properties>
 		<java.version>17</java.version>
@@ -30,199 +58,173 @@
 		<mysql.version>9.6.0</mysql.version>
 		<snakeyaml.version>2.6</snakeyaml.version>
 		<protobuf.version>4.34.1</protobuf.version>
+		<jspecify.version>1.0.0</jspecify.version>
 		<slf4j.version>2.0.5</slf4j.version>
 		<logback.version>1.4.7</logback.version>
 		<logstash.encoder.version>7.4</logstash.encoder.version>
+		<archunit.version>1.3.0</archunit.version>
+		<wiremock.version>3.9.1</wiremock.version>
 		<sonar.projectKey>autoFrameX</sonar.projectKey>
 		<sonar.projectName>autoFrameX</sonar.projectName>
 		<sonar.java.source>17</sonar.java.source>
-		<sonar.sources>src/main/java</sonar.sources>
-		<sonar.tests>src/test/java</sonar.tests>
-
 	</properties>
 
-	<dependencies>
+	<!--
+	    Centralized version pinning — the future "BOM" content the roadmap
+	    referred to, folded directly into the parent rather than a separate
+	    autoframex-bom module (nothing else in the reactor needs to import this
+	    dependencyManagement independently of also being a reactor member).
 
-		<!-- Selenium -->
-		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-java</artifactId>
-			<version>${selenium.version}</version>
-		</dependency>
+	    gson/snakeyaml/protobuf-java/jspecify are here as pure version overrides
+	    (no module lists them as a direct <dependency> below) — see each
+	    artifact's comment for exactly which transitive consumer needed the
+	    override, verified via `mvn dependency:tree -Dverbose` (TD-20 Stage 1,
+	    2026-07-15). dependencyManagement entries don't add a dependency to any
+	    module by themselves; they only take effect if something in that
+	    module's own graph (direct or transitive) already pulls the artifact in.
+	-->
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-java</artifactId>
+				<version>${selenium.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.testng</groupId>
+				<artifactId>testng</artifactId>
+				<version>${testng.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.rest-assured</groupId>
+				<artifactId>rest-assured</artifactId>
+				<version>${rest.assured.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.rest-assured</groupId>
+				<artifactId>json-schema-validator</artifactId>
+				<version>${rest.assured.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi</artifactId>
+				<version>${apache.poi.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi-ooxml</artifactId>
+				<version>${apache.poi.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.aventstack</groupId>
+				<artifactId>extentreports</artifactId>
+				<version>${extent.report.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.cucumber</groupId>
+				<artifactId>cucumber-java</artifactId>
+				<version>${cucumber.jvm.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.cucumber</groupId>
+				<artifactId>cucumber-testng</artifactId>
+				<version>${cucumber.jvm.testng.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.cucumber</groupId>
+				<artifactId>cucumber-picocontainer</artifactId>
+				<version>${cucumber.picocontainer.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>${commons.io.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>${jackson.databind.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aeonbits.owner</groupId>
+				<artifactId>owner</artifactId>
+				<version>${owner.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.javafaker</groupId>
+				<artifactId>javafaker</artifactId>
+				<version>${faker.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.mysql</groupId>
+				<artifactId>mysql-connector-j</artifactId>
+				<version>${mysql.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>${logback.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>jul-to-slf4j</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.logstash.logback</groupId>
+				<artifactId>logstash-logback-encoder</artifactId>
+				<version>${logstash.encoder.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.wiremock</groupId>
+				<artifactId>wiremock-standalone</artifactId>
+				<version>${wiremock.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.tngtech.archunit</groupId>
+				<artifactId>archunit</artifactId>
+				<version>${archunit.version}</version>
+				<scope>test</scope>
+			</dependency>
 
-		<!-- TestNG -->
-		<dependency>
-			<groupId>org.testng</groupId>
-			<artifactId>testng</artifactId>
-			<version>${testng.version}</version>
-		</dependency>
-
-		<!-- Rest Assured -->
-		<dependency>
-			<groupId>io.rest-assured</groupId>
-			<artifactId>rest-assured</artifactId>
-			<version>${rest.assured.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jspecify</groupId>
-			<artifactId>jspecify</artifactId>
-			<version>1.0.0</version>
-			<scope>compile</scope>
-		</dependency>
-
-		<!-- JSON Schema Validator — required by RestAssuredResponseBase.verifySchema() -->
-		<dependency>
-			<groupId>io.rest-assured</groupId>
-			<artifactId>json-schema-validator</artifactId>
-			<version>${rest.assured.version}</version>
-		</dependency>
-
-		<!-- Apache POI -->
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi</artifactId>
-			<version>${apache.poi.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi-ooxml</artifactId>
-			<version>${apache.poi.version}</version>
-		</dependency>
-
-		<!-- Extent Reports -->
-		<dependency>
-			<groupId>com.aventstack</groupId>
-			<artifactId>extentreports</artifactId>
-			<version>${extent.report.version}</version>
-		</dependency>
-
-		<!-- Cucumber -->
-		<dependency>
-			<groupId>io.cucumber</groupId>
-			<artifactId>cucumber-java</artifactId>
-			<version>${cucumber.jvm.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.cucumber</groupId>
-			<artifactId>cucumber-testng</artifactId>
-			<version>${cucumber.jvm.testng.version}</version>
-		</dependency>
-		<!-- Cucumber PicoContainer — enables constructor injection in step definitions.
-		     Shared state between step classes flows through plain Java objects
-		     (ScenarioContext, etc.) instead of static fields.           -->
-		<dependency>
-			<groupId>io.cucumber</groupId>
-			<artifactId>cucumber-picocontainer</artifactId>
-			<version>${cucumber.picocontainer.version}</version>
-		</dependency>
-
-		<!-- Commons IO -->
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>${commons.io.version}</version>
-		</dependency>
-
-		<!-- No direct code usage (confirmed via grep) — each pins a transitive
-		     dependency's version up from an older copy something else pulls in
-		     (verified via `mvn dependency:tree -Dverbose`, TD-20 audit 2026-07-15):
-		     gson overrides extentreports' transitive gson:2.10.1; snakeyaml
-		     overrides javafaker's transitive snakeyaml:android:1.23; protobuf-java
-		     overrides mysql-connector-j's transitive protobuf-java:4.31.1. -->
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>${gson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.databind.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.yaml</groupId>
-			<artifactId>snakeyaml</artifactId>
-			<version>${snakeyaml.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.protobuf</groupId>
-			<artifactId>protobuf-java</artifactId>
-			<version>${protobuf.version}</version>
-		</dependency>
-
-		<!-- Owner Config Library -->
-		<dependency>
-			<groupId>org.aeonbits.owner</groupId>
-			<artifactId>owner</artifactId>
-			<version>${owner.version}</version>
-		</dependency>
-
-		<!-- Faker Config Library -->
-		<dependency>
-			<groupId>com.github.javafaker</groupId>
-			<artifactId>javafaker</artifactId>
-			<version>${faker.version}</version>
-		</dependency>
-
-		<!--mysql-connector-j (upgraded for CVE fixes) -->
-		<dependency>
-			<groupId>com.mysql</groupId>
-			<artifactId>mysql-connector-j</artifactId>
-			<version>${mysql.version}</version>
-		</dependency>
-
-		<!-- SLF4J API -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>${slf4j.version}</version>
-		</dependency>
-
-		<!-- Logback — SLF4J implementation -->
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>${logback.version}</version>
-		</dependency>
-
-		<!-- JUL-to-SLF4J bridge — routes java.util.logging through Logback -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>jul-to-slf4j</artifactId>
-			<version>${slf4j.version}</version>
-		</dependency>
-
-		<!-- Logstash encoder — JSON log format for ELK Stack ingestion -->
-		<dependency>
-			<groupId>net.logstash.logback</groupId>
-			<artifactId>logstash-logback-encoder</artifactId>
-			<version>${logstash.encoder.version}</version>
-		</dependency>
-
-		<!-- WireMock — test-scoped; WireMockManager lives in src/test/java -->
-		<dependency>
-			<groupId>org.wiremock</groupId>
-			<artifactId>wiremock-standalone</artifactId>
-			<version>3.9.1</version>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- ArchUnit — test-scoped; core artifact only (no archunit-junit5, this
-		     project uses TestNG). Backs the architectural guardrail tests in
-		     com.framework.testng.ArchitectureRulesTest. -->
-		<dependency>
-			<groupId>com.tngtech.archunit</groupId>
-			<artifactId>archunit</artifactId>
-			<version>1.3.0</version>
-			<scope>test</scope>
-		</dependency>
-
-	</dependencies>
+			<!-- Version-override pins only — no module declares these as a direct
+			     dependency; they take effect if/when a module's own dependency
+			     graph transitively pulls in an older copy. -->
+			<dependency>
+				<groupId>com.google.code.gson</groupId>
+				<artifactId>gson</artifactId>
+				<version>${gson.version}</version>
+				<!-- overrides extentreports' transitive gson:2.10.1 -->
+			</dependency>
+			<dependency>
+				<groupId>org.yaml</groupId>
+				<artifactId>snakeyaml</artifactId>
+				<version>${snakeyaml.version}</version>
+				<!-- overrides javafaker's transitive snakeyaml:android:1.23 -->
+			</dependency>
+			<dependency>
+				<groupId>com.google.protobuf</groupId>
+				<artifactId>protobuf-java</artifactId>
+				<version>${protobuf.version}</version>
+				<!-- overrides mysql-connector-j's transitive protobuf-java:4.31.1 -->
+			</dependency>
+			<dependency>
+				<groupId>org.jspecify</groupId>
+				<artifactId>jspecify</artifactId>
+				<version>${jspecify.version}</version>
+				<!-- matches selenium-api's own transitive need at the same version -->
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<build>
 		<plugins>
-			<!-- Maven Compiler Plugin for Java Version -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -234,7 +236,6 @@
 				</configuration>
 			</plugin>
 
-			<!-- Maven Source Plugin to share sources -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
@@ -248,8 +249,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
-			<!-- Maven Jar Plugin -> plugin removed as default generation is sufficient -->
 
 			<!-- Maven Surefire Plugin for TestNG -->
 			<plugin>
@@ -282,20 +281,6 @@
 						<phase>test</phase>
 						<goals><goal>report</goal></goals>
 					</execution>
-					<!--
-					    Coverage floor, bound to the "verify" phase — plain `mvn test` does
-					    not run it, so CI runs one extra `mvn verify -Dmaven.test.skip=true`
-					    step after its real test suites to enforce this against the
-					    cumulative jacoco.exec they already produced in the same job.
-
-					    20% is set deliberately below the ~34% line coverage the parallel
-					    smoke suite (testng-parallel-smoke.xml) actually measured at the
-					    time this was added — real margin, not a rubber stamp, but low
-					    enough that it only catches a genuine regression (e.g. most tests
-					    silently failing to run) rather than every routine PR. Ratchet this
-					    up as real regression coverage grows; do not lower it to "make CI
-					    pass" without also explaining why in the commit message.
-					-->
 					<execution>
 						<id>jacoco-check</id>
 						<phase>verify</phase>
@@ -325,11 +310,7 @@
 				<version>3.11.0.3922</version>
 			</plugin>
 
-			<!-- Checkstyle — style/consistency checks. Report-only for now (failOnViolation
-			     is off): the codebase has never been checked against any ruleset before,
-			     so a full retroactive fix-up is out of scope for introducing the tool.
-			     Run `mvn checkstyle:check` locally to see the report; flip
-			     failOnViolation to true once the existing violation backlog is cleared. -->
+			<!-- Checkstyle — report-only (failOnViolation off); see docs/CODING_STANDARDS.md. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
@@ -383,15 +364,10 @@
 				</executions>
 			</plugin>
 
-			<!-- OWASP Dependency-Check — SCA scan across ~25 direct dependencies, none
-			     of which were scanned for known CVEs before this. Deliberately NOT bound
-			     to a lifecycle phase (unlike the tools above): it downloads/updates the
-			     NVD CVE feed on first run, which is slow and gets rate-limited without an
-			     NVD API key — running it on every push would make CI slow and flaky. Run
-			     explicitly with `mvn dependency-check:check` (optionally
-			     -Dnvd.api.key=... for faster feed updates), or via the scheduled
-			     dependency-check.yml workflow (weekly + manual dispatch), matching how
-			     security.yml's ZAP scan is already scheduled/manual rather than per-push. -->
+			<!-- OWASP Dependency-Check — see docs/TECHNICAL_DEBT_REGISTER.md TD-11.
+			     Deliberately NOT bound to a lifecycle phase (NVD feed download is
+			     slow/rate-limited) — run explicitly with `mvn dependency-check:check`
+			     or via the scheduled dependency-check.yml workflow. -->
 			<plugin>
 				<groupId>org.owasp</groupId>
 				<artifactId>dependency-check-maven</artifactId>

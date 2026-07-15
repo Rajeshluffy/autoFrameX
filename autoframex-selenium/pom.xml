@@ -1,0 +1,77 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>autoFrameX</groupId>
+		<artifactId>autoframex-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>autoframex-selenium</artifactId>
+
+	<!--
+	    Selenium WebDriver support: com.framework.selenium.api.* (action classes,
+	    SeleniumBase facade, BasePage), com.framework.testng.api.base (TestNG
+	    lifecycle base classes, retry engine), design.patterns.object.pool (the
+	    WebDriver pool), design.patterns.factory.browser (browser creation
+	    registry). Also owns the 5 Selenium-dependent utility classes
+	    (VideoRecorder, ValidationUtils, WaitUtils, ScreenshotUtils,
+	    ScreenshotStore) that couldn't stay in autoframex-core's com.framework.utils
+	    without giving core a hard Selenium dependency.
+	-->
+
+	<dependencies>
+		<dependency>
+			<groupId>autoFrameX</groupId>
+			<artifactId>autoframex-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<!-- test-jar so testng-ci.xml here can reference core's ExtentBugTest -->
+		<dependency>
+			<groupId>autoFrameX</groupId>
+			<artifactId>autoframex-core</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-java</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Publishes a test-jar so autoframex-testkit's aggregate suite
+			     (testng.xml) can reference RetryTest, which lives here. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

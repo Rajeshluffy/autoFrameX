@@ -1,0 +1,96 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>autoFrameX</groupId>
+		<artifactId>autoframex-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>autoframex-testkit</artifactId>
+
+	<!--
+	    No main code of its own — hosts only the one suite (testng.xml) that
+	    spans more than one module's classpath at once (ExtentBugTest [core] +
+	    RetryTest [selenium] + runners.CucumberRunner [cucumber], plus
+	    <packages> scanning of com.framework.performance/security's main
+	    classes). No other module's own classpath satisfies all of that at
+	    once, hence this aggregator. Depends on every other module (test-jar
+	    for the 3 that contribute test classes referenced by name, regular
+	    dependency for the rest).
+	-->
+
+	<dependencies>
+		<dependency>
+			<groupId>autoFrameX</groupId>
+			<artifactId>autoframex-core</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>autoFrameX</groupId>
+			<artifactId>autoframex-core</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>autoFrameX</groupId>
+			<artifactId>autoframex-selenium</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>autoFrameX</groupId>
+			<artifactId>autoframex-selenium</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>autoFrameX</groupId>
+			<artifactId>autoframex-cucumber</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>autoFrameX</groupId>
+			<artifactId>autoframex-cucumber</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>autoFrameX</groupId>
+			<artifactId>autoframex-api</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>autoFrameX</groupId>
+			<artifactId>autoframex-database</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>autoFrameX</groupId>
+			<artifactId>autoframex-performance</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>autoFrameX</groupId>
+			<artifactId>autoframex-security</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+</project>

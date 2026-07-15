@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>autoFrameX</groupId>
+		<artifactId>autoframex-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>autoframex-performance</artifactId>
+
+	<!--
+	    Performance testing utilities: com.framework.performance. Uses only Java
+	    stdlib concurrency + RestAssured (already pulled in via autoframex-api) —
+	    no JMeter dependency exists here or anywhere in this reactor (corrected
+	    2026-07-15; the original architecture doc wrongly claimed one did). This
+	    module exists to keep performance test *code* out of projects that don't
+	    want it, not to isolate a heavy dependency.
+	-->
+
+	<dependencies>
+		<dependency>
+			<groupId>autoFrameX</groupId>
+			<artifactId>autoframex-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>autoFrameX</groupId>
+			<artifactId>autoframex-selenium</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>autoFrameX</groupId>
+			<artifactId>autoframex-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+		</dependency>
+	</dependencies>
+
+</project>

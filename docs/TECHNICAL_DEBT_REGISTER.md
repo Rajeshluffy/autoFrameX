@@ -7,11 +7,36 @@ remediation pass (2026-07-15). See [ARCHITECTURE.md](ARCHITECTURE.md) for diagra
 **19 of 20 items fixed and verified** (compiled + run against real suites, not just
 unit-tested in isolation) across the 2026-07-15 passes. 1 closed as not applicable
 (TD-19 — repo owner confirmed this is not going open-source). 1 remains open — TD-20,
-now in progress (Stage 1 of 3 done). Progress on the agreed order: ~~TD-07~~ (done) →
+now in progress (Stage 2 of 3 done). Progress on the agreed order: ~~TD-07~~ (done) →
 ~~`BrowserType` registry rework~~ (done — covered both the `RemoteGridBrowser` coupling
 and multi-custom-browser support) → **TD-20** (in progress, staged: Stage 1
-prerequisite decoupling done 2026-07-15; Stage 2 reactor/module migration and Stage 3
-CI/docs updates remain).
+prerequisite decoupling done, Stage 2 reactor/module migration done, both 2026-07-15;
+only Stage 3 — CI/Docker/Jenkins/docs updates — remains).
+
+**TD-20 Stage 2 (2026-07-15):** the repo is now a real 8-module Maven reactor —
+`autoframex-core`, `-selenium`, `-api`, `-database` (new, missing from the original
+sketch), `-cucumber`, `-performance`, `-security`, `-testkit` (new — hosts `testng.xml`,
+the one suite spanning more than one module's classpath). `com.api.design` was
+originally slated for `core` but turned out to directly import
+`io.restassured.specification.RequestSpecification` — caught only when `core` first
+failed to compile; moved to `autoframex-api` instead (a third-party-import gap the
+framework-only import-graph research from planning didn't catch, same category as the
+`com.framework.utils` Selenium-dependent classes found earlier). Suite XMLs that only
+touch one module's classes moved with that module (`testng-ci.xml`,
+`testng-ci-retry.xml`, `testng-parallel-smoke.xml`, `testng-data-provider.xml`,
+`testng-targeted.xml` → `autoframex-selenium`); `testng.xml` (spans
+selenium+cucumber+performance+security) moved to the new `autoframex-testkit`
+aggregator, which needs `test-jar` dependencies on `core`/`selenium`/`cucumber` to see
+their test classes by name (`ExtentBugTest`, `RetryTest`, `CucumberRunner`) — a real,
+somewhat-advanced Maven mechanic this split required. `CucumberRunner`'s
+`@CucumberOptions(features = "src/test/resources/features")` was a filesystem-relative
+path that broke when invoked from a different module's working directory than the one
+that compiled it; fixed to `"classpath:features"` (more portable regardless). All 5
+real suites re-verified scoped to their new module homes, behaving identically to
+pre-split. Running `testng.xml` end-to-end for the first time all session (via the new
+testkit module) surfaced a genuine, previously-undiscovered Cucumber driver-pool-leak
+bug — unrelated to the module split itself, flagged as a separate follow-up rather than
+fixed here.
 
 **Closed, not applicable:** TD-19 (OSS-readiness: LICENSE, reverse-DNS groupId, purge
 client names from core Javadoc) — the repo owner confirmed (2026-07-15) this framework
@@ -44,7 +69,7 @@ is not being open-sourced, so none of that work is relevant. Revisit if that cha
 
 | # | Item | Category | Severity | Status |
 |---|---|---|---|---|
-| TD-20 | No multi-module split — every team pulls all ~24 dependencies transitively | Scalability | Medium | **In progress, staged** (see [ARCHITECTURE.md](ARCHITECTURE.md#recommended-project-structure-multi-module-split--td-20-in-progress)). Comparable in scope/risk to the TD-03 singleton fix — a dedicated 3-stage plan, not attempted alongside 17 other changes in one sweep. **Stage 1 done (2026-07-15):** fixed the 2 circular-dependency blockers that would have made `core` depend on `selenium` (`Reporter`'s pool bind/init/shutdown calls moved down into `SeleniumBase`'s own `@BeforeTest`/`@AfterSuite` hooks; `FailureCategorizer` decoupled from `ElementNotFoundException` via a new `com.framework.exception.Categorized` marker interface, and from Selenium's own exception types via class-name matching instead of `instanceof`) — both guarded by a new ArchUnit rule (`coreMustNotDependOnSeleniumOrPool`). Also ran `mvn dependency:tree -Dverbose` against all 5 dependencies with zero direct code usage: `gson`/`snakeyaml`/`protobuf-java` turned out to be genuine version-override pins (confirmed by breaking the build when one was removed and checking the real transitive conflict each resolves — `extentreports`→gson 2.10.1, `javafaker`→snakeyaml:android 1.23, `mysql-connector-j`→protobuf-java 4.31.1) and `jspecify` matches what `selenium-api` already needs transitively at the same version — all 4 kept, now documented inline. Only `jsoup` had zero transitive reference anywhere in the full tree — removed. Corrected this doc's and `ARCHITECTURE.md`'s previous claim that performance/security modules exist to isolate JMeter/ZAP-client dependencies — neither exists in the pom; the real benefit is test-code isolation. **Stage 2 (reactor structure + code migration) and Stage 3 (CI/Docker/Jenkins/docs updates) remain.** |
+| TD-20 | No multi-module split — every team pulls all ~24 dependencies transitively | Scalability | Medium | **In progress, staged** (see [ARCHITECTURE.md](ARCHITECTURE.md#recommended-project-structure-multi-module-split--td-20-in-progress)). Comparable in scope/risk to the TD-03 singleton fix — a dedicated 3-stage plan, not attempted alongside 17 other changes in one sweep. **Stage 1 done (2026-07-15):** fixed the 2 circular-dependency blockers that would have made `core` depend on `selenium` (`Reporter`'s pool bind/init/shutdown calls moved down into `SeleniumBase`'s own `@BeforeTest`/`@AfterSuite` hooks; `FailureCategorizer` decoupled from `ElementNotFoundException` via a new `com.framework.exception.Categorized` marker interface, and from Selenium's own exception types via class-name matching instead of `instanceof`) — both guarded by a new ArchUnit rule (`coreMustNotDependOnSeleniumOrPool`). Also ran `mvn dependency:tree -Dverbose` against all 5 dependencies with zero direct code usage: `gson`/`snakeyaml`/`protobuf-java` turned out to be genuine version-override pins (confirmed by breaking the build when one was removed and checking the real transitive conflict each resolves — `extentreports`→gson 2.10.1, `javafaker`→snakeyaml:android 1.23, `mysql-connector-j`→protobuf-java 4.31.1) and `jspecify` matches what `selenium-api` already needs transitively at the same version — all 4 kept, now documented inline. Only `jsoup` had zero transitive reference anywhere in the full tree — removed. Corrected this doc's and `ARCHITECTURE.md`'s previous claim that performance/security modules exist to isolate JMeter/ZAP-client dependencies — neither exists in the pom; the real benefit is test-code isolation. **Stage 2 done (2026-07-15):** see the Stage 2 note above the "Fixed" table — the repo is now a real 8-module reactor, all 5 real suites re-verified against their new module homes. **Only Stage 3 (CI/Docker/Jenkins/docs updates) remains.** |
 
 Also related: the bidirectional `design.patterns.* ↔ com.framework.config.data` coupling
 (`PoolConfig`, `DriverPoolManager`, `BrowserFactory`, `RemoteGridBrowser`, `DBManager` all
