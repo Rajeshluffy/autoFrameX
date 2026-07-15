@@ -9,8 +9,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.framework.config.data.ConfigManager;
-
 import design.patterns.factory.browser.BrowserType;
 
 /**
@@ -30,7 +28,11 @@ public class PoolConfig {
 	private final boolean healthCheckEnabled;
 	private final boolean stateResetEnabled;
 	private final boolean closeAfterEach;
-	private final Set<BrowserType> supportedBrowsers;
+	private final Set<String> supportedBrowsers;
+	private final int pageLoadTimeoutSeconds;
+	private final int scriptTimeoutSeconds;
+	private final int implicitWaitSeconds;
+	private final String gridHubUrl;
 
 	private PoolConfig(Builder builder) {
 		this.maxPoolSize = builder.maxPoolSize;
@@ -42,6 +44,10 @@ public class PoolConfig {
 		this.stateResetEnabled = builder.stateResetEnabled;
 		this.closeAfterEach = builder.closeAfterEach;
 		this.supportedBrowsers = Collections.unmodifiableSet(builder.supportedBrowsers);
+		this.pageLoadTimeoutSeconds = builder.pageLoadTimeoutSeconds;
+		this.scriptTimeoutSeconds = builder.scriptTimeoutSeconds;
+		this.implicitWaitSeconds = builder.implicitWaitSeconds;
+		this.gridHubUrl = builder.gridHubUrl;
 	}
 
 	public int getMaxPoolSize() {
@@ -81,8 +87,28 @@ public class PoolConfig {
 		return closeAfterEach;
 	}
 
-	public Set<BrowserType> getSupportedBrowsers() {
+	public Set<String> getSupportedBrowsers() {
 		return supportedBrowsers;
+	}
+
+	/** Selenium Grid hub URL, used by {@code GRID_*} browser providers. Empty string if not configured. */
+	public String getGridHubUrl() {
+		return gridHubUrl;
+	}
+
+	/** Seconds before a page load times out — applied to every newly-created driver. */
+	public int getPageLoadTimeoutSeconds() {
+		return pageLoadTimeoutSeconds;
+	}
+
+	/** Seconds before an async script execution times out. */
+	public int getScriptTimeoutSeconds() {
+		return scriptTimeoutSeconds;
+	}
+
+	/** Seconds of implicit wait applied to every newly-created driver. */
+	public int getImplicitWaitSeconds() {
+		return implicitWaitSeconds;
 	}
 
 	@Override
@@ -96,20 +122,72 @@ public class PoolConfig {
 
 	/**
 	 * Builder for PoolConfig following Builder pattern.
+	 *
+	 * <p>Field defaults below are plain constants, not read from {@code ConfigManager} —
+	 * {@code DriverPoolManager.loadConfiguration()} (the only caller in this codebase)
+	 * always overrides every one of them explicitly, so reaching into config here was
+	 * dead coupling: {@code design.patterns.*} (meant to be generic, framework-agnostic
+	 * infrastructure) importing {@code com.framework.config.data} for values nothing
+	 * ever actually used. These constants mirror {@code frameworkConfig.properties}'
+	 * own defaults purely so a caller who builds a {@code PoolConfig} directly (bypassing
+	 * {@code DriverPoolManager}) still gets sane values.
 	 */
 	public static class Builder {
-		private int maxPoolSize = ConfigManager.getInstance().getConfig().getPoolMaxSize();
-		private int minPoolSize = ConfigManager.getInstance().getConfig().getPoolMinSize();
-		private int maxIdleMinutes = ConfigManager.getInstance().getConfig().getPoolMaxIdleMinutes();
-		private int borrowTimeoutSeconds = ConfigManager.getInstance().getConfig().getPoolBorrowTimeoutSeconds();
-		private int maxReuseCount = ConfigManager.getInstance().getConfig().getPoolMaxReuseCount();
+		private static final int DEFAULT_MAX_POOL_SIZE = 5;
+		private static final int DEFAULT_MIN_POOL_SIZE = 2;
+		private static final int DEFAULT_MAX_IDLE_MINUTES = 10;
+		private static final int DEFAULT_BORROW_TIMEOUT_SECONDS = 30;
+		private static final int DEFAULT_MAX_REUSE_COUNT = 75;
+		private static final int DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS = 30;
+		private static final int DEFAULT_SCRIPT_TIMEOUT_SECONDS = 30;
+		private static final int DEFAULT_IMPLICIT_WAIT_SECONDS = 10;
+
+		private int maxPoolSize = DEFAULT_MAX_POOL_SIZE;
+		private int minPoolSize = DEFAULT_MIN_POOL_SIZE;
+		private int maxIdleMinutes = DEFAULT_MAX_IDLE_MINUTES;
+		private int borrowTimeoutSeconds = DEFAULT_BORROW_TIMEOUT_SECONDS;
+		private int maxReuseCount = DEFAULT_MAX_REUSE_COUNT;
 		private boolean healthCheckEnabled = true;
 		private boolean stateResetEnabled = true;
 		private boolean closeAfterEach = true;
-		private Set<BrowserType> supportedBrowsers = new HashSet<>();
+		private Set<String> supportedBrowsers = new HashSet<>();
+		private int pageLoadTimeoutSeconds = DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS;
+		private int scriptTimeoutSeconds = DEFAULT_SCRIPT_TIMEOUT_SECONDS;
+		private int implicitWaitSeconds = DEFAULT_IMPLICIT_WAIT_SECONDS;
+		private String gridHubUrl = "";
 
 		public Builder() {
-			supportedBrowsers.add(BrowserType.CHROME);
+			supportedBrowsers.add("CHROME");
+		}
+
+		/** Selenium Grid hub URL, threaded into {@code GRID_*} browser providers. */
+		public Builder gridHubUrl(String gridHubUrl) {
+			this.gridHubUrl = gridHubUrl != null ? gridHubUrl : "";
+			return this;
+		}
+
+		/** Seconds before a page load times out — applied to every newly-created driver. */
+		public Builder pageLoadTimeoutSeconds(int pageLoadTimeoutSeconds) {
+			if (pageLoadTimeoutSeconds <= 0)
+				throw new IllegalArgumentException("pageLoadTimeoutSeconds must be positive");
+			this.pageLoadTimeoutSeconds = pageLoadTimeoutSeconds;
+			return this;
+		}
+
+		/** Seconds before an async script execution times out. */
+		public Builder scriptTimeoutSeconds(int scriptTimeoutSeconds) {
+			if (scriptTimeoutSeconds <= 0)
+				throw new IllegalArgumentException("scriptTimeoutSeconds must be positive");
+			this.scriptTimeoutSeconds = scriptTimeoutSeconds;
+			return this;
+		}
+
+		/** Seconds of implicit wait applied to every newly-created driver. */
+		public Builder implicitWaitSeconds(int implicitWaitSeconds) {
+			if (implicitWaitSeconds < 0)
+				throw new IllegalArgumentException("implicitWaitSeconds must be >= 0");
+			this.implicitWaitSeconds = implicitWaitSeconds;
+			return this;
 		}
 
 		/**
@@ -205,14 +283,20 @@ public class PoolConfig {
 		}
 
 		/**
-		 * Adds a supported browser type.
-		 * 
-		 * @param browserType browser type to support
+		 * Adds a supported browser id (a {@link design.patterns.factory.browser.BrowserRegistry}
+		 * key — built-in ids match {@code BrowserType.name()}, e.g. {@code "CHROME"}).
+		 *
+		 * @param browserId browser id to support
 		 * @return this builder
 		 */
-		public Builder addSupportedBrowser(BrowserType browserType) {
-			this.supportedBrowsers.add(browserType);
+		public Builder addSupportedBrowser(String browserId) {
+			this.supportedBrowsers.add(browserId);
 			return this;
+		}
+
+		/** Compat overload for a caller holding a {@link BrowserType} constant. */
+		public Builder addSupportedBrowser(BrowserType browserType) {
+			return addSupportedBrowser(browserType.name());
 		}
 
 		/**

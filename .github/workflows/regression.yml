@@ -63,7 +63,6 @@ jobs:
             -Denv=${{ inputs.environment }} \
             -Dheadless=${{ inputs.headless }} \
             -Dsurefire.reportNameSuffix=regression
-        continue-on-error: true
 
       - name: Upload HTML reports
         if: always()

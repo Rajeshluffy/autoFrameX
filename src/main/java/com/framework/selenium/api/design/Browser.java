@@ -8,9 +8,6 @@ import org.openqa.selenium.NoSuchFrameException;
 import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.WebElement;
 
-import design.patterns.factory.browser.BrowserType;
-import design.patterns.object.pool.WebDriverPoolFactory;
-
 /**
  * <b>Interface Name:</b> Browser <br>
  * <b>Purpose:</b> This interface acts as a contract for all browser-level interactions 

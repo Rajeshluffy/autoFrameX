@@ -7,10 +7,14 @@ import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 
+/**
+ * Stateless REST Assured client — every call builds and returns its own
+ * {@link Response} with no instance fields, so one instance is safe to share
+ * across threads/scenarios without any synchronization contract to document
+ * or enforce.
+ */
 public class RestAssuredBase implements ApiClient {
-	
-	private Response response;
-	
+
 	private RequestSpecification given(RequestSpecification requestSpecification) {
 		return RestAssured.given()
 				          .spec(requestSpecification)
@@ -19,24 +23,24 @@ public class RestAssuredBase implements ApiClient {
 
 	@Override
 	public ResponseAPI get(RequestSpecification request, String endPoint) {
-		response = given(request).get(endPoint);
+		Response response = given(request).get(endPoint);
 		return new RestAssuredResponseBase(response);
 	}
 
 	@Override
 	public ResponseAPI post(RequestSpecification request, String endPoint) {
-		response = given(request)				   				   
+		Response response = given(request)
 				   .post(endPoint);
 		return new RestAssuredResponseBase(response);
 	}
 
 	@Override
 	public ResponseAPI post(RequestSpecification request, String endPoint, Object body) {
-		response = given(request)				   
+		Response response = given(request)
 				   .body(body)
 				   .post(endPoint);
 		return new RestAssuredResponseBase(response);
-	}	
+	}
 
 	@Override
 	public ResponseAPI put(RequestSpecification request, String endPoint, Object body) {

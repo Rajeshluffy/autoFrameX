@@ -1,17 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
+  <!-- %mask masks credential-shaped substrings (password=, Bearer ...) in every
+       log line automatically — see com.framework.utils.logging.MaskingMessageConverter.
+       Applies to both appenders below so masking is never opt-in per call site. -->
+  <conversionRule conversionWord="mask" converterClass="com.framework.utils.logging.MaskingMessageConverter"/>
+
   <!-- Console output with timestamp, thread, level, logger, and message -->
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %mask%n</pattern>
     </encoder>
   </appender>
 
-  <!-- File output in JSON format for ELK Stack ingestion via Filebeat -->
+  <!-- File output in JSON format for ELK Stack ingestion via Filebeat.
+       MaskingLogstashEncoder wraps LogstashEncoder to mask the same way. -->
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>logs/test-execution.log</file>
-    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+    <encoder class="com.framework.utils.logging.MaskingLogstashEncoder">
       <customFields>{"env":"${env:-local}","testSuite":"${testSuite:-autoFrameX}"}</customFields>
     </encoder>
     <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
@@ -41,7 +47,10 @@
 
   <!-- Suppress noisy third-party loggers -->
   <logger name="org.openqa.selenium" level="WARN"/>
-  <logger name="io.restassured"      level="DEBUG"/>
+  <!-- DEBUG logs full request/response bodies (headers, tokens) on every run;
+       masking now covers what it logs, but INFO stays the safer default —
+       bump this logger to DEBUG locally when you need request/response detail. -->
+  <logger name="io.restassured"      level="INFO"/>
   <logger name="org.apache.http"     level="WARN"/>
   <logger name="io.netty"            level="WARN"/>
 

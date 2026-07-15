@@ -20,6 +20,7 @@ import org.testng.annotations.DataProvider;
 import com.framework.config.data.ConfigManager;
 import com.framework.config.data.ExecutionMode;
 import com.framework.selenium.api.base.SeleniumBase;
+import com.framework.utils.AccountData;
 import com.framework.utils.DataLibrary;
 import com.framework.utils.EncryptionUtils;
 import com.framework.utils.FakerDataFactory;
@@ -86,13 +87,25 @@ public class ProjectSpecificMethods extends SeleniumBase {
 	 *       {@link ConfigManager}). The test method runs exactly once.</li>
 	 * </ul>
 	 *
-	 * <p>Test methods annotated with {@link TestMetadata#allRows()} = false and
+	 * <p>Test methods annotated with {@link com.framework.utils.TestMetadata#allRows()} = false and
 	 * running in DATA_PROVIDER mode still receive all rows — the {@code allRows}
 	 * flag is honoured only when {@code excelFileName} is set directly on the
 	 * class (legacy behaviour). Prefer the XML param approach for new tests.
 	 */
 	@DataProvider(name = "fetchData", parallel = true)
-	public Object[][] fetchData() throws IOException {
+	public Object[][] fetchData(ITestContext context) throws IOException {
+		// Re-bind this thread to its config/pool context. TestNG evaluates
+		// @DataProvider methods to build the invocation matrix before
+		// @BeforeMethod ever runs on whatever thread does that evaluation, so
+		// without this, ConfigManager.getInstance() here would silently
+		// resolve to an unbound, default-initialized context instead of the
+		// suite's real one (e.g. reading execution.mode as its "targeted"
+		// default instead of the XML's configured "data_provider").
+		ConcurrentMap<String, String> suiteParams = extractSuiteParameters(context);
+		String contextId = ConfigManager.resolveContextId(suiteParams);
+		ConfigManager.bindContext(contextId);
+		DriverPoolManager.bindContext(contextId);
+
 		ExecutionMode mode = ConfigManager.getInstance().getConfig().getExecutionMode();
 
 		if (mode == ExecutionMode.DATA_PROVIDER) {
@@ -141,6 +154,15 @@ public class ProjectSpecificMethods extends SeleniumBase {
 	public void preCondition(Method method, ITestContext context, Object[] parameters) {
 		logger.info("▶ @BeforeMethod: " + method.getDeclaringClass().getSimpleName()
 				+ "#" + method.getName());
+
+		// 0. Re-bind this thread to its config/pool context. Required even though
+		// Reporter.initFromContext already bound the @BeforeTest thread: under
+		// parallel="methods"/"classes" this @BeforeMethod runs on a different
+		// worker thread, which has no ThreadLocal state of its own yet.
+		ConcurrentMap<String, String> suiteParams = extractSuiteParameters(context);
+		String contextId = ConfigManager.resolveContextId(suiteParams);
+		ConfigManager.bindContext(contextId);
+		DriverPoolManager.bindContext(contextId);
 
 		// 1. Bind account from DataProvider parameters (if present)
 		AccountData account = extractAccount(parameters, context);

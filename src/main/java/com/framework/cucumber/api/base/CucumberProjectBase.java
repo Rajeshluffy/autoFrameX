@@ -70,6 +70,13 @@ public abstract class CucumberProjectBase extends SeleniumBase {
     public void setUp(Scenario scenario) {
         logger.info("▶ @Before [Cucumber]: {}", scenario.getName());
 
+        // Bind this thread to its config/pool context. No ITestContext is available
+        // in a pure Cucumber hook, so resolution falls through to env var/system
+        // property/default.
+        String contextId = ConfigManager.resolveContextId(null);
+        ConfigManager.bindContext(contextId);
+        DriverPoolManager.bindContext(contextId);
+
         ConcurrentMap<String, String> params = new ConcurrentHashMap<>();
         params.put("scenarioName", scenario.getName());
         params.put("scenarioId",   scenario.getId());

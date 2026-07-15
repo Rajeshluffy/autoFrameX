@@ -7,8 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
-import com.framework.config.data.ConfigManager;
-
 import design.patterns.object.pool.PoolConfig;
 
 /**
@@ -36,41 +34,44 @@ public class BrowserFactory implements WebDriverFactoryInterface {
 
 	private static final Logger logger = LoggerFactory.getLogger(BrowserFactory.class);
 
-	// Timeout constants — intentionally NOT static: reading config at class-load
-	// time (static field init) caused NPE when BrowserFactory was referenced before
-	// ConfigManager was initialized (e.g., during Spring/TestNG context startup).
-	// Reading lazily via instance methods defers the config lookup to driver-creation
-	// time, when ConfigManager is guaranteed to be ready.
-	private int pageLoadTimeout() {
-		return ConfigManager.getInstance().getConfig().getPageLoadTimeout();
-	}
-
-	private int scriptTimeout() {
-		return ConfigManager.getInstance().getConfig().getScriptTimeout();
-	}
-
-	private int implicitWait() {
-		return ConfigManager.getInstance().getConfig().getImplicit();
-	}
-
 	// -------------------------------------------------------------------------
 	// Primary factory method used by the pool
 	// -------------------------------------------------------------------------
 
 	/**
 	 * Creates a fully-configured {@link RemoteWebDriver} for the given browser
-	 * type. Called by {@link design.patterns.object.pool.WebDriverPoolFactory}
-	 * each time a new driver is needed.
+	 * id. Called by {@link design.patterns.object.pool.WebDriverPoolFactory}
+	 * each time a new driver is needed — this is the real implementation;
+	 * {@link #createDriver(BrowserType, PoolConfig)} bridges into it for
+	 * backward compatibility.
+	 *
+	 * @param browserId the {@link BrowserRegistry} id that identifies the browser
+	 *                  (built-in ids match {@code BrowserType.name()}, e.g. {@code "CHROME"})
+	 * @param config    pool configuration, including the driver timeouts to
+	 *                  apply (see {@link #configureTimeouts}) and anything a
+	 *                  registered provider needs (e.g. the grid hub URL);
+	 *                  {@code null} falls back to {@link PoolConfig}'s own defaults
+	 * @return a new, maximized, timeout-configured WebDriver instance
+	 */
+	public RemoteWebDriver createDriver(String browserId, PoolConfig config) {
+		logger.debug("Creating driver via BrowserRegistry: " + browserId);
+		PoolConfig effective = config != null ? config : new PoolConfig.Builder().build();
+		RemoteWebDriver driver = BrowserRegistry.resolve(browserId, effective).launchBrowser();
+		configureTimeouts(driver, effective);
+		return driver;
+	}
+
+	/**
+	 * Backward-compatible bridge for a caller holding a {@link BrowserType}
+	 * constant directly — delegates to {@link #createDriver(String, PoolConfig)}.
 	 *
 	 * @param browserType the enum value that identifies the browser
-	 * @param config      pool configuration (reserved for future use)
+	 * @param config      pool configuration; {@code null} falls back to
+	 *                    {@link PoolConfig}'s own defaults
 	 * @return a new, maximized, timeout-configured WebDriver instance
 	 */
 	public RemoteWebDriver createDriver(BrowserType browserType, PoolConfig config) {
-		logger.debug("Creating driver via Enum Factory: " + browserType);
-		RemoteWebDriver driver = browserType.launchBrowser();
-		configureTimeouts(driver);
-		return driver;
+		return createDriver(browserType.name(), config);
 	}
 
 	// -------------------------------------------------------------------------
@@ -96,13 +97,22 @@ public class BrowserFactory implements WebDriverFactoryInterface {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Applies standard timeouts to a freshly-created driver.
+	 * Applies standard timeouts to a freshly-created driver, read from
+	 * {@code config} rather than reaching into {@code ConfigManager} directly —
+	 * this package is meant to be generic, framework-agnostic infrastructure
+	 * with no knowledge of {@code com.framework.config.data} (see this
+	 * package's {@code package-info.java}).
 	 *
 	 * @param driver the driver to configure
+	 * @param config pool config carrying the three timeout values; {@code null}
+	 *               falls back to {@code new PoolConfig.Builder().build()}'s
+	 *               own defaults (the two call sites that don't have a real
+	 *               {@code PoolConfig} yet — see {@link WebDriverFactoryInterface})
 	 */
-	private void configureTimeouts(RemoteWebDriver driver) {
-		driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(pageLoadTimeout()));
-		driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(scriptTimeout()));
-		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(implicitWait()));
+	private void configureTimeouts(RemoteWebDriver driver, PoolConfig config) {
+		PoolConfig effective = config != null ? config : new PoolConfig.Builder().build();
+		driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(effective.getPageLoadTimeoutSeconds()));
+		driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(effective.getScriptTimeoutSeconds()));
+		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(effective.getImplicitWaitSeconds()));
 	}
 }

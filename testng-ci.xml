@@ -20,11 +20,14 @@
     <parameter name="env"         value="qa"/>
     <parameter name="headless"    value="true"/>
 
-    <!-- Framework unit tests — no WebDriver, no browser required -->
+    <!-- Framework unit tests — no WebDriver, no browser required.
+         RetryTest is intentionally always-failing (it verifies the retry engine's
+         behavior, not a regression) and lives in testng-ci-retry.xml instead, so it
+         never affects this suite's pass/fail signal. -->
     <test name="Framework Unit Tests">
         <classes>
             <class name="com.framework.testng.ExtentBugTest"/>
-            <class name="com.framework.testng.RetryTest"/>
+            <class name="com.framework.testng.ArchitectureRulesTest"/>
         </classes>
     </test>
 

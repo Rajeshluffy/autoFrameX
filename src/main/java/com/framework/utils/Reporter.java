@@ -2,8 +2,6 @@ package com.framework.utils;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
@@ -19,15 +17,11 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.BeforeTest;
 
-import com.framework.testng.api.base.TestMetadata;
-
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.MediaEntityBuilder;
 import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.model.Media;
-import com.aventstack.extentreports.reporter.ExtentSparkReporter;
-import com.aventstack.extentreports.reporter.configuration.Theme;
 import com.framework.config.data.ConfigManager;
 
 import com.framework.observability.CorrelationContext;
@@ -37,8 +31,6 @@ import com.framework.observability.ResourceUsageAccumulator;
 import com.framework.observability.TestEvent;
 import com.framework.observability.TestEventCollector;
 
-import design.patterns.object.pool.DriverPoolManager;
-
 /**
  * Abstract base class for test reporting and framework initialization.
  *
@@ -46,13 +38,20 @@ import design.patterns.object.pool.DriverPoolManager;
  * 1. @BeforeSuite does NOT accept ITestContext - removed parameter injection.
  * 2. @BeforeTest is used as a bridge to extract suite/test parameters from
  * ITestContext (which IS supported there) and pass them to ConfigManager
- * and DriverPoolManager before @BeforeClass runs.
+ * before @BeforeClass runs.
  * 3. Null guards added on 'extent' to prevent NPE if @BeforeSuite fails.
  *
+ * <p>Deliberately has no compile-time dependency on the WebDriver pool
+ * (design.patterns.object.pool) — this class lives in the framework's core
+ * module and must stay usable by non-UI (API-only) consumers (TD-20's
+ * multi-module split). {@code SeleniumBase} (which extends this class, in the
+ * selenium module) has its own @BeforeTest/@AfterSuite hooks for pool
+ * bind/init/shutdown — see that class.
+ *
  * Correct TestNG Execution Order:
- * 
+ *
  * @BeforeSuite -> initSuite() (no params - sets up report folder only)
- * @BeforeTest -> initFromContext() (ITestContext OK here - inits pool/config)
+ * @BeforeTest -> initFromContext() (ITestContext OK here - inits config)
  * @BeforeClass -> startTestCase() (creates extent test node)
  * @BeforeMethod -> setNode() (creates method node)
  * @Test -> test runs
@@ -63,17 +62,11 @@ public abstract class Reporter {
 
     private static final Logger logger = LoggerFactory.getLogger(Reporter.class);
 
-    // ExtentReports instances
-    private static volatile ExtentReports extent;
+    // ExtentTest node tracking (per-thread) — the ExtentReports instance itself
+    // and the report folder/file naming live in ExtentReportManager (TD-07).
     private static final ThreadLocal<ExtentTest> parentTest = new ThreadLocal<>();
     private static final ThreadLocal<ExtentTest> test = new ThreadLocal<>();
     private static final ThreadLocal<String> testName = new ThreadLocal<>();
-
-    // Report configuration
-    private static final String DEFAULT_FILE_NAME = "result.html";
-    private static final String DATE_PATTERN = "dd-MMM-yyyy HH-mm-ss";
-    public static volatile String folderName = "";
-    private static volatile String reportFileName = DEFAULT_FILE_NAME;
 
     // Test metadata (set by child class in @BeforeClass)
     public String testcaseName;
@@ -81,9 +74,6 @@ public abstract class Reporter {
     public String authors;
     public String category;
     public String excelFileName;
-
-    // Driver manager reference
-    protected DriverPoolManager driverManager;
 
     // Observability — per-test start time (ThreadLocal, matches pattern of other TLs)
     private static final ThreadLocal<Long> testStartTimeMs = new ThreadLocal<>();
@@ -141,20 +131,30 @@ public abstract class Reporter {
 
         String suiteName = (context != null && context.getSuite() != null)
                 ? context.getSuite().getName() : null;
-        initReportInfrastructure(suiteName);
+        ExtentReportManager.initReportInfrastructure(suiteName);
 
         // Extract parameters from TestNG XML
         ConcurrentMap<String, String> suiteParams = extractSuiteParameters(context);
         logger.info("Suite parameters extracted: " + suiteParams);
 
+        // Bind this (suite-initiating) thread to its config context before
+        // touching the singleton-turned-registry. @BeforeMethod re-binds again
+        // per test method, since parallel="methods"/"classes" run methods on
+        // different worker threads than the one that ran this @BeforeTest.
+        //
+        // NOTE: the WebDriver pool (design.patterns.object.pool.DriverPoolManager)
+        // is deliberately NOT touched here — Reporter lives in the framework's
+        // core module and must not have a compile-time dependency on the selenium
+        // module (TD-20's multi-module split). Pool bind/init happens in
+        // SeleniumBase's own @BeforeTest hook instead (selenium module), which
+        // runs after this one since SeleniumBase extends Reporter.
+        String contextId = ConfigManager.resolveContextId(suiteParams);
+        ConfigManager.bindContext(contextId);
+
         // Initialize configuration (safe to call multiple times - idempotent)
         ConfigManager.getInstance().initializeConfig(suiteParams);
         logger.info("✓ Configuration initialized: "
                 + ConfigManager.getInstance().getConfigSummary());
-
-        // Initialize WebDriver pool (safe to call multiple times - idempotent)
-        DriverPoolManager.getInstance().initializePool(suiteParams);
-        logger.info("✓ WebDriver Pool initialized");
 
         logger.info("=== @BeforeTest Complete ===");
     }
@@ -173,6 +173,7 @@ public abstract class Reporter {
     @BeforeClass(alwaysRun = true)
     public void startTestCase() {
         // Guard: if extent failed to initialize, log and skip
+        ExtentReports extent = ExtentReportManager.getExtent();
         if (extent == null) {
             logger.error("ExtentReports not initialized - @BeforeSuite may have failed.");
             return;
@@ -227,6 +228,7 @@ public abstract class Reporter {
     @BeforeMethod(alwaysRun = true)
     public void setNode(Method method, ITestContext context) {
         // Guard: if extent failed to initialize, skip node creation
+        ExtentReports extent = ExtentReportManager.getExtent();
         if (extent == null) {
             logger.error("ExtentReports not initialized - skipping node creation.");
             return;
@@ -285,7 +287,7 @@ public abstract class Reporter {
                 && !status.equalsIgnoreCase("SKIPPED")) {
             long snapNumber = takeSnap();
             try {
-                String imagePathStr = "./" + folderName + "/images/" + snapNumber + ".jpg";
+                String imagePathStr = "./" + ExtentReportManager.folderName + "/images/" + snapNumber + ".jpg";
                 File imageFile = new File(imagePathStr);
 
                 if (imageFile.exists() && imageFile.length() > 0) {
@@ -308,7 +310,7 @@ public abstract class Reporter {
                     break;
                 case "FAIL":
                     currentTest.fail(desc, img);
-                    throw new RuntimeException("Test failed: " + desc);
+                    throw new com.framework.exception.TestStepFailedException("Test failed: " + desc);
                 case "WARNING":
                     currentTest.warning(desc, img);
                     break;
@@ -400,6 +402,7 @@ public abstract class Reporter {
         TestEventCollector.getInstance().flush();
         logger.info("Flaky test summary: {}", FlakyTestTracker.getInstance().getSummary());
 
+        ExtentReports extent = ExtentReportManager.getExtent();
         if (extent != null) {
             synchronized (extent) {
                 FlakyTestTracker.getInstance().getSummary().forEach((name, score) ->
@@ -407,17 +410,16 @@ public abstract class Reporter {
                             String.format("%.0f%% failure rate", score * 100)));
                 extent.flush();
             }
-            logger.info("✓ Report flushed: " + folderName + "/" + reportFileName);
+            logger.info("✓ Report flushed: " + ExtentReportManager.getReportFolder() + "/"
+                    + ExtentReportManager.getReportFileName());
         }
 
         FlakyTestTracker.getInstance().reset();
 
-        DriverPoolManager dm = getDriverManager();
-        if (dm != null) {
-            logger.info("Pool stats:\n" + dm.getPoolStatistics());
-            dm.shutdownPool();
-            logger.info("✓ Pool shutdown complete");
-        }
+        // WebDriver pool shutdown deliberately NOT done here — see the note in
+        // initFromContext(). SeleniumBase's own @AfterSuite hook handles it
+        // (selenium module); TestNG runs @AfterSuite in reverse-hierarchy order,
+        // so SeleniumBase's runs before this one.
 
         cleanupThreadLocals();
         logger.info("=== @AfterSuite Complete ===");
@@ -428,82 +430,15 @@ public abstract class Reporter {
     // =========================================================================
 
     /**
-     * Creates the shared per-run report folder (with {@code images/} and
-     * {@code videos/} subfolders) and the ExtentReports HTML reporter, naming
-     * the report file after the test suite instead of a static name.
-     *
-     * <p>Public and static so non-TestNG runners (e.g. the Cucumber runner,
-     * which cannot extend this class) can trigger the same folder layout
-     * before their own scenarios run. Idempotent — the first caller wins.
-     *
-     * @param suiteName the TestNG suite name (falls back to a static name if
-     *                  null/blank, e.g. when no suite context is available)
-     */
-    public static synchronized void initReportInfrastructure(String suiteName) {
-        if (extent != null) {
-            logger.debug("ExtentReports already initialized, skipping.");
-            return;
-        }
-
-        String date = new SimpleDateFormat(DATE_PATTERN).format(new Date());
-        folderName = "reports/" + date;
-
-        // Create report folder
-        File folder = new File("./" + folderName);
-        if (!folder.exists()) {
-            folder.mkdirs();
-        }
-
-        // Create images folder
-        File images = new File("./" + folderName + "/images");
-        if (!images.exists()) {
-            images.mkdirs();
-        }
-
-        // Create videos folder (VideoRecorder also lazily creates per-test
-        // subfolders here, but the parent should exist from run start).
-        File videos = new File("./" + folderName + "/videos");
-        if (!videos.exists()) {
-            videos.mkdirs();
-        }
-
-        reportFileName = (suiteName != null && !suiteName.isBlank())
-                ? sanitizeFileName(suiteName) + ".html"
-                : DEFAULT_FILE_NAME;
-
-        // Configure Spark reporter (ExtentReports 5.x replacement for ExtentHtmlReporter).
-        // ChartLocation and setChartVisibilityOnOpen are removed in v5 — the Spark
-        // template handles chart placement automatically.
-        // setAppendExisting is also gone; each run overwrites the file (fresh report).
-        ExtentSparkReporter sparkReporter = new ExtentSparkReporter("./" + folderName + "/" + reportFileName);
-        sparkReporter.config().setTheme(Theme.STANDARD);
-        sparkReporter.config().setDocumentTitle("Automation Test Report");
-        sparkReporter.config().setEncoding("utf-8");
-        sparkReporter.config().setReportName("Automation Test Results");
-
-        extent = new ExtentReports();
-        extent.attachReporter(sparkReporter);
-
-        extent.setSystemInfo("Java Version", System.getProperty("java.version"));
-        extent.setSystemInfo("OS", System.getProperty("os.name"));
-        extent.setSystemInfo("User", System.getProperty("user.name"));
-
-        logger.info("ExtentReports initialized at: " + folderName + "/" + reportFileName);
-    }
-
-    /** Replaces characters invalid in file names with '_'. */
-    private static String sanitizeFileName(String value) {
-        return value.replaceAll("[^a-zA-Z0-9_-]", "_");
-    }
-
-    /**
      * Extracts all parameters from TestNG suite/test context.
-     * Safe to call from @BeforeTest where ITestContext is supported.
+     * Safe to call from @BeforeTest or @BeforeMethod, both of which support
+     * ITestContext injection — subclasses reuse this to re-resolve the same
+     * config/pool context id on worker threads (see {@link ConfigManager#resolveContextId}).
      *
      * @param context TestNG context
      * @return thread-safe map of parameters
      */
-    private ConcurrentMap<String, String> extractSuiteParameters(ITestContext context) {
+    protected ConcurrentMap<String, String> extractSuiteParameters(ITestContext context) {
         ConcurrentMap<String, String> params = new ConcurrentHashMap<>();
 
         if (context == null) {
@@ -537,14 +472,6 @@ public abstract class Reporter {
     /** Takes a screenshot. Implemented by SeleniumBase. */
     public abstract long takeSnap();
 
-    /** Gets or lazily creates the DriverPoolManager instance. */
-    protected DriverPoolManager getDriverManager() {
-        if (driverManager == null) {
-            driverManager = DriverPoolManager.getInstance();
-        }
-        return driverManager;
-    }
-
     public String getTestName() {
         return testName.get();
     }
@@ -555,16 +482,16 @@ public abstract class Reporter {
     }
 
     public String getReportFolder() {
-        return folderName;
+        return ExtentReportManager.getReportFolder();
     }
 
-    /** Suite-name-based HTML report file name (e.g. {@code MySuite.html}), resolved by {@link #initReportInfrastructure}. */
+    /** Suite-name-based HTML report file name (e.g. {@code MySuite.html}), resolved by {@link ExtentReportManager#initReportInfrastructure}. */
     public static String getReportFileName() {
-        return reportFileName;
+        return ExtentReportManager.getReportFileName();
     }
 
     public boolean isReportingInitialized() {
-        return extent != null;
+        return ExtentReportManager.getExtent() != null;
     }
 
     protected void cleanupThreadLocals() {
@@ -576,185 +503,3 @@ public abstract class Reporter {
     }
 }
 
-//
-// import java.io.File;
-// import java.io.IOException;
-// import java.text.SimpleDateFormat;
-// import java.util.Date;
-// import java.util.logging.Logger;
-//
-// import org.testng.ITestContext;
-// import org.testng.annotations.AfterSuite;
-// import org.testng.annotations.BeforeClass;
-// import org.testng.annotations.BeforeMethod;
-// import org.testng.annotations.BeforeSuite;
-//
-// import com.aventstack.extentreports.ExtentReports;
-// import com.aventstack.extentreports.ExtentTest;
-// import com.aventstack.extentreports.MediaEntityBuilder;
-// import com.aventstack.extentreports.MediaEntityModelProvider;
-// import com.aventstack.extentreports.Status;
-// import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
-// import com.aventstack.extentreports.reporter.configuration.ChartLocation;
-// import com.aventstack.extentreports.reporter.configuration.Theme;
-//
-// import design.patterns.factory.browser.BrowserFactory;
-// import design.patterns.factory.browser.WebDriverFactoryInterface;
-// import design.patterns.object.pool.DriverPoolManager;
-// import design.patterns.object.pool.WebDriverPoolFactory;
-//
-// public abstract class Reporter extends DriverPoolManager {
-//
-//
-//
-// /**
-// * Initializes and returns a new WebDriverPoolFactory instance using this
-// factory.
-// *
-// * @return a WebDriverPoolFactory instance
-// */
-// public WebDriverPoolFactory createWebDriverPool() {
-//
-// return null;
-//
-// }
-//
-//
-//
-// private static final Logger logger =
-// Logger.getLogger(DriverPoolManager.class.getName());
-// private static ExtentReports extent;
-// private static final ThreadLocal<ExtentTest> parentTest = new
-// ThreadLocal<>();
-// private static final ThreadLocal<ExtentTest> test = new ThreadLocal<>();
-// private static final ThreadLocal<String> testName = new ThreadLocal<>();
-//
-// private static final String fileName = "result.html";
-// private static final String pattern = "dd-MMM-yyyy HH-mm-ss";
-//
-// public String testcaseName, testDescription, authors, category,
-// excelFileName;
-// public static String folderName = "";
-//
-// protected static WebDriverPoolFactory createWebDriverPool = null;
-//
-// @BeforeClass(alwaysRun = true)
-// public static void initializePoolFactory(ITestContext context) {
-// initializePoolFactory(context);
-// }
-//
-// @BeforeSuite(alwaysRun = true)
-// public synchronized void startReport() {
-// String date = new SimpleDateFormat(pattern).format(new Date());
-// folderName = "reports/" + date;
-//
-// File folder = new File("./" + folderName);
-// if (!folder.exists()) {
-// folder.mkdirs();
-// }
-//
-// ExtentHtmlReporter htmlReporter = new ExtentHtmlReporter("./" + folderName +
-// "/" + fileName);
-// htmlReporter.config().setTestViewChartLocation(ChartLocation.BOTTOM);
-// htmlReporter.config().setChartVisibilityOnOpen(false);
-// htmlReporter.config().setTheme(Theme.STANDARD);
-// htmlReporter.config().setDocumentTitle("Automation Report");
-// htmlReporter.config().setEncoding("utf-8");
-// htmlReporter.config().setReportName("Automation Results");
-// htmlReporter.setAppendExisting(false);
-//
-// extent = new ExtentReports();
-// extent.attachReporter(htmlReporter);
-// }
-//
-// @BeforeClass(alwaysRun = true)
-// public void startTestCase() {
-// ExtentTest parent = extent.createTest(testcaseName,
-// testDescription).assignAuthor(authors)
-// .assignCategory(category);
-// parentTest.set(parent);
-// testName.set(testcaseName);
-// }
-//
-// @BeforeMethod(alwaysRun = true)
-// public void setNode() {
-// ExtentTest child = parentTest.get().createNode(getTestName());
-// test.set(child);
-// }
-//
-// public abstract long takeSnap();
-//
-// public void reportStep(String desc, String status, boolean bSnap) {
-// synchronized (test) {
-// MediaEntityModelProvider img = null;
-// if (bSnap && !(status.equalsIgnoreCase("INFO") ||
-// status.equalsIgnoreCase("SKIPPED"))) {
-// long snapNumber = takeSnap();
-// try {
-// String path = "./../../" + folderName + "/images/" + snapNumber + ".jpg";
-// img = MediaEntityBuilder.createScreenCaptureFromPath(path).build();
-// } catch (IOException e) {
-// e.printStackTrace();
-// }
-// }
-//
-// switch (status.toUpperCase()) {
-// case "PASS":
-// test.get().pass(desc, img);
-// break;
-// case "FAIL":
-// test.get().fail(desc, img);
-// throw new RuntimeException("Test failed: See report for details.");
-// case "WARNING":
-// test.get().warning(desc, img);
-// break;
-// case "SKIPPED":
-// test.get().skip("Skipped: " + desc);
-// break;
-// case "INFO":
-// test.get().info(desc);
-// break;
-// default:
-// test.get().info(desc);
-// break;
-// }
-// }
-// }
-//
-// public void reportStep(String desc, String status) {
-// reportStep(desc, status, true);
-// }
-//
-// @AfterSuite(alwaysRun = true)
-// public synchronized void endReport() {
-// if (extent != null) {
-// extent.flush();
-// }
-//
-//// closeBrowserPool(context);
-// }
-//
-// /**
-// * Final cleanup - close all drivers
-// */
-// // @AfterSuite(alwaysRun = true,dependsOnMethods = "endReport")
-// public static void closeBrowserPool(ITestContext context) {
-// if (poolFactory != null) {
-// logger.info("Shutting down WebDriver Pool for test suite: " +
-// context.getSuite().getName()); logger.info("Final Pool Statistics:\n" +
-// poolFactory.getPoolStatistics());
-//
-// poolFactory.close(); poolFactory = null;
-//
-// logger.info("WebDriver Pool shutdown complete"); } }
-//
-//
-// public String getTestName() {
-// return testName.get();
-// }
-//
-// public Status getTestStatus() {
-// return parentTest.get().getModel().getStatus();
-// }
-//
-// }

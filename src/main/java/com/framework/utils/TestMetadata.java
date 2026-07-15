@@ -1,4 +1,4 @@
-package com.framework.testng.api.base;
+package com.framework.utils;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,8 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Declarative metadata for a test class, consumed by {@link com.framework.utils.Reporter}
- * when building the ExtentReports test node.
+ * Declarative metadata for a test class, consumed by {@link Reporter} when
+ * building the ExtentReports test node.
  *
  * <p>Usage — annotate your test class instead of overriding {@code setValues()}:
  * <pre>
@@ -29,6 +29,14 @@ import java.lang.annotation.Target;
  * <pre>
  * {@literal @}TestMetadata(name = "CreateLead", excelFile = "CreateLead", ...)
  * </pre>
+ *
+ * <p><b>Package placement:</b> this lives alongside {@link Reporter} (its only
+ * framework-side consumer) rather than in {@code com.framework.testng.api.base}
+ * deliberately — the previous placement created a real circular package
+ * dependency ({@code utils → testng.api.base → selenium.api.base → utils}, via
+ * {@code Reporter} importing it while {@code SeleniumBase} extended
+ * {@code Reporter} and {@code ProjectSpecificMethods} extended
+ * {@code SeleniumBase}).
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

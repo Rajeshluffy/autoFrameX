@@ -1,4 +1,4 @@
-package com.framework.testng.api.base;
+package com.framework.utils;
 
 /**
  * Typed representation of a single test account row.
@@ -14,6 +14,15 @@ package com.framework.testng.api.base;
  * <p>In <b>Data Provider</b> mode, one instance is created per Excel row and
  * injected into each {@code @Test(dataProvider="fetchData")} method.
  * In <b>Targeted</b> mode, one instance is built from TestNG XML parameters.
+ *
+ * <p><b>Package placement:</b> lives alongside {@link DataLibrary} (its
+ * primary constructor site, via {@link #fromRow}) rather than in
+ * {@code com.framework.testng.api.base} deliberately — the previous placement
+ * created a real circular package dependency ({@code utils → testng.api.base →
+ * selenium.api.base → utils}, via {@code DataLibrary} importing it while
+ * {@code SeleniumBase} extended {@code Reporter} (also in {@code utils}) and
+ * {@code ProjectSpecificMethods} (in {@code testng.api.base}) extended
+ * {@code SeleniumBase}).
  */
 public class AccountData {
 

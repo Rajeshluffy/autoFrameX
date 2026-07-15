@@ -9,7 +9,6 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 import design.patterns.factory.browser.BrowserFactory;
-import design.patterns.factory.browser.BrowserType;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -67,12 +66,12 @@ public class WebDriverPoolFactory implements AutoCloseable {
     private final BrowserFactory driverFactory;
 
     // ── Pool state ───────────────────────────────────────────────────────────
-    /** IDLE drivers waiting to be borrowed, keyed by browser type. */
-    private final ConcurrentMap<BrowserType, LinkedBlockingQueue<PooledDriver>> availableDrivers;
+    /** IDLE drivers waiting to be borrowed, keyed by browser id (see {@code BrowserRegistry}). */
+    private final ConcurrentMap<String, LinkedBlockingQueue<PooledDriver>> availableDrivers;
     /** All drivers currently checked out by a test thread. */
     private final ConcurrentMap<RemoteWebDriver, PooledDriver> activeDrivers;
-    /** Total live instances per browser type (IDLE + IN_USE). */
-    private final ConcurrentMap<BrowserType, AtomicInteger> poolSizeCounters;
+    /** Total live instances per browser id (IDLE + IN_USE). */
+    private final ConcurrentMap<String, AtomicInteger> poolSizeCounters;
 
     // ── Lifecycle ────────────────────────────────────────────────────────────
     private final AtomicBoolean            isShutdown     = new AtomicBoolean(false);
@@ -113,7 +112,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
         this.activeDrivers     = new ConcurrentHashMap<>();
         this.poolSizeCounters  = new ConcurrentHashMap<>();
 
-        for (BrowserType bt : config.getSupportedBrowsers()) {
+        for (String bt : config.getSupportedBrowsers()) {
             availableDrivers.put(bt, new LinkedBlockingQueue<>());
             poolSizeCounters.put(bt, new AtomicInteger(0));
         }
@@ -133,7 +132,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
         int min = config.getMinPoolSize();
         if (min <= 0) return;
 
-        for (BrowserType bt : config.getSupportedBrowsers()) {
+        for (String bt : config.getSupportedBrowsers()) {
             for (int i = 0; i < min; i++) {
                 try {
                     RemoteWebDriver driver = createNewDriver(bt);
@@ -166,11 +165,11 @@ public class WebDriverPoolFactory implements AutoCloseable {
      * return — checking on return is useless because the next borrower could get a
      * zombie driver after an idle TTL gap anyway.
      *
-     * @param browserType browser type requested
+     * @param browserType browser id requested (see {@code BrowserRegistry})
      * @param url         initial URL to navigate to (may be null)
      * @return a healthy, navigated WebDriver bound to the current thread context
      */
-    public RemoteWebDriver acquire(BrowserType browserType, String url) {
+    public RemoteWebDriver acquire(String browserType, String url) {
         validateNotShutdown();
         validateBrowserType(browserType);
 
@@ -233,7 +232,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
      * Blocks up to {@code borrowTimeoutSeconds} waiting for an IDLE driver.
      * Used when the pool is at max capacity.
      */
-    private RemoteWebDriver borrowWithTimeout(BrowserType browserType) {
+    private RemoteWebDriver borrowWithTimeout(String browserType) {
         LinkedBlockingQueue<PooledDriver> queue = availableDrivers.get(browserType);
         try {
             PooledDriver pd = queue.poll(config.getBorrowTimeoutSeconds(), TimeUnit.SECONDS);
@@ -405,7 +404,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
      * Tries to borrow an IDLE driver from the queue (non-blocking).
      * Enforces health-check and reuse-cap on borrow, not on return.
      */
-    private RemoteWebDriver tryReuseFromPool(BrowserType browserType) {
+    private RemoteWebDriver tryReuseFromPool(String browserType) {
         LinkedBlockingQueue<PooledDriver> queue = availableDrivers.get(browserType);
         PooledDriver pd = queue.poll(); // non-blocking
         if (pd == null) return null;
@@ -434,7 +433,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
         return pd.getDriver();
     }
 
-    private RemoteWebDriver createNewDriver(BrowserType browserType) {
+    private RemoteWebDriver createNewDriver(String browserType) {
         try {
             RemoteWebDriver driver = driverFactory.createDriver(browserType, config);
             statistics.incrementCreated();
@@ -446,7 +445,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
         }
     }
 
-    private void registerActive(RemoteWebDriver driver, BrowserType browserType) {
+    private void registerActive(RemoteWebDriver driver, String browserType) {
         PooledDriver pd = activeDrivers.computeIfAbsent(driver,
                 k -> new PooledDriver(k, browserType));
         // Transition: new drivers start IDLE, then must go IN_USE
@@ -534,7 +533,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
      * Submits {@code driver.quit()} to the dedicated executor so the test thread
      * is never blocked by browser teardown (2–8 s).
      */
-    private void safelyDestroyAsync(RemoteWebDriver driver, BrowserType browserType) {
+    private void safelyDestroyAsync(RemoteWebDriver driver, String browserType) {
         quitExecutor.submit(() -> {
             try {
                 driver.quit();
@@ -555,8 +554,8 @@ public class WebDriverPoolFactory implements AutoCloseable {
         if (isShutdown.get()) return;
         int cleaned = 0;
 
-        for (Map.Entry<BrowserType, LinkedBlockingQueue<PooledDriver>> entry : availableDrivers.entrySet()) {
-            BrowserType bt = entry.getKey();
+        for (Map.Entry<String, LinkedBlockingQueue<PooledDriver>> entry : availableDrivers.entrySet()) {
+            String bt = entry.getKey();
             LinkedBlockingQueue<PooledDriver> queue = entry.getValue();
             List<PooledDriver> expired = new ArrayList<>();
 
@@ -595,7 +594,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
     public String getStatistics() {
         StringBuilder sb = new StringBuilder("=== WebDriver Pool Statistics ===\n");
 
-        for (BrowserType bt : config.getSupportedBrowsers()) {
+        for (String bt : config.getSupportedBrowsers()) {
             int idle   = availableDrivers.get(bt).size();
             int total  = poolSizeCounters.get(bt).get();
             int inUse  = total - idle;
@@ -664,13 +663,13 @@ public class WebDriverPoolFactory implements AutoCloseable {
         if (isShutdown.get()) throw new IllegalStateException("Pool has been shutdown");
     }
 
-    private void validateBrowserType(BrowserType bt) {
+    private void validateBrowserType(String bt) {
         if (!config.getSupportedBrowsers().contains(bt))
             throw new IllegalArgumentException("Unsupported browser: " + bt);
     }
 
-    private void incrementPoolSize(BrowserType bt) { poolSizeCounters.get(bt).incrementAndGet(); }
-    private void decrementPoolSize(BrowserType bt) { poolSizeCounters.get(bt).decrementAndGet(); }
+    private void incrementPoolSize(String bt) { poolSizeCounters.get(bt).incrementAndGet(); }
+    private void decrementPoolSize(String bt) { poolSizeCounters.get(bt).decrementAndGet(); }
 
     private void sleep(long millis) {
         try { Thread.sleep(millis); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
@@ -686,7 +685,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
     static class PooledDriver {
 
         private final RemoteWebDriver driver;
-        private final BrowserType     browserType;
+        private final String          browserType;
         private final Instant         createdAt;
         private final AtomicInteger   usageCount = new AtomicInteger(0);
 
@@ -699,7 +698,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
 
         private volatile Instant lastUsedAt;
 
-        PooledDriver(RemoteWebDriver driver, BrowserType browserType) {
+        PooledDriver(RemoteWebDriver driver, String browserType) {
             this.driver      = driver;
             this.browserType = browserType;
             this.createdAt   = Instant.now();
@@ -722,7 +721,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
 
         DriverState getState()     { return state.get(); }
         RemoteWebDriver getDriver()  { return driver; }
-        BrowserType getBrowserType() { return browserType; }
+        String getBrowserType()     { return browserType; }
         int getUsageCount()          { return usageCount.get(); }
 
         void markAcquired() {
@@ -769,15 +768,15 @@ public class WebDriverPoolFactory implements AutoCloseable {
     // EXCEPTIONS
     // =========================================================================
 
-    public static class DriverAcquisitionException extends RuntimeException {
+    public static class DriverAcquisitionException extends com.framework.exception.FrameworkException {
         public DriverAcquisitionException(String msg, Throwable cause) { super(msg, cause); }
     }
 
-    public static class DriverCreationException extends RuntimeException {
+    public static class DriverCreationException extends com.framework.exception.FrameworkException {
         public DriverCreationException(String msg, Throwable cause) { super(msg, cause); }
     }
 
-    public static class NavigationException extends RuntimeException {
+    public static class NavigationException extends com.framework.exception.FrameworkException {
         public NavigationException(String msg, Throwable cause) { super(msg, cause); }
     }
 }

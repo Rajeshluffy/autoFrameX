@@ -4,6 +4,7 @@ import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,8 +53,14 @@ public class ChromeBrowser implements Browser {
 		prefs.put("profile.password_manager_leak_detection", false); // Suppress "Change your password" breach popup
 		prefs.put("profile.default_content_setting_values.notifications", 2); // 2 means Block
 		
-		// Configure default download directory to a "downloads" folder in your project workspace
-		String downloadPath = System.getProperty("user.dir") + "\\downloads";
+		// Per-thread download directory: under parallel execution, concurrent Chrome
+		// instances sharing one folder would collide on identical downloaded filenames.
+		// Each pooled driver is bound to one thread for its lifetime (DriverPoolManager's
+		// ThreadLocal<DriverContext>), so keying on thread id keeps this collision-free
+		// without needing a per-test unique id at options-build time.
+		String downloadPath = System.getProperty("user.dir") + File.separator + "downloads"
+				+ File.separator + Thread.currentThread().getId();
+		new File(downloadPath).mkdirs();
 		prefs.put("download.default_directory", downloadPath);
 		prefs.put("download.prompt_for_download", false); // Automatically download without prompting
 		prefs.put("download.directory_upgrade", true);

@@ -257,44 +257,31 @@ public class ProjectDirector {
     }
 
     // ── Type-safe resolution helpers ─────────────────────────────────────────
+    // Delegate to the shared ConfigResolver (see its Javadoc) so this priority
+    // chain has exactly one implementation, shared with DriverPoolManager's
+    // pool-sizing resolution instead of being copy-pasted and drifting.
+    // sysPropKey is accepted for call-site compatibility but always equals
+    // testngKey in every real call in this class — ConfigResolver reuses one
+    // key for both, matching the only way this was ever actually called.
 
     private static String resolve(String testngKey, ConcurrentMap<String, String> params,
             String envKey, String sysPropKey, String defaultValue) {
-        if (params != null) {
-            String v = params.get(testngKey);
-            if (v != null && !v.trim().isEmpty()) return v;
-        }
-        String env = System.getenv(envKey);
-        if (env != null && !env.trim().isEmpty()) return env;
-        String sys = System.getProperty(sysPropKey);
-        if (sys != null && !sys.trim().isEmpty()) return sys;
-        return defaultValue;
+        return ConfigResolver.resolveString(testngKey, envKey, params, defaultValue);
     }
 
     private static boolean resolveBoolean(String testngKey, ConcurrentMap<String, String> params,
             String envKey, String sysPropKey, boolean defaultValue) {
-        return Boolean.parseBoolean(
-                resolve(testngKey, params, envKey, sysPropKey, String.valueOf(defaultValue)));
+        return ConfigResolver.resolveBoolean(testngKey, envKey, params, defaultValue);
     }
 
     private static short resolveShort(String testngKey, ConcurrentMap<String, String> params,
             String envKey, String sysPropKey, short defaultValue) {
-        String v = resolve(testngKey, params, envKey, sysPropKey, String.valueOf(defaultValue));
-        try { return Short.parseShort(v); }
-        catch (NumberFormatException e) {
-            logger.warn("Invalid short for '" + testngKey + "': " + v + " → using " + defaultValue);
-            return defaultValue;
-        }
+        return ConfigResolver.resolveShort(testngKey, envKey, params, defaultValue);
     }
 
     private static int resolveInt(String testngKey, ConcurrentMap<String, String> params,
             String envKey, String sysPropKey, int defaultValue) {
-        String v = resolve(testngKey, params, envKey, sysPropKey, String.valueOf(defaultValue));
-        try { return Integer.parseInt(v); }
-        catch (NumberFormatException e) {
-            logger.warn("Invalid int for '" + testngKey + "': " + v + " → using " + defaultValue);
-            return defaultValue;
-        }
+        return ConfigResolver.resolveInt(testngKey, envKey, params, defaultValue);
     }
 
     private static String summarise(ProjectConfig c) {

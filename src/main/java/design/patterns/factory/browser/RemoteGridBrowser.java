@@ -18,11 +18,23 @@ import com.framework.config.data.ConfigManager;
  * Routes driver creation through a Selenium Grid hub.
  *
  * <p>Used by the {@code GRID_CHROME}, {@code GRID_FIREFOX}, and
- * {@code GRID_EDGE} {@link BrowserType} enum constants.  The hub URL is
- * read from {@code ConfigManager} at the moment a driver is requested, so
- * it respects runtime overrides ({@code -DgridHubUrl=...},
- * {@code GRID_HUB_URL} env var, TestNG parameter) set up before test
- * execution begins.
+ * {@code GRID_EDGE} {@link BrowserType} enum constants, and by
+ * {@link BrowserRegistry}'s built-in providers of the same names.
+ *
+ * <p>Two constructors, two different sources for the hub URL:
+ * <ul>
+ *   <li>{@link #RemoteGridBrowser(String, String)} — hub URL supplied directly
+ *       (used by {@link BrowserRegistry}'s providers, which receive it from
+ *       {@code PoolConfig.getGridHubUrl()} at driver-creation time). This is
+ *       the path every real test suite in this repo goes through, and it
+ *       never touches {@code ConfigManager}.</li>
+ *   <li>{@link #RemoteGridBrowser(String)} — no URL supplied; falls back to
+ *       reading {@code ConfigManager} lazily inside {@link #launchBrowser(Capabilities)}.
+ *       Kept only for backward compatibility with a caller holding a raw
+ *       {@code BrowserType} enum constant (whose {@code GRID_*} constants are
+ *       still bound with this 1-arg constructor) and calling
+ *       {@code .launchBrowser()} directly, bypassing the pool.</li>
+ * </ul>
  *
  * <h3>Grid compatibility</h3>
  * <ul>
@@ -40,8 +52,18 @@ public class RemoteGridBrowser implements Browser {
     /** Lower-case browser name used to select the right capability options. */
     private final String browserName;
 
+    /** Hub URL supplied at construction time; {@code null} means "resolve lazily via ConfigManager." */
+    private final String gridHubUrl;
+
     public RemoteGridBrowser(String browserName) {
         this.browserName = browserName.toLowerCase();
+        this.gridHubUrl = null;
+    }
+
+    /** Preferred constructor — hub URL supplied directly, no {@code ConfigManager} dependency. */
+    public RemoteGridBrowser(String browserName, String gridHubUrl) {
+        this.browserName = browserName.toLowerCase();
+        this.gridHubUrl = gridHubUrl;
     }
 
     @Override
@@ -51,7 +73,8 @@ public class RemoteGridBrowser implements Browser {
 
     @Override
     public RemoteWebDriver launchBrowser(Capabilities capabilities) {
-        String hubUrl = ConfigManager.getInstance().getConfig().getGridHubUrl();
+        String hubUrl = gridHubUrl != null ? gridHubUrl
+                : ConfigManager.getInstance().getConfig().getGridHubUrl();
         try {
             MutableCapabilities options = buildOptions();
             if (capabilities != null) {

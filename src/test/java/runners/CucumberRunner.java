@@ -3,7 +3,7 @@ package runners;
 import org.testng.ITestContext;
 import org.testng.annotations.BeforeTest;
 
-import com.framework.utils.Reporter;
+import com.framework.utils.ExtentReportManager;
 
 import io.cucumber.testng.AbstractTestNGCucumberTests;
 import io.cucumber.testng.CucumberOptions;
@@ -31,10 +31,10 @@ public class CucumberRunner extends AbstractTestNGCucumberTests {
     public void initReportFolder(ITestContext context) {
         String suiteName = (context != null && context.getSuite() != null)
                 ? context.getSuite().getName() : null;
-        Reporter.initReportInfrastructure(suiteName);
+        ExtentReportManager.initReportInfrastructure(suiteName);
 
-        String base = Reporter.folderName + "/"
-                + Reporter.getReportFileName().replaceFirst("\\.html$", "");
+        String base = ExtentReportManager.folderName + "/"
+                + ExtentReportManager.getReportFileName().replaceFirst("\\.html$", "");
         System.setProperty("cucumber.plugin", "html:" + base + ".html,json:" + base + ".json");
     }
 }

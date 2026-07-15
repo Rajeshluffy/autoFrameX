@@ -33,7 +33,6 @@ jobs:
             -Denv=qa \
             -Dheadless=true \
             -Dsurefire.reportNameSuffix=sonar
-        continue-on-error: true
 
       - name: Run SonarQube analysis
         env:

@@ -49,9 +49,9 @@ A shared, enterprise-grade test automation framework built on Selenium 4, TestNG
 | Logging | SLF4J + Logback + Logstash encoder | 2.0.5 / 1.4.7 / 7.4 |
 | Database | MySQL Connector/J | 9.6.0 |
 | Security | OWASP ZAP (via ZapSecurityUtils) | — |
-| Video | Monte Screen Recorder | 0.7.7.0 |
+| Video | WebDriver screenshots + FFmpeg (system binary) | — |
 | Build | Maven | 3.x |
-| Java | Java | 16 |
+| Java | Java | 17 |
 
 ---
 
@@ -73,8 +73,8 @@ autoFrameX/
 │   │   │   ├── api/base/                 # SeleniumBase, BasePage
 │   │   │   ├── api/design/               # Browser, Element, Locators interfaces
 │   │   │   └── exception/               # ElementNotFoundException
-│   │   ├── testng/api/base/              # ProjectSpecificMethods, RetryEngine, TestMetadata
-│   │   └── utils/                        # Reporter, DataLibrary, WaitUtils, EncryptionUtils, ...
+│   │   ├── testng/api/base/              # ProjectSpecificMethods, RetryEngine
+│   │   └── utils/                        # Reporter, TestMetadata, DataLibrary, WaitUtils, EncryptionUtils, ...
 │   └── design/patterns/
 │       ├── database/                     # AbstractDatabaseConnection, MySQLConnection, DBManager
 │       ├── factory/browser/              # BrowserFactory, BrowserType, Chrome/Firefox/Edge/Remote
@@ -247,11 +247,11 @@ docker-compose up --build
 |---|---|
 | `Reporter` | Thread-safe Extent report wrapper |
 | `WaitUtils` | Fluent/explicit wait helpers |
-| `DataLibrary` | Excel + YAML test data reader |
+| `DataLibrary` | Excel + CSV/TSV test data reader with cache |
 | `EncryptionUtils` | AES-256 encrypt/decrypt for credentials |
 | `ValidationUtils` | Common assertion helpers |
 | `ScreenshotUtils` | Full-page and element screenshots |
-| `VideoRecorder` | Monte-based AVI screen recording |
+| `VideoRecorder` | Failure-only video capture — WebDriver screenshots assembled via FFmpeg |
 | `LogUtils` | SLF4J structured logging helpers |
 | `RetryUtils` | Programmatic retry with backoff |
 

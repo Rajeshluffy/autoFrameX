@@ -4,11 +4,12 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.framework.config.data.ConfigManager;
+import com.framework.config.data.ConfigResolver;
 import com.framework.config.data.ProjectConfig;
 
 import design.patterns.factory.browser.BrowserConfig;
 import design.patterns.factory.browser.BrowserFactory;
-import design.patterns.factory.browser.BrowserType;
+import design.patterns.factory.browser.BrowserRegistry;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
@@ -19,8 +20,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Central manager for WebDriver pool lifecycle with improved thread safety.
- * Implements Facade and Singleton patterns.
- * 
+ * Implements Facade pattern, keyed by execution context (see {@link ConfigManager}).
+ *
  * <p>
  * Responsibilities:
  * <ul>
@@ -29,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * <li>Pool lifecycle (initialization and shutdown)</li>
  * <li>Integration with TestNG lifecycle</li>
  * </ul>
- * 
+ *
  * <p>
  * <b>CRITICAL IMPROVEMENTS:</b>
  * <ul>
@@ -38,19 +39,33 @@ import org.slf4j.LoggerFactory;
  * <li>Better error handling and fallbacks</li>
  * <li>Support for parallel test execution</li>
  * </ul>
- * 
+ *
  * <p>
  * Thread Safety: All operations are thread-safe for parallel execution.
- * 
+ *
+ * <p>
+ * <b>Multi-context support:</b> like {@link ConfigManager}, this was a plain
+ * JVM-wide singleton — one pool for the entire process, unable to support two
+ * concurrently-running applications with different sizing/browser needs.
+ * It is now a registry of pools keyed by the same {@code contextId} string
+ * {@link ConfigManager} uses, bound per-thread via {@link #bindContext}.
+ * {@link #getInstance()} keeps its original signature and behavior for every
+ * existing caller — it transparently resolves to whichever context is bound
+ * on the calling thread, defaulting to a single shared context if nothing
+ * ever calls {@link #bindContext}.
+ *
  * @author Framework Team
- * @version 3.1 - Enhanced parallel execution support
+ * @version 3.2 - Multi-context (multi-application) pool isolation
  */
 public class DriverPoolManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(DriverPoolManager.class);
 
-	// Singleton instance with volatile for thread safety
-	private static volatile DriverPoolManager instance;
+	/** Context id used when nothing ever calls {@link #bindContext}. */
+	private static final String DEFAULT_CONTEXT = "default";
+
+	private static final ConcurrentMap<String, DriverPoolManager> REGISTRY = new ConcurrentHashMap<>();
+	private static final ThreadLocal<String> CONTEXT_ID = new ThreadLocal<>();
 
 	// Pool resources (volatile for visibility across threads)
 	private volatile WebDriverPoolFactory driverPool;
@@ -74,27 +89,49 @@ public class DriverPoolManager {
 	}
 
 	/**
-	 * Private constructor for singleton.
+	 * Private constructor — instances are only created via the {@link #REGISTRY}.
 	 */
 	private DriverPoolManager() {
 		logger.debug("DriverPoolManager instance created");
 	}
 
 	/**
-	 * Gets the singleton instance with double-checked locking.
-	 * 
-	 * @return DriverPoolManager singleton instance
+	 * Binds the calling thread to a pool context. Must be called on every thread
+	 * before it uses {@link #getInstance()} if per-application isolation is
+	 * needed — see {@link ConfigManager#bindContext} for the full contract
+	 * (same {@code contextId} should be used for both managers together).
+	 *
+	 * @param contextId identifies which application's pool this thread should
+	 *                  use; null falls back to the default context
+	 */
+	public static void bindContext(String contextId) {
+		CONTEXT_ID.set(contextId != null && !contextId.isBlank() ? contextId : DEFAULT_CONTEXT);
+	}
+
+	/**
+	 * Gets the pool manager bound to the calling thread's context, creating it
+	 * on first use. Falls back to {@link #DEFAULT_CONTEXT} if the thread never
+	 * called {@link #bindContext} — identical to the old singleton behavior for
+	 * any caller that doesn't opt into multi-context isolation.
+	 *
+	 * @return DriverPoolManager instance for the current thread's context
 	 */
 	public static DriverPoolManager getInstance() {
-		if (instance == null) {
-			synchronized (DriverPoolManager.class) {
-				if (instance == null) {
-					instance = new DriverPoolManager();
-					logger.info("DriverPoolManager singleton initialized");
-				}
-			}
-		}
-		return instance;
+		String id = CONTEXT_ID.get();
+		if (id == null) id = DEFAULT_CONTEXT;
+		return REGISTRY.computeIfAbsent(id, k -> {
+			logger.info("DriverPoolManager created for context: " + k);
+			return new DriverPoolManager();
+		});
+	}
+
+	/**
+	 * Shuts down every registered context's pool. Called once from
+	 * {@code @AfterSuite} — a suite may have created several contexts across
+	 * parallel {@code <test>} blocks, each needing its own shutdown.
+	 */
+	public static void shutdownAll() {
+		REGISTRY.values().forEach(DriverPoolManager::shutdownPool);
 	}
 
 	/**
@@ -177,7 +214,7 @@ public class DriverPoolManager {
 
 		try {
 			// Determine browser and URL with priority resolution
-			BrowserType browserType = determineBrowserType(method, methodParams);
+			String browserType = determineBrowserId(method, methodParams);
 			String url = determineUrl(method, methodParams);
 
 			logger.debug(String.format("Acquiring driver: browser=%s, url=%s",
@@ -392,11 +429,17 @@ public class DriverPoolManager {
 		// Builder() defaults to both CHROME + FIREFOX.  Replace with only the
 		// browser configured for this suite run so pre-warm never launches a
 		// browser process that no test will ever borrow.
-		BrowserType configuredBrowser = parseBrowserType(
+		String configuredBrowser = resolveBrowserId(
 				loadStringConfig("BROWSER", "browser", testngParams, config().getBrowserName()));
 		builder.clearSupportedBrowsers()
 		       .addSupportedBrowser(configuredBrowser);
 		logger.info("Pool will pre-warm: " + configuredBrowser);
+
+		// Threaded through as data (not read directly from ConfigManager by
+		// design.patterns.factory.browser.* — see BrowserRegistry's GRID_* providers
+		// and RemoteGridBrowser's two-constructor design) so the grid hub URL
+		// resolves the same way the other config values on this Builder do.
+		builder.gridHubUrl(config().getGridHubUrl());
 
 		// ── Size limits ───────────────────────────────────────────────────────
 		int maxPoolSize = loadIntConfig("MAX_POOL_SIZE", "maxPoolSize",
@@ -441,51 +484,68 @@ public class DriverPoolManager {
 				testngParams, config().isCloseAfterEach());
 		builder.closeAfterEach(closeAfterEach);
 
+		// ── Driver timeouts ───────────────────────────────────────────────────
+		// Carried on PoolConfig (not read directly from ConfigManager by
+		// BrowserFactory/design.patterns.factory.browser.* — see that package's
+		// package-info.java) so design.patterns.* doesn't need to import
+		// com.framework.config.data for these three values.
+		int pageLoadTimeoutSeconds = loadIntConfig("PAGE_LOAD_TIMEOUT", "pageLoadTimeout",
+				testngParams, config().getPageLoadTimeout());
+		builder.pageLoadTimeoutSeconds(pageLoadTimeoutSeconds);
+
+		int scriptTimeoutSeconds = loadIntConfig("SCRIPT_TIMEOUT", "scriptTimeout",
+				testngParams, config().getScriptTimeout());
+		builder.scriptTimeoutSeconds(scriptTimeoutSeconds);
+
+		int implicitWaitSeconds = loadIntConfig("IMPLICIT_WAIT", "implicitWait",
+				testngParams, config().getImplicit());
+		builder.implicitWaitSeconds(implicitWaitSeconds);
+
 		return builder.build();
 	}
 
 	/**
-	 * Determines browser type with priority order.
+	 * Determines the browser id (a {@link BrowserRegistry} key) with priority order.
 	 */
-	private BrowserType determineBrowserType(Method method, ConcurrentMap<String, String> params) {
+	private String determineBrowserId(Method method, ConcurrentMap<String, String> params) {
 		// Priority 1: Method parameter
 		if (params != null && params.containsKey("browser")) {
-			return parseBrowserType(params.get("browser"));
+			return resolveBrowserId(params.get("browser"));
 		}
 
 		// Priority 2: Method annotation
 		BrowserConfig methodConfig = method.getAnnotation(BrowserConfig.class);
 		if (methodConfig != null) {
-			return parseBrowserType(methodConfig.value());
+			return resolveBrowserId(methodConfig.value());
 		}
 
 		// Priority 3: Class annotation
 		BrowserConfig classConfig = method.getDeclaringClass()
 				.getAnnotation(BrowserConfig.class);
 		if (classConfig != null) {
-			return parseBrowserType(classConfig.value());
+			return resolveBrowserId(classConfig.value());
 		}
 
 		// Priority 4: CI/CD environment
 		String envBrowser = System.getenv("BROWSER");
 		if (envBrowser != null && !envBrowser.isEmpty()) {
-			return parseBrowserType(envBrowser);
+			return resolveBrowserId(envBrowser);
 		}
 
 		// Priority 5: System property
 		String sysBrowser = System.getProperty("browser");
 		if (sysBrowser != null && !sysBrowser.isEmpty()) {
-			return parseBrowserType(sysBrowser);
+			return resolveBrowserId(sysBrowser);
 		}
 
 		// Priority 6: Config file defaults
 		String cfgBrowser = config().getBrowserName();
 		if (cfgBrowser != null && !cfgBrowser.isEmpty()) {
-			return parseBrowserType(cfgBrowser);
+			return resolveBrowserId(cfgBrowser);
 		}
 
 		// Priority 7: Built-in fallback
-		return BrowserType.CHROME;
+		return "CHROME";
 	}
 
 	/**
@@ -552,79 +612,32 @@ public class DriverPoolManager {
 			"  <parameter name=\"environment\" value=\"dev\"/>                    (routes via configClass)");
 	}
 
-	private BrowserType parseBrowserType(String browserName) {
-		try {
-			return BrowserType.valueOf(browserName.toUpperCase().trim());
-		} catch (IllegalArgumentException e) {
-		logger.warn("Invalid browser type: '" + browserName + "', defaulting to CHROME");
-			return BrowserType.CHROME; // built-in fallback; property file default preferred
+	private String resolveBrowserId(String browserName) {
+		String id = browserName.toUpperCase().trim();
+		if (BrowserRegistry.isRegistered(id)) {
+			return id;
 		}
+		logger.warn("Invalid/unregistered browser id: '" + browserName + "', defaulting to CHROME");
+		return "CHROME"; // built-in fallback; property file default preferred
 	}
+
+	// Delegate to the shared ConfigResolver (see its Javadoc) so this priority
+	// chain has exactly one implementation, shared with ProjectDirector's
+	// project-config resolution instead of being copy-pasted and drifting.
 
 	private int loadIntConfig(String envKey, String paramKey,
 			ConcurrentMap<String, String> params, int defaultValue) {
-		// TestNG parameter
-		if (params != null && params.containsKey(paramKey)) {
-			try {
-				return Integer.parseInt(params.get(paramKey));
-			} catch (NumberFormatException e) {
-				logger.warn("Invalid " + paramKey + ": " + params.get(paramKey));
-			}
-		}
-
-		// Environment variable
-		String envValue = System.getenv(envKey);
-		if (envValue != null) {
-			try {
-				return Integer.parseInt(envValue);
-			} catch (NumberFormatException e) {
-				logger.warn("Invalid " + envKey + ": " + envValue);
-			}
-		}
-
-		// System property
-		String sysValue = System.getProperty(paramKey);
-		if (sysValue != null) {
-			try {
-				return Integer.parseInt(sysValue);
-			} catch (NumberFormatException e) {
-				logger.warn("Invalid " + paramKey + ": " + sysValue);
-			}
-		}
-
-		return defaultValue;
+		return ConfigResolver.resolveInt(paramKey, envKey, params, defaultValue);
 	}
 
 	private boolean loadBoolConfig(String envKey, String paramKey,
 			ConcurrentMap<String, String> params, boolean defaultValue) {
-		if (params != null && params.containsKey(paramKey)) {
-			return Boolean.parseBoolean(params.get(paramKey));
-		}
-
-		String envValue = System.getenv(envKey);
-		if (envValue != null) {
-			return Boolean.parseBoolean(envValue);
-		}
-
-		String sysValue = System.getProperty(paramKey);
-		if (sysValue != null) {
-			return Boolean.parseBoolean(sysValue);
-		}
-
-		return defaultValue;
+		return ConfigResolver.resolveBoolean(paramKey, envKey, params, defaultValue);
 	}
 
 	private String loadStringConfig(String envKey, String paramKey,
 			ConcurrentMap<String, String> params, String defaultValue) {
-		if (params != null && params.containsKey(paramKey)) {
-			String v = params.get(paramKey);
-			if (v != null && !v.trim().isEmpty()) return v.trim();
-		}
-		String envValue = System.getenv(envKey);
-		if (envValue != null && !envValue.trim().isEmpty()) return envValue.trim();
-		String sysValue = System.getProperty(paramKey);
-		if (sysValue != null && !sysValue.trim().isEmpty()) return sysValue.trim();
-		return defaultValue;
+		return ConfigResolver.resolveString(paramKey, envKey, params, defaultValue);
 	}
 
 	private int getWaitTimeout(ConcurrentMap<String, String> params) {
@@ -670,10 +683,10 @@ public class DriverPoolManager {
 		private final RemoteWebDriver driver;
 		private final WebDriverWait wait;
 		private final String testName;
-		private final BrowserType browserType;
+		private final String browserType;
 
 		DriverContext(RemoteWebDriver driver, WebDriverWait wait,
-				String testName, BrowserType browserType) {
+				String testName, String browserType) {
 			this.driver = driver;
 			this.wait = wait;
 			this.testName = testName;
@@ -692,7 +705,7 @@ public class DriverPoolManager {
 			return testName;
 		}
 
-		BrowserType getBrowserType() {
+		String getBrowserType() {
 			return browserType;
 		}
 	}
@@ -701,17 +714,17 @@ public class DriverPoolManager {
 	 * Test metadata for tracking and reporting.
 	 */
 	private static class TestMetadata {
-		private final BrowserType browserType;
+		private final String browserType;
 		private final String url;
 		private final long startTime;
 
-		TestMetadata(BrowserType browserType, String url, long startTime) {
+		TestMetadata(String browserType, String url, long startTime) {
 			this.browserType = browserType;
 			this.url = url;
 			this.startTime = startTime;
 		}
 
-		BrowserType getBrowserType() {
+		String getBrowserType() {
 			return browserType;
 		}
 

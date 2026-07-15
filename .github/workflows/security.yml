@@ -62,7 +62,6 @@ jobs:
             -Dsecurity.target.url=${{ inputs.target_url }} \
             -Dscan.type=${{ inputs.scan_type }} \
             -Dsurefire.reportNameSuffix=security
-        continue-on-error: true
 
       - name: Upload ZAP HTML report
         if: always()

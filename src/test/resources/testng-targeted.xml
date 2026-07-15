@@ -23,11 +23,13 @@
     <!-- Execution mode -->
     <parameter name="execution.mode" value="targeted"/>
 
-    <!-- Account under test -->
+    <!-- Account under test — url points at a public site so this suite runs
+         out of the box; point it at your real app once you're wiring in your
+         own test classes below. -->
     <parameter name="accountId" value="ACC001"/>
     <parameter name="username"  value="user@example.com"/>
     <parameter name="password"  value="secret"/>
-    <parameter name="url"       value="https://www.alfadock-pack.com/ver10/#/home"/>
+    <parameter name="url"       value="https://example.com"/>
 
     <!-- Framework config selection -->
     <parameter name="configClass"
@@ -40,10 +42,13 @@
     <test name="TargetedAccountTests">
         <classes>
             <!--
-              Add your test classes here.
-              Test methods may or may not use the fetchData DataProvider.
-              Without the DataProvider they still receive the account via getAccount().
+              TargetedExampleTest is a working reference example (runs against the
+              account configured above, no external app needed) — replace with your
+              own classes below it. Test methods may or may not use the fetchData
+              DataProvider. Without the DataProvider they still receive the account
+              via getAccount().
             -->
+            <class name="com.framework.testng.examples.TargetedExampleTest"/>
             <!-- <class name="com.alfadock.tests.LoginTest"/> -->
             <!-- <class name="com.alfadock.tests.DashboardTest"/> -->
         </classes>

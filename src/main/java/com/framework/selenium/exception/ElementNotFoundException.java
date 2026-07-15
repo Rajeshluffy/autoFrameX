@@ -1,5 +1,8 @@
 package com.framework.selenium.exception;
 
+import com.framework.exception.Categorized;
+import com.framework.exception.FrameworkException;
+
 /**
  * Thrown when a WebElement cannot be located using the provided locator strategy.
  *
@@ -32,9 +35,14 @@ package com.framework.selenium.exception;
  * @version 1.0
  * @see com.framework.selenium.api.base.SeleniumBase#locateElement(Locators, String)
  */
-public class ElementNotFoundException extends RuntimeException {
+public class ElementNotFoundException extends FrameworkException implements Categorized {
 
     private static final long serialVersionUID = 1L;
+
+    @Override
+    public String category() {
+        return "ELEMENT_NOT_FOUND";
+    }
 
     /**
      * Constructs an ElementNotFoundException with a descriptive message.

@@ -232,14 +232,14 @@ public final class RetryUtils {
     // =========================================================================
 
     /** Thrown when all retry attempts are exhausted. */
-    public static class RetryExhaustedException extends RuntimeException {
+    public static class RetryExhaustedException extends com.framework.exception.FrameworkException {
         public RetryExhaustedException(String message, Throwable cause) {
             super(message, cause);
         }
     }
 
     /** Thrown when a call is rejected because the circuit breaker is OPEN. */
-    public static class CircuitOpenException extends RuntimeException {
+    public static class CircuitOpenException extends com.framework.exception.FrameworkException {
         public CircuitOpenException(String message) {
             super(message);
         }

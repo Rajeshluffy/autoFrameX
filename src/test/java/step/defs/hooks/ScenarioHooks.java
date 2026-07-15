@@ -2,8 +2,9 @@ package step.defs.hooks;
 
 import java.lang.reflect.Method;
 
+import com.framework.config.data.ConfigManager;
+import com.framework.utils.ExtentReportManager;
 import com.framework.utils.LogUtils;
-import com.framework.utils.Reporter;
 import com.framework.utils.ScreenshotUtils;
 import com.framework.utils.VideoRecorder;
 
@@ -48,6 +49,14 @@ public class ScenarioHooks {
     @Before(order = 1)
     public void setUp(Scenario scenario) {
         LogUtils.step("Scenario started: " + scenario.getName());
+
+        // Bind this thread to its config/pool context. No ITestContext is available
+        // in a pure Cucumber hook, so resolution falls through to env var/system
+        // property/default — matching the null-params resolution already used below.
+        String contextId = ConfigManager.resolveContextId(null);
+        ConfigManager.bindContext(contextId);
+        DriverPoolManager.bindContext(contextId);
+
         DriverPoolManager pool = DriverPoolManager.getInstance();
         pool.initializePool(null);
         pool.setupDriver(SCENARIO_METHOD, null);
@@ -79,7 +88,7 @@ public class ScenarioHooks {
         }
 
         if (scenario.isFailed() && uiCtx.driver != null) {
-            ScreenshotUtils.captureFailureEvidence(uiCtx.driver, "./" + Reporter.folderName + "/images");
+            ScreenshotUtils.captureFailureEvidence(uiCtx.driver, "./" + ExtentReportManager.folderName + "/images");
         }
         try {
             DriverPoolManager.getInstance().teardownDriver(SCENARIO_METHOD, !scenario.isFailed());

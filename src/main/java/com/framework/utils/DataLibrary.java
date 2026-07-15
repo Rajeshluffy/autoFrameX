@@ -17,11 +17,11 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import com.framework.testng.api.base.AccountData;
+import com.framework.config.data.ConfigResolver;
 
 /**
- * Reads test data from Excel (.xlsx) and delimited text (CSV/TSV) files
- * under the {@code ./data/} folder.
+ * Reads test data from Excel (.xlsx) and delimited text (CSV/TSV) files under a
+ * configurable base directory (default {@code ./data}, see {@link #baseDataDir()}).
  *
  * <p>Parsed data is cached in a {@link ConcurrentHashMap} so multiple test
  * classes sharing the same file only pay the I/O cost once per JVM run.
@@ -35,6 +35,17 @@ public class DataLibrary {
 
     /** Cache: cache-key → parsed data grid. */
     private static final ConcurrentMap<String, Object[][]> cache = new ConcurrentHashMap<>();
+
+    /**
+     * Resolves the base data directory: {@code -DdataDir=...} system property,
+     * then {@code DATA_DIR} environment variable, then {@code ./data} default.
+     * No TestNG-parameter tier — this is a static utility invoked from
+     * {@code @DataProvider} methods with no {@code ITestContext} in scope, unlike
+     * {@code ConfigManager}'s own resolution chain.
+     */
+    private static String baseDataDir() {
+        return ConfigResolver.resolveString("dataDir", "DATA_DIR", null, "./data");
+    }
 
     public DataLibrary() { /* utility class — no instances */ }
 
@@ -191,7 +202,7 @@ public class DataLibrary {
     // -------------------------------------------------------------------------
 
     private static Object[][] loadDelimited(String fileName, String delimiter) {
-        String path = "./data/" + fileName;
+        String path = baseDataDir() + "/" + fileName;
         logger.info("Loading delimited data from: " + path + " (delimiter: [" + delimiter + "])");
 
         List<Object[]> rows = new ArrayList<>();
@@ -218,7 +229,7 @@ public class DataLibrary {
     }
 
     private static Object[][] loadFromDisk(String excelFileName) {
-        String path = "./data/" + excelFileName + ".xlsx";
+        String path = baseDataDir() + "/" + excelFileName + ".xlsx";
         logger.info("Loading Excel data from: " + path);
 
         try (XSSFWorkbook wbook = new XSSFWorkbook(path)) {

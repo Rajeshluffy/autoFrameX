@@ -55,7 +55,6 @@ jobs:
             -Dperformance.duration=${{ inputs.duration_seconds }} \
             -Dperformance.p95.sla=${{ inputs.p95_sla_ms }} \
             -Dsurefire.reportNameSuffix=performance
-        continue-on-error: true
 
       - name: Upload HTML reports
         if: always()

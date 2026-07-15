@@ -21,8 +21,10 @@ import javax.crypto.spec.SecretKeySpec;
  * <ol>
  *   <li>System property {@code autoFrameX.encryption.key}</li>
  *   <li>Environment variable {@code AUTOFRAMEX_ENCRYPTION_KEY}</li>
- *   <li>Built-in fallback key (development/CI only — rotate for production)</li>
  * </ol>
+ * There is no built-in fallback key — {@link #encrypt}/{@link #decrypt} throw
+ * {@link IllegalStateException} if neither source is set, rather than silently
+ * encrypting with a key visible to anyone with repo access.
  *
  * <h3>Format</h3>
  * Encrypted values are Base64-encoded strings containing a 12-byte random IV
@@ -41,9 +43,6 @@ public final class EncryptionUtils {
             Pattern.compile("(?i)(password|passwd|pwd|secret|token|key|auth)\\s*[=:]\\s*\\S+");
     private static final Pattern BEARER_PATTERN =
             Pattern.compile("(?i)(Bearer\\s+)([A-Za-z0-9\\-._~+/]+=*)");
-
-    // Fallback key — 32 bytes for AES-256. Override via system property or env var.
-    private static final String FALLBACK_KEY = "autoFrameX!Dev#Key$2024%Secure&32";
 
     private EncryptionUtils() {}
 
@@ -146,7 +145,9 @@ public final class EncryptionUtils {
             raw = System.getenv("AUTOFRAMEX_ENCRYPTION_KEY");
         }
         if (raw == null || raw.isBlank()) {
-            raw = FALLBACK_KEY;
+            throw new IllegalStateException(
+                    "No encryption key configured. Set -DautoFrameX.encryption.key=... or the "
+                    + "AUTOFRAMEX_ENCRYPTION_KEY environment variable before calling encrypt()/decrypt().");
         }
         // Pad or truncate to exactly 32 bytes for AES-256
         byte[] keyBytes = new byte[32];

@@ -324,8 +324,8 @@ public class VideoRecorder {
     // =========================================================================
 
     private File createFramesDir(String testName) {
-        String base = (Reporter.folderName != null && !Reporter.folderName.isEmpty())
-                ? Reporter.folderName
+        String base = (ExtentReportManager.folderName != null && !ExtentReportManager.folderName.isEmpty())
+                ? ExtentReportManager.folderName
                 : "reports/default";
 
         long   epoch    = System.currentTimeMillis();

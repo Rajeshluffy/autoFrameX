@@ -1,0 +1,28 @@
+# EditorConfig: https://editorconfig.org
+# Standardizes NEW code going forward — the codebase has a real, pre-existing mix of
+# tabs and 4-space indentation (see docs/TECHNICAL_DEBT_REGISTER.md, Readability).
+# This deliberately does not trigger a mass reformat of existing files; it just stops
+# the drift from here. Reformat a file to this convention only as part of otherwise
+# touching it, not as a standalone unrelated diff.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.java]
+indent_style = space
+indent_size = 4
+
+[*.{xml,yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.{bat,ps1}]
+end_of_line = crlf

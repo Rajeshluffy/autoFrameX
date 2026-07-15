@@ -6,50 +6,114 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Thread-safe configuration manager implementing Singleton pattern.
- * Manages lifecycle of configuration with lazy initialization support.
- * 
- * <p>Features:
- * <ul>
- *   <li>Thread-safe singleton with double-checked locking</li>
- *   <li>Support for runtime configuration updates</li>
- *   <li>Environment-aware configuration loading</li>
- *   <li>Fallback to defaults when configs unavailable</li>
- * </ul>
- * 
+ * Configuration manager, keyed by execution context so multiple applications
+ * (distinct {@code configClass} values) can run concurrently in one JVM.
+ *
+ * <p>Historically this was a plain JVM-wide singleton — one {@link ProjectConfig}
+ * shared by the entire process. That blocked running two applications' suites
+ * concurrently in one Surefire run: the second suite's parameters silently merged
+ * into the first's. It is now a small registry of instances keyed by a
+ * {@code contextId} string (see {@link #bindContext} / {@link #resolveContextId}),
+ * bound per-thread via a {@link ThreadLocal}.
+ *
+ * <p><b>{@link #getInstance()} keeps its original signature and behavior</b> for
+ * every existing caller: it always resolves to whichever context is currently
+ * bound on the calling thread, defaulting to a single shared context if nothing
+ * ever calls {@link #bindContext}. Single-application suites are unaffected.
+ *
+ * <p><b>Binding contract:</b> {@link #bindContext} must be called on every thread
+ * before it touches {@code getInstance()} — once per {@code @BeforeTest} (suite
+ * thread) and again per {@code @BeforeMethod}/Cucumber {@code @Before} (worker
+ * thread), since TestNG's {@code parallel="methods"}/{@code "classes"} runs test
+ * methods on different threads than the one that ran {@code @BeforeTest}. See
+ * {@code Reporter.initFromContext}, {@code ProjectSpecificMethods.preCondition},
+ * {@code ScenarioHooks.setUp}, and {@code CucumberProjectBase.setUp}.
+ *
+ * <p><b>Known limitation:</b> the Owner library's own {@code ConfigCache} (used by
+ * {@link ConfigurationManager}) is itself a process-wide cache keyed by
+ * {@code Class}. Two contexts sharing the same {@code configClass} but wanting
+ * different property overrides (e.g. same app, two environments, run
+ * concurrently) still share that cached proxy — this fix isolates config across
+ * different {@code configClass} values, not across differing overrides of the
+ * same one.
+ *
  * @author Framework Team
- * @version 3.0
+ * @version 3.1
  */
 public class ConfigManager {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
-    private static volatile ConfigManager instance;
-    
+
+    /** Context id used when nothing ever calls {@link #bindContext}. */
+    private static final String DEFAULT_CONTEXT = "default";
+
+    private static final ConcurrentMap<String, ConfigManager> REGISTRY = new ConcurrentHashMap<>();
+    private static final ThreadLocal<String> CONTEXT_ID = new ThreadLocal<>();
+
     private volatile ProjectConfig config;
     private volatile boolean initialized = false;
-    
+
     // Runtime overrides storage
     private final ConcurrentMap<String, String> runtimeOverrides = new ConcurrentHashMap<>();
-    
+
     /**
-     * Private constructor for singleton pattern.
+     * Private constructor — instances are only created via the {@link #REGISTRY}.
      */
     private ConfigManager() {}
-    
+
     /**
-     * Gets singleton instance using double-checked locking.
-     * 
-     * @return ConfigManager instance
+     * Binds the calling thread to a configuration context. Must be called before
+     * any {@link #getInstance()} use on this thread if per-application isolation
+     * is needed; otherwise every thread falls back to {@link #DEFAULT_CONTEXT}.
+     *
+     * @param contextId identifies which application's config this thread should
+     *                  see (typically the resolved {@code configClass}); null
+     *                  falls back to the default context
+     */
+    public static void bindContext(String contextId) {
+        CONTEXT_ID.set(contextId != null && !contextId.isBlank() ? contextId : DEFAULT_CONTEXT);
+    }
+
+    /**
+     * Resolves a context id from a TestNG/Cucumber parameter map, using the same
+     * priority order {@link ProjectDirector} uses to resolve {@code configClass}:
+     * explicit {@code contextId} param, then {@code configClass} param, then the
+     * {@code CONFIG_CLASS} env var, then the {@code configClass} system property,
+     * then {@link #DEFAULT_CONTEXT}.
+     *
+     * @param params suite/test/method parameters; may be {@code null} (e.g. from
+     *               Cucumber hooks that have no TestNG XML params available)
+     * @return a non-null context id
+     */
+    public static String resolveContextId(java.util.Map<String, String> params) {
+        if (params != null) {
+            String explicit = params.get("contextId");
+            if (explicit != null && !explicit.isBlank()) return explicit;
+
+            String configClass = params.get("configClass");
+            if (configClass != null && !configClass.isBlank()) return configClass;
+        }
+        String envConfigClass = System.getenv("CONFIG_CLASS");
+        if (envConfigClass != null && !envConfigClass.isBlank()) return envConfigClass;
+
+        String sysConfigClass = System.getProperty("configClass");
+        if (sysConfigClass != null && !sysConfigClass.isBlank()) return sysConfigClass;
+
+        return DEFAULT_CONTEXT;
+    }
+
+    /**
+     * Gets the configuration instance bound to the calling thread's context,
+     * creating it on first use. Falls back to {@link #DEFAULT_CONTEXT} if the
+     * thread never called {@link #bindContext} — identical to the old singleton
+     * behavior for any caller that doesn't opt into multi-context isolation.
+     *
+     * @return ConfigManager instance for the current thread's context
      */
     public static ConfigManager getInstance() {
-        if (instance == null) {
-            synchronized (ConfigManager.class) {
-                if (instance == null) {
-                    instance = new ConfigManager();
-                }
-            }
-        }
-        return instance;
+        String id = CONTEXT_ID.get();
+        if (id == null) id = DEFAULT_CONTEXT;
+        return REGISTRY.computeIfAbsent(id, k -> new ConfigManager());
     }
     
     /**

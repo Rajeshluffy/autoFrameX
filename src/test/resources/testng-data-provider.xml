@@ -37,11 +37,13 @@
     <test name="MultiAccountTests">
         <classes>
             <!--
-              Add your test classes here.
-              Each class's @Test methods must declare:
+              DataProviderExampleTest is a working reference example (runs against
+              data/accounts.xlsx, no external app needed) — replace with your own
+              classes below it. Each class's @Test methods must declare:
                 @Test(dataProvider = "fetchData")
                 public void testMethod(AccountData account) { ... }
             -->
+            <class name="com.framework.testng.examples.DataProviderExampleTest"/>
             <!-- <class name="com.alfadock.tests.LoginTest"/> -->
             <!-- <class name="com.alfadock.tests.DashboardTest"/> -->
         </classes>

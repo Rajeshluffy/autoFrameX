@@ -22,20 +22,61 @@ jobs:
           java-version: '17'
           cache: maven
 
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
+      - name: Verify Chrome installation
+        run: |
+          google-chrome --version
+          chromedriver --version
+
       - name: Compile
         run: mvn clean compile -q
 
       - name: Run framework unit tests
-        # testng-ci.xml excludes CucumberRunner (which needs a real browser).
-        # RetryTest is intentionally always-failing — it tests the retry engine.
-        # continue-on-error keeps the workflow green so artifact upload always runs.
+        # testng-ci.xml excludes CucumberRunner (which needs a real browser) and
+        # RetryTest (see below) — this step's pass/fail is the real merge gate.
         run: |
           mvn test \
             -Dtestng.suite.file=testng-ci.xml \
             -Denv=qa \
             -Dheadless=true \
             -Dsurefire.reportNameSuffix=ci
+
+      - name: Run parallel execution smoke suite
+        # Genuinely exercises parallel="methods" thread-count=5 against a real
+        # WebDriver pool (public site, no local app dependency) — this is the
+        # real regression gate for pool/thread-safety behavior under
+        # concurrency, unlike testng-data-provider.xml/testng-targeted.xml
+        # which are parallel-capable templates with no test classes wired in.
+        run: |
+          mvn test \
+            -Dtestng.suite.file=testng-parallel-smoke.xml \
+            -Dheadless=true \
+            -Dsurefire.reportNameSuffix=parallel-smoke
+
+      - name: Verify retry engine (expected failures — does not gate merges)
+        # RetryTest's methods are intentionally always-failing; they test the
+        # RetryEngine's own retry/backoff behavior, not application regressions.
+        run: |
+          mvn test \
+            -Dtestng.suite.file=testng-ci-retry.xml \
+            -Denv=qa \
+            -Dheadless=true \
+            -Dsurefire.reportNameSuffix=ci-retry
         continue-on-error: true
+
+      - name: Enforce coverage floor + static analysis (report-only)
+        # jacoco:check is bound to the "verify" phase, so it doesn't run during
+        # the "mvn test" steps above — this step reads the jacoco.exec those
+        # steps already accumulated in this same job and enforces the coverage
+        # floor against it. -Dmaven.test.skip=true means no tests re-run here;
+        # Checkstyle/PMD/SpotBugs also run but are report-only (see pom.xml) —
+        # they log findings without failing the build until the existing
+        # violation backlog is cleared.
+        run: mvn verify -Dmaven.test.skip=true
 
       - name: Upload Surefire test results
         if: always()
