@@ -20,7 +20,12 @@ pipeline {
         string(
             name: 'SUITE_FILE',
             defaultValue: 'testng.xml',
-            description: 'TestNG suite XML file to execute (relative to project root)'
+            description: 'TestNG suite XML file to execute (relative to the MODULE directory below, not the repo root)'
+        )
+        string(
+            name: 'MODULE',
+            defaultValue: 'autoframex-testkit',
+            description: 'Reactor module that owns SUITE_FILE above (TD-20 multi-module split) — e.g. autoframex-testkit for testng.xml, autoframex-selenium for testng-ci.xml'
         )
         string(
             name: 'THREAD_COUNT',
@@ -52,6 +57,10 @@ pipeline {
 
         stage('Inject Configs') {
             steps {
+                // Destination is autoframex-core/src/main/resources (TD-20):
+                // ConfigManager/ProjectDirector, which read these project
+                // config files via the configClass parameter, now live in
+                // the autoframex-core module, not the repo root.
                 withCredentials([
                     file(credentialsId: 'alfadock-config', variable: 'ALFA_CONFIG'),
                     file(credentialsId: 'leaftap-config',  variable: 'LEAF_CONFIG')
@@ -59,15 +68,15 @@ pipeline {
                     script {
                         if (isUnix()) {
                             sh '''
-                                mkdir -p src/main/resources
-                                cp "$ALFA_CONFIG" src/main/resources/alfaDOCKConfig.properties
-                                cp "$LEAF_CONFIG"  src/main/resources/leafTapConfig.properties
+                                mkdir -p autoframex-core/src/main/resources
+                                cp "$ALFA_CONFIG" autoframex-core/src/main/resources/alfaDOCKConfig.properties
+                                cp "$LEAF_CONFIG"  autoframex-core/src/main/resources/leafTapConfig.properties
                             '''
                         } else {
                             bat '''
-                                if not exist src\\main\\resources mkdir src\\main\\resources
-                                copy /Y "%ALFA_CONFIG%" "src\\main\\resources\\alfaDOCKConfig.properties"
-                                copy /Y "%LEAF_CONFIG%"  "src\\main\\resources\\leafTapConfig.properties"
+                                if not exist autoframex-core\\src\\main\\resources mkdir autoframex-core\\src\\main\\resources
+                                copy /Y "%ALFA_CONFIG%" "autoframex-core\\src\\main\\resources\\alfaDOCKConfig.properties"
+                                copy /Y "%LEAF_CONFIG%"  "autoframex-core\\src\\main\\resources\\leafTapConfig.properties"
                             '''
                         }
                     }
@@ -75,13 +84,17 @@ pipeline {
             }
         }
 
-        stage('Build & Compile') {
+        stage('Build & Install') {
             steps {
                 script {
+                    // install (not just compile): downstream modules need
+                    // upstream reactor artifacts (autoframex-core,
+                    // autoframex-selenium, ...) resolvable from the local
+                    // repo before any -pl-scoped stage below can build.
                     if (isUnix()) {
-                        sh 'mvn clean compile -q'
+                        sh 'mvn clean install -DskipTests -Djacoco.skip=true -q'
                     } else {
-                        bat 'mvn clean compile -q'
+                        bat 'mvn clean install -DskipTests -Djacoco.skip=true -q'
                     }
                 }
             }
@@ -90,10 +103,11 @@ pipeline {
         stage('Framework Unit Tests') {
             steps {
                 script {
+                    // testng-ci.xml now lives in autoframex-selenium (TD-20).
                     if (isUnix()) {
-                        sh 'mvn test -Dtestng.suite.file=testng-ci.xml -Dsurefire.reportNameSuffix=framework-unit'
+                        sh 'mvn test -pl autoframex-selenium -Dtestng.suite.file=testng-ci.xml -Dsurefire.reportNameSuffix=framework-unit'
                     } else {
-                        bat 'mvn test -Dtestng.suite.file=testng-ci.xml -Dsurefire.reportNameSuffix=framework-unit'
+                        bat 'mvn test -pl autoframex-selenium -Dtestng.suite.file=testng-ci.xml -Dsurefire.reportNameSuffix=framework-unit'
                     }
                 }
             }
@@ -111,7 +125,11 @@ pipeline {
                 stage('TestNG Suite') {
                     steps {
                         script {
+                            // MODULE/SUITE_FILE pair together identify which
+                            // reactor module owns the suite (TD-20) — default
+                            // testng.xml lives in autoframex-testkit.
                             def cmd = "mvn test" +
+                                " -pl ${params.MODULE}" +
                                 " -Dtestng.suite.file=${params.SUITE_FILE}" +
                                 " -Dbrowser=${params.BROWSER}" +
                                 " -Denv=${params.ENVIRONMENT}" +
@@ -126,7 +144,13 @@ pipeline {
                 stage('AlfaDOCK Suite') {
                     steps {
                         script {
+                            // NOTE (pre-existing, unrelated to TD-20): alfaDOCKtestng.xml
+                            // is not present anywhere in this repo — it's expected to be
+                            // supplied by the consuming AlfaDOCK project's own module.
+                            // -pl targets autoframex-testkit as a placeholder; point this
+                            // at whichever module that downstream project actually owns.
                             def cmd = "mvn test" +
+                                " -pl autoframex-testkit" +
                                 " -Dtestng.suite.file=alfaDOCKtestng.xml" +
                                 " -Dbrowser=${params.BROWSER}" +
                                 " -Denv=${params.ENVIRONMENT}" +
@@ -142,7 +166,10 @@ pipeline {
         stage('GPN Suite') {
             steps {
                 script {
+                    // NOTE (pre-existing, unrelated to TD-20): gpn.xml is not present
+                    // anywhere in this repo — see the AlfaDOCK Suite comment above.
                     def cmd = "mvn test" +
+                        " -pl autoframex-testkit" +
                         " -Dtestng.suite.file=gpn.xml" +
                         " -Dbrowser=${params.BROWSER}" +
                         " -Denv=${params.ENVIRONMENT}" +
@@ -166,11 +193,16 @@ pipeline {
                     string(credentialsId: 'sonar-host-url', variable: 'SONAR_HOST_URL')
                 ]) {
                     script {
+                        // Run at the reactor root (no -pl) so Sonar analyzes every
+                        // module's source; xmlReportPaths is globbed since coverage
+                        // data only really exists for whichever module(s) the stages
+                        // above actually exercised (TD-20 — see sonar.yml for the
+                        // same pattern).
                         def cmd = "mvn sonar:sonar" +
                             " -Dsonar.projectKey=autoFrameX" +
                             " -Dsonar.host.url=${SONAR_HOST_URL}" +
                             " -Dsonar.token=${SONAR_TOKEN}" +
-                            " -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml"
+                            " -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml"
                         if (isUnix()) { sh cmd } else { bat cmd }
                     }
                 }
@@ -202,7 +234,7 @@ pipeline {
             }
 
             archiveArtifacts(
-                artifacts: 'reports/**/*.html, logs/test-events.json, target/surefire-reports/**',
+                artifacts: '**/reports/**/*.html, **/logs/test-events.json, **/target/surefire-reports/**',
                 allowEmptyArchive: true
             )
         }

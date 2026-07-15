@@ -20,8 +20,14 @@ on:
         required: true
         default: 'true'
         type: boolean
+      module:
+        description: 'Reactor module that owns the suite file below (TD-20 multi-module split)'
+        required: true
+        default: autoframex-testkit
+        type: choice
+        options: [autoframex-testkit, autoframex-selenium, autoframex-cucumber, autoframex-performance, autoframex-security]
       suite_file:
-        description: 'TestNG suite XML file (relative to project root)'
+        description: 'TestNG suite XML file (relative to the module directory above, not the repo root)'
         required: true
         default: testng.xml
         type: string
@@ -52,12 +58,13 @@ jobs:
           google-chrome --version
           chromedriver --version
 
-      - name: Compile
-        run: mvn clean compile -q
+      - name: Build and install all modules (multi-module reactor — TD-20)
+        run: mvn clean install -DskipTests -Djacoco.skip=true -q
 
       - name: Run regression suite
         run: |
           mvn test \
+            -pl ${{ inputs.module }} \
             -Dtestng.suite.file=${{ inputs.suite_file }} \
             -Dbrowser=${{ inputs.browser }} \
             -Denv=${{ inputs.environment }} \
@@ -70,8 +77,8 @@ jobs:
         with:
           name: regression-reports-${{ inputs.browser }}-${{ inputs.environment }}
           path: |
-            reports/**/*.html
-            target/cucumber-reports/
+            **/reports/**/*.html
+            **/target/cucumber-reports/
           if-no-files-found: ignore
           retention-days: 30
 
@@ -80,7 +87,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-events-${{ inputs.browser }}-${{ inputs.environment }}
-          path: logs/test-events.json
+          path: '**/logs/test-events.json'
           if-no-files-found: ignore
           retention-days: 30
 
@@ -89,5 +96,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: surefire-results-regression
-          path: target/surefire-reports/
+          path: '**/target/surefire-reports/'
           retention-days: 30

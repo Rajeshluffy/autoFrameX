@@ -12,10 +12,17 @@ services:
       ENVIRONMENT: ${ENVIRONMENT:-qa}
       HEADLESS: ${HEADLESS:-true}
       SUITE_FILE: ${SUITE_FILE:-testng.xml}
+      # Reactor module that owns SUITE_FILE above (TD-20 multi-module split).
+      # Change alongside SUITE_FILE if you point at a suite owned by a
+      # different module (e.g. MODULE=autoframex-selenium for testng-ci.xml).
+      MODULE: ${MODULE:-autoframex-testkit}
     volumes:
-      - ./reports:/app/reports
-      - ./logs:/app/logs
-      - ./target/surefire-reports:/app/target/surefire-reports
+      # Paths are relative to the MODULE default (autoframex-testkit) since
+      # Surefire's working directory is the invoking module's own basedir,
+      # not the reactor root — update these to match if you override MODULE.
+      - ./autoframex-testkit/reports:/app/autoframex-testkit/reports
+      - ./autoframex-testkit/logs:/app/autoframex-testkit/logs
+      - ./autoframex-testkit/target/surefire-reports:/app/autoframex-testkit/target/surefire-reports
     # Uncomment the block below when using Selenium Grid (selenium-hub service)
     # depends_on:
     #   selenium-hub:

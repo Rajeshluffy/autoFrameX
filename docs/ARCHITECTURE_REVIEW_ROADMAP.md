@@ -58,9 +58,12 @@ Make "20 teams, multiple apps" actually true.
 - [x] Add an ArchUnit test (`ArchitectureRulesTest`, wired into `testng-ci.xml`) that
       fails the build if the `utils → testng.api.base` cycle ever comes back, plus a
       guard against mutable static state in page objects
+- [x] Split `autoFrameX` into an 8-module Maven reactor so a team depending on it only
+      pulls the concerns it needs (TD-20, fully done 2026-07-15 in 3 stages — see
+      `TECHNICAL_DEBT_REGISTER.md`)
 
-Only TD-20 remains open on the whole register — see "Why TD-07 needed its own pass
-(and why TD-20 still does)" below.
+All 20 items on the register are now fixed or closed — see "Why TD-07 needed its own
+pass (and why TD-20 needed one too)" below.
 
 ## Phase 4 — Polish ✅ Done
 
@@ -83,7 +86,7 @@ Docs truth, onboarding, and the OSS-readiness decision.
 
 ---
 
-## Why TD-07 and the BrowserType rework needed their own pass (and why TD-20 still does)
+## Why TD-07 and the BrowserType rework needed their own pass (and why TD-20 needed one too)
 
 All three looked structurally similar to TD-03 (the JVM-singleton fix) in that they
 touch a lot of surface area and carry real risk of subtly breaking existing consumers
@@ -108,9 +111,11 @@ That property — a design that keeps every pre-existing public signature stable
 what made both of these safe to execute in one dedicated pass instead of remaining
 deferred; see each item's `TECHNICAL_DEBT_REGISTER.md` entry for the design.
 
-**TD-20** doesn't have that property — it changes the *build artifact* teams depend on.
-Splitting `autoFrameX` into 6+ modules means every consuming project's pom needs to
+**TD-20** didn't have that property — it changed the *build artifact* teams depend on.
+Splitting `autoFrameX` into 8 modules meant every consuming project's pom needs to
 change which artifact(s) it depends on. That's a breaking change to the packaging
-contract, not an internal refactor hidden behind a stable API, so it still deserves its
-own dedicated plan-mode pass with an explicit target design signed off before touching
-code — not an inline change bundled with other fixes in one sweep.
+contract, not an internal refactor hidden behind a stable API, so it got its own
+dedicated plan-mode pass with an explicit target design signed off before touching
+code, executed as 3 independently-verified stages rather than one sweep — see
+`TECHNICAL_DEBT_REGISTER.md`'s TD-20 entry for the final design and what actually
+changed at each stage.

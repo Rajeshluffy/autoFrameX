@@ -57,41 +57,63 @@ A shared, enterprise-grade test automation framework built on Selenium 4, TestNG
 
 ## Project Structure
 
+As of TD-20, autoFrameX is an 8-module Maven reactor — each module owns a
+distinct concern, so a consuming team only pulls in the dependencies of the
+modules it actually needs (e.g. an API-only team depends on `autoframex-core`
++ `autoframex-api`, not the whole tree).
+
 ```
 autoFrameX/
-├── src/main/java/
-│   ├── com/api/                          # REST Assured API layer
-│   │   ├── design/                       # ApiClient, ResponseAPI interfaces
-│   │   └── rest/assured/base/            # Request/response base classes, listener
-│   ├── com/framework/
-│   │   ├── config/data/                  # Config system (Owner-based, multi-project)
-│   │   ├── cucumber/api/base/            # CucumberProjectBase, ScenarioContext
-│   │   ├── observability/                # TestEventCollector, FlakyTestTracker, FailureCategorizer
-│   │   ├── performance/                  # PerformanceTestBase, PagePerformanceUtils, ApiPerformanceUtils
-│   │   ├── security/                     # SecurityTestBase, ZapSecurityUtils, InputSanitizer
-│   │   ├── selenium/
-│   │   │   ├── api/base/                 # SeleniumBase, BasePage
-│   │   │   ├── api/design/               # Browser, Element, Locators interfaces
-│   │   │   └── exception/               # ElementNotFoundException
-│   │   ├── testng/api/base/              # ProjectSpecificMethods, RetryEngine
-│   │   └── utils/                        # Reporter, TestMetadata, DataLibrary, WaitUtils, EncryptionUtils, ...
-│   └── design/patterns/
-│       ├── database/                     # AbstractDatabaseConnection, MySQLConnection, DBManager
-│       ├── factory/browser/              # BrowserFactory, BrowserType, Chrome/Firefox/Edge/Remote
-│       └── object/pool/                  # DriverPoolManager, WebDriverPoolFactory
-├── src/main/resources/
-│   ├── frameworkConfig.properties        # All tunable framework defaults
-│   └── logback.xml                       # Logback config (console + JSON file appender)
-├── src/test/java/
-│   ├── runners/                          # CucumberRunner
-│   └── step/defs/                        # UI, API, combined step definitions + hooks
-├── src/test/resources/features/          # Cucumber .feature files
-├── testng.xml                            # Master suite (unit + cucumber + perf + security)
-├── testng-ci.xml                         # CI-optimised suite (headless, parallel)
-├── Jenkinsfile                           # Declarative pipeline
-├── Dockerfile / docker-compose.yml       # Containerised execution
-└── pom.xml
+├── pom.xml                                # Reactor parent — packaging=pom, <modules>, <dependencyManagement>
+│
+├── autoframex-core/                       # Leaf module — no framework dependencies
+│   └── src/main/java/
+│       ├── com/framework/config/data/     # Config system (Owner-based, multi-project)
+│       ├── com/framework/exception/       # FrameworkException hierarchy, Categorized
+│       ├── com/framework/observability/   # TestEventCollector, FlakyTestTracker, FailureCategorizer
+│       └── com/framework/utils/           # Reporter, DataLibrary, EncryptionUtils, RetryUtils, ...
+│
+├── autoframex-selenium/                   # depends on: core
+│   ├── data/accounts.xlsx                 # Data-provider example fixture
+│   ├── testng-ci.xml, testng-ci-retry.xml,
+│   │   testng-parallel-smoke.xml          # Suites that only touch core+selenium classes
+│   └── src/main/java/
+│       ├── com/framework/selenium/        # SeleniumBase, BasePage, action classes, exceptions
+│       ├── com/framework/testng/api/base/ # ProjectSpecificMethods, RetryEngine
+│       ├── com/framework/utils/           # The 5 Selenium-dependent utils (WaitUtils, ScreenshotUtils, ...)
+│       └── design/patterns/
+│           ├── factory/browser/           # BrowserFactory, BrowserRegistry, Chrome/Firefox/Edge/Remote
+│           └── object/pool/               # DriverPoolManager, WebDriverPoolFactory
+│
+├── autoframex-api/                        # depends on: core
+│   └── src/main/java/com/api/
+│       ├── design/                        # ApiClient, ResponseAPI interfaces
+│       └── rest/assured/base/             # Request/response base classes, listener
+│
+├── autoframex-database/                   # depends on: core
+│   └── src/main/java/design/patterns/database/  # AbstractDatabaseConnection, MySQLConnection, DBManager
+│
+├── autoframex-cucumber/                    # depends on: core, selenium, api
+│   └── src/main/java/com/framework/cucumber/api/base/  # CucumberProjectBase, ScenarioContext
+│
+├── autoframex-performance/                 # depends on: core, selenium, api
+│   └── src/main/java/com/framework/performance/  # PerformanceTestBase, ApiPerformanceUtils, ...
+│
+├── autoframex-security/                    # depends on: core, selenium, api
+│   └── src/main/java/com/framework/security/     # SecurityTestBase, ZapSecurityUtils, InputSanitizer
+│
+├── autoframex-testkit/                     # depends on: all of the above (test scope)
+│   └── testng.xml                          # Master aggregate suite (spans every module via <packages>)
+│
+├── Jenkinsfile                             # Declarative pipeline
+├── Dockerfile / docker-compose.yml         # Containerised execution
+└── .github/workflows/                      # ci / regression / performance / security / sonar / dependency-check
 ```
+
+Suite XML files, test fixtures (`data/accounts.xlsx`), and Cucumber
+`.feature` files each live inside the module whose classpath they need —
+Surefire resolves a suite file relative to the invoking module's own basedir,
+not the reactor root.
 
 ---
 
@@ -108,14 +130,19 @@ autoFrameX/
 ```bash
 git clone https://github.com/Rajeshluffy/autoFrameX.git
 cd autoFrameX
-mvn clean compile
+mvn clean install -DskipTests
 ```
+
+`install` (not just `compile`) is required even for a first build: this is a
+multi-module reactor, so downstream modules (e.g. `autoframex-selenium`)
+resolve upstream ones (`autoframex-core`) from the local `~/.m2` repo, not
+just from in-memory reactor state.
 
 ---
 
 ## Configuration
 
-All defaults live in `src/main/resources/frameworkConfig.properties`. Override any value from the command line or `testng.xml` parameters.
+All defaults live in `autoframex-core/src/main/resources/frameworkConfig.properties`. Override any value from the command line or `testng.xml` parameters.
 
 ```properties
 # Browser
@@ -154,28 +181,33 @@ Each `testng.xml` passes a `configClass` parameter pointing to a `ProjectAppConf
 
 ## Running Tests
 
-**Default suite**
+Every suite file now lives inside the module that owns its classes, so `mvn
+test` needs a `-pl <module>` to know where to look (Surefire resolves the
+suite path relative to that module's own basedir, not the reactor root).
+
+**Default suite** (`testng.xml`, spans every module — lives in `autoframex-testkit`)
 
 ```bash
-mvn test
+mvn install -DskipTests -Djacoco.skip=true   # once, or after any core/selenium/... change
+mvn test -pl autoframex-testkit
 ```
 
 **Override browser / environment / headless at runtime**
 
 ```bash
-mvn test -Dbrowser=firefox -Denv=staging -Dheadless=true
+mvn test -pl autoframex-testkit -Dbrowser=firefox -Denv=staging -Dheadless=true
 ```
 
-**Run a specific suite**
+**Run a specific suite** (`testng-ci.xml` lives in `autoframex-selenium`)
 
 ```bash
-mvn test -Dtestng.suite.file=testng-ci.xml
+mvn test -pl autoframex-selenium -Dtestng.suite.file=testng-ci.xml
 ```
 
 **Parallel execution**
 
 ```bash
-mvn test -Dtestng.suite.file=testng-ci.xml -DthreadCount=4
+mvn test -pl autoframex-selenium -Dtestng.suite.file=testng-ci.xml -DthreadCount=4
 ```
 
 **Run via Docker**
@@ -183,6 +215,10 @@ mvn test -Dtestng.suite.file=testng-ci.xml -DthreadCount=4
 ```bash
 docker-compose up --build
 ```
+
+The Docker image's `MODULE`/`SUITE_FILE` env vars default to
+`autoframex-testkit`/`testng.xml` — override both together if you want a
+different module's suite (see `docker-compose.yml`).
 
 ---
 
@@ -243,42 +279,54 @@ docker-compose up --build
 
 ### Utilities
 
-| Class | Purpose |
-|---|---|
-| `Reporter` | Thread-safe Extent report wrapper |
-| `WaitUtils` | Fluent/explicit wait helpers |
-| `DataLibrary` | Excel + CSV/TSV test data reader with cache |
-| `EncryptionUtils` | AES-256 encrypt/decrypt for credentials |
-| `ValidationUtils` | Common assertion helpers |
-| `ScreenshotUtils` | Full-page and element screenshots |
-| `VideoRecorder` | Failure-only video capture — WebDriver screenshots assembled via FFmpeg |
-| `LogUtils` | SLF4J structured logging helpers |
-| `RetryUtils` | Programmatic retry with backoff |
+Split across `autoframex-core` (no Selenium dependency) and
+`autoframex-selenium` (needs a live `WebDriver`) per TD-20:
+
+| Class | Purpose | Module |
+|---|---|---|
+| `Reporter` | Thread-safe Extent report wrapper | core |
+| `DataLibrary` | Excel + CSV/TSV test data reader with cache | core |
+| `EncryptionUtils` | AES-256 encrypt/decrypt for credentials | core |
+| `LogUtils` | SLF4J structured logging helpers | core |
+| `RetryUtils` | Programmatic retry with backoff | core |
+| `WaitUtils` | Fluent/explicit wait helpers | selenium |
+| `ValidationUtils` | Common assertion helpers | selenium |
+| `ScreenshotUtils` | Full-page and element screenshots | selenium |
+| `ScreenshotStore` | Per-thread screenshot bytes for report embedding | selenium |
+| `VideoRecorder` | Failure-only video capture — WebDriver screenshots assembled via FFmpeg | selenium |
 
 ---
 
 ## CI/CD
 
-The `Jenkinsfile` defines a declarative pipeline with parameterised browser, environment, headless flag, suite file, and thread count. Stages: Checkout → Build → Test → Reports → (optional) SonarQube.
+The `Jenkinsfile` defines a declarative pipeline with parameterised browser, environment, headless flag, module, suite file, and thread count. Stages: Checkout → Inject Configs → Build & Install → Test → Reports → (optional) SonarQube.
 
-GitHub Actions workflows are in `.github/workflows/`:
+GitHub Actions workflows are in `.github/workflows/` — each `mvn` step now
+installs the full reactor first, then targets the one module that owns the
+suite it's running via `-pl` (see each file's own comments for why):
 
-| Workflow | Trigger |
-|---|---|
-| `ci.yml` | Push / PR to main |
-| `regression.yml` | Scheduled nightly |
-| `performance.yml` | Manual dispatch |
-| `security.yml` | Manual dispatch |
-| `sonar.yml` | Push to main |
+| Workflow | Trigger | Module targeted |
+|---|---|---|
+| `ci.yml` | Push / PR to any branch | `autoframex-selenium` |
+| `regression.yml` | Manual dispatch | Chosen via the `module` input (default `autoframex-testkit`) |
+| `performance.yml` | Manual dispatch | `autoframex-selenium` |
+| `security.yml` | Manual dispatch | `autoframex-selenium` |
+| `sonar.yml` | Push / PR to main | `autoframex-selenium` (test step); reactor root (Sonar analysis) |
+| `dependency-check.yml` | Weekly + manual dispatch | Reactor root (scans every module) |
 
 ---
 
 ## Code Quality
 
-SonarQube analysis and JaCoCo coverage are wired into the Maven build:
+SonarQube analysis and JaCoCo coverage are wired into the Maven build. Run
+`sonar:sonar` at the reactor root (not `-pl`-scoped) so it analyzes every
+module's source:
 
 ```bash
 mvn sonar:sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.login=<token>
 ```
 
-Coverage reports are generated automatically during `mvn test` via the JaCoCo plugin and consumed by SonarQube.
+Coverage reports are generated per-module during `mvn test` via the JaCoCo
+plugin (`<module>/target/site/jacoco/jacoco.xml`) and consumed by SonarQube —
+only modules whose tests actually ran in a given invocation will show
+non-zero coverage; there's no cross-module `jacoco:report-aggregate` step yet.

@@ -240,9 +240,12 @@ public class ItemSteps {
 
 ## File Structure
 
+Framework source is split across an 8-module Maven reactor (TD-20) — the
+classes below all live in `autoframex-selenium`:
+
 ```
 autoFrameX/
-├── src/main/java/
+├── autoframex-selenium/src/main/java/
 │   ├── com/framework/selenium/
 │   │   ├── api/base/
 │   │   │   ├── SeleniumBase.java       ← locateElement() methods

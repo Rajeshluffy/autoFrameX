@@ -32,14 +32,20 @@ jobs:
           google-chrome --version
           chromedriver --version
 
-      - name: Compile
-        run: mvn clean compile -q
+      - name: Build and install all modules (multi-module reactor — TD-20)
+        # A plain "mvn clean compile" no longer suffices: autoframex-selenium
+        # (which owns testng-ci.xml et al.) depends on autoframex-core as a
+        # reactor artifact, so every module needs to be installed to the local
+        # repo before a single-module `-pl` test run below can resolve it.
+        run: mvn clean install -DskipTests -Djacoco.skip=true -q
 
       - name: Run framework unit tests
-        # testng-ci.xml excludes CucumberRunner (which needs a real browser) and
-        # RetryTest (see below) — this step's pass/fail is the real merge gate.
+        # testng-ci.xml (autoframex-selenium) excludes CucumberRunner (needs a
+        # real browser) and RetryTest (see below) — this step's pass/fail is
+        # the real merge gate.
         run: |
           mvn test \
+            -pl autoframex-selenium \
             -Dtestng.suite.file=testng-ci.xml \
             -Denv=qa \
             -Dheadless=true \
@@ -53,6 +59,7 @@ jobs:
         # which are parallel-capable templates with no test classes wired in.
         run: |
           mvn test \
+            -pl autoframex-selenium \
             -Dtestng.suite.file=testng-parallel-smoke.xml \
             -Dheadless=true \
             -Dsurefire.reportNameSuffix=parallel-smoke
@@ -62,6 +69,7 @@ jobs:
         # RetryEngine's own retry/backoff behavior, not application regressions.
         run: |
           mvn test \
+            -pl autoframex-selenium \
             -Dtestng.suite.file=testng-ci-retry.xml \
             -Denv=qa \
             -Dheadless=true \
@@ -71,19 +79,24 @@ jobs:
       - name: Enforce coverage floor + static analysis (report-only)
         # jacoco:check is bound to the "verify" phase, so it doesn't run during
         # the "mvn test" steps above — this step reads the jacoco.exec those
-        # steps already accumulated in this same job and enforces the coverage
-        # floor against it. -Dmaven.test.skip=true means no tests re-run here;
-        # Checkstyle/PMD/SpotBugs also run but are report-only (see pom.xml) —
-        # they log findings without failing the build until the existing
-        # violation backlog is cleared.
-        run: mvn verify -Dmaven.test.skip=true
+        # steps already accumulated in autoframex-selenium's own target/ and
+        # enforces the coverage floor against it. Scoped to autoframex-selenium
+        # (-pl, no -am) since that's the only module this job's test steps
+        # actually exercised — running `mvn verify` reactor-wide would fail
+        # every other module's coverage floor at 0%, since none of their own
+        # tests ran in this job (a known simplification: this doesn't attempt
+        # cross-module JaCoCo aggregation). -Dmaven.test.skip=true means no
+        # tests re-run here; Checkstyle/PMD/SpotBugs also run but are
+        # report-only (see pom.xml) — they log findings without failing the
+        # build until the existing violation backlog is cleared.
+        run: mvn verify -pl autoframex-selenium -Dmaven.test.skip=true
 
       - name: Upload Surefire test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: surefire-results-ci
-          path: target/surefire-reports/
+          path: '**/target/surefire-reports/'
           retention-days: 14
 
       - name: Upload observability events
@@ -91,6 +104,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-events-ci
-          path: logs/test-events.json
+          # Written relative to whichever module's working directory Surefire
+          # used (autoframex-selenium here, not the repo root) — glob for it.
+          path: '**/logs/test-events.json'
           if-no-files-found: ignore
           retention-days: 14

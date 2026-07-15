@@ -216,26 +216,33 @@ no longer shadows a valid lower-priority one. Both `ProjectDirector` and
 
 ---
 
-## Recommended project structure (multi-module split — TD-20, in progress)
+## Project structure (multi-module split — TD-20, fully done 2026-07-15)
 
-Breaks the current single flat module (one `artifactId`, ~21 direct dependencies, all
-transitive to every consumer) along the seams visible in the package tree. This is the
-last open item on the technical debt register — see
-[TECHNICAL_DEBT_REGISTER.md](TECHNICAL_DEBT_REGISTER.md)'s TD-20 entry for full status.
+Broke the original single flat module (one `artifactId`, ~21 direct dependencies, all
+transitive to every consumer) along the seams visible in the package tree, into a real
+8-module reactor. See
+[TECHNICAL_DEBT_REGISTER.md](TECHNICAL_DEBT_REGISTER.md)'s TD-20 entry for the full
+3-stage history (prerequisite decoupling, module migration, CI/Docker/Jenkins/docs).
 
 ```text
-autoframex/  (reactor pom, packaging=pom)
-├── autoframex-core/           config.data, utils(.logging), observability, exception, com.api.design
-├── autoframex-selenium/       selenium.api.*, testng.api.base, design.patterns.object.pool, factory.browser
-├── autoframex-api/            com.api.rest.assured.base
-├── autoframex-cucumber/       cucumber.api.base, BDD glue conventions
-├── autoframex-database/       design.patterns.database.* (DB connection pooling — its own module
-│                               since not every consumer needs mysql-connector-j)
-├── autoframex-performance/    performance.* (opt-in test-code isolation)
-├── autoframex-security/       security.* (opt-in test-code isolation)
-├── autoframex-testkit/        integration/regression suites spanning more than one module's
-│                               classpath at once (testng.xml, testng-ci-retry.xml)
-└── autoframex-bom/            dependencyManagement — pins every transitive version once
+autoframex/  (reactor pom, packaging=pom, holds <dependencyManagement> —
+              no separate BOM module was needed)
+├── autoframex-core/           config.data, utils(.logging), observability, exception (leaf — no deps)
+├── autoframex-selenium/       selenium.api.*, testng.api.base, design.patterns.object.pool,
+│                               factory.browser, plus the 5 Selenium-dependent utils classes
+│                               (WaitUtils, ScreenshotUtils, ScreenshotStore, ValidationUtils,
+│                               VideoRecorder)                                    [depends on: core]
+├── autoframex-api/            com.api.design (ApiClient/ResponseAPI — needs RestAssured directly,
+│                               so it couldn't live in core), com.api.rest.assured.base
+│                                                                                 [depends on: core]
+├── autoframex-database/       design.patterns.database.*                        [depends on: core]
+├── autoframex-cucumber/       cucumber.api.base, BDD glue conventions   [depends on: core, selenium, api]
+├── autoframex-performance/    performance.* (opt-in test-code isolation) [depends on: core, selenium, api]
+├── autoframex-security/       security.* — SecurityTestBase extends selenium's
+│                               ProjectSpecificMethods, so needs selenium too, not just core+api
+│                                                                          [depends on: core, selenium, api]
+└── autoframex-testkit/        the one suite spanning every module's classpath at once (testng.xml)
+                                                                            [depends on: all of the above]
 ```
 
 **Corrected 2026-07-15** (research during TD-20 planning): the original version of this

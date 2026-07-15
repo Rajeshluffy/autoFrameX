@@ -24,17 +24,26 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Compile and collect coverage
+      - name: Build and install all modules (multi-module reactor — TD-20)
+        run: mvn clean install -DskipTests -Djacoco.skip=true -q
+
+      - name: Run tests and collect coverage
         # JaCoCo prepare-agent runs automatically via pom.xml; report goal runs after test phase.
-        # testng-ci.xml is browser-free so this step works without Chrome.
+        # testng-ci.xml (autoframex-selenium) is browser-free so this step works without Chrome.
         run: |
-          mvn clean test \
+          mvn test \
+            -pl autoframex-selenium \
             -Dtestng.suite.file=testng-ci.xml \
             -Denv=qa \
             -Dheadless=true \
             -Dsurefire.reportNameSuffix=sonar
 
       - name: Run SonarQube analysis
+        # Runs at the reactor root (not -pl-scoped) so Sonar analyzes every
+        # module's source, not just autoframex-selenium's — coverage will
+        # correctly show 0% for modules this job's one test step didn't
+        # exercise (a known simplification, no cross-module JaCoCo
+        # aggregation attempted here — see ci.yml's coverage-floor step).
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
@@ -43,12 +52,12 @@ jobs:
             -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY || 'autoFrameX' }} \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml
 
       - name: Upload Surefire XML results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: surefire-results-sonar
-          path: target/surefire-reports/
+          path: '**/target/surefire-reports/'
           retention-days: 14

@@ -158,7 +158,7 @@ Scenario 2 (Thread B):  [PARALLEL]
 
 ```java
 @CucumberOptions(
-    features = {"src/test/resources/features"},
+    features = {"classpath:features"},
     glue = {"step.defs"},  // Package containing step classes
     dryRun = false,
     plugin = {...}
@@ -167,7 +167,7 @@ public class CucumberRunner extends AbstractTestNGCucumberTests {
 }
 ```
 
-**Key:** The `glue` path must point to the package containing your step definition classes.
+**Key:** The `glue` path must point to the package containing your step definition classes. Use `classpath:features` (not a filesystem-relative path like `src/test/resources/features`) for `features` — in the TD-20 multi-module reactor, `CucumberRunner` (in `autoframex-cucumber`) can also be invoked from `autoframex-testkit`'s aggregate suite, whose working directory differs from `autoframex-cucumber`'s own basedir; `classpath:` resolves correctly regardless of which module invoked it.
 
 ## Real-World Example from autoFrameX
 

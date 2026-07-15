@@ -6,13 +6,20 @@ This guide explains how downstream projects that use autoFrameX as a Maven depen
 
 ## What autoFrameX ships
 
+autoFrameX is an 8-module Maven reactor (TD-20). Every `mvn test`/`mvn
+verify` invocation below targets one module with `-pl <module>` — Surefire
+resolves suite XML paths relative to that module's own basedir, not the
+reactor root, so the module and suite file must always be specified together.
+
 | Artifact | Location | Purpose |
 |---|---|---|
 | `Jenkinsfile` | project root | Parameterized Jenkins pipeline template |
-| `testng-ci.xml` | project root | Browser-free CI suite (no Chrome required) |
-| `.github/workflows/ci.yml` | `.github/workflows/` | GitHub Actions: push/PR smoke check |
-| `.github/workflows/regression.yml` | `.github/workflows/` | GitHub Actions: manual full regression |
-| `Dockerfile` | project root | Chrome + Maven base image |
+| `testng-ci.xml` | `autoframex-selenium/` | Browser-free CI suite (no Chrome required) |
+| `testng.xml` | `autoframex-testkit/` | Aggregate suite spanning every module |
+| `.github/workflows/ci.yml` | `.github/workflows/` | GitHub Actions: push/PR smoke check (`autoframex-selenium`) |
+| `.github/workflows/regression.yml` | `.github/workflows/` | GitHub Actions: manual full regression (module chosen via `module` input) |
+| `.github/workflows/dependency-check.yml` | `.github/workflows/` | GitHub Actions: weekly/manual OWASP SCA scan (reactor root, every module) |
+| `Dockerfile` | project root | Chrome + Maven base image, builds every module |
 | `docker-compose.yml` | project root | Local container execution with volume mounts |
 
 ---
@@ -48,7 +55,8 @@ if (failureRate > 10) {   // 10% instead of the framework's 50%
 | `BROWSER` | chrome | Browser for UI tests |
 | `ENVIRONMENT` | qa | Target environment |
 | `HEADLESS` | true | Headless mode |
-| `SUITE_FILE` | testng.xml | TestNG suite to run |
+| `SUITE_FILE` | testng.xml | TestNG suite to run (relative to `MODULE`'s directory) |
+| `MODULE` | autoframex-testkit | Reactor module that owns `SUITE_FILE` (TD-20) |
 | `THREAD_COUNT` | 1 | Surefire parallel thread count |
 
 All parameters are overridable at build time: `Build with Parameters` in the Jenkins UI, or via `curl` for API-triggered builds.
@@ -59,12 +67,17 @@ All parameters are overridable at build time: `Build with Parameters` in the Jen
 
 ### Use ci.yml as a PR gate
 
-Copy `.github/workflows/ci.yml` into your project. It runs `testng-ci.xml` (browser-free) on every push and PR. To point it at your own browser-free suite:
+Copy `.github/workflows/ci.yml` into your project. It first runs `mvn clean
+install -DskipTests -Djacoco.skip=true` (required so `-pl`-scoped steps below
+can resolve upstream reactor modules), then runs `testng-ci.xml`
+(browser-free) from `autoframex-selenium` on every push and PR. To point it
+at your own browser-free suite, add `-pl` for whichever module you placed it in:
 
 ```yaml
 - name: Run framework unit tests
   run: |
     mvn test \
+      -pl your-module \
       -Dtestng.suite.file=myproject-ci.xml \   # your CI suite
       -Denv=qa \
       -Dheadless=true
@@ -72,27 +85,28 @@ Copy `.github/workflows/ci.yml` into your project. It runs `testng-ci.xml` (brow
 
 ### Use regression.yml for manual full runs
 
-Copy `.github/workflows/regression.yml`. It is `workflow_dispatch` only — it never auto-triggers. Trigger it from the GitHub Actions UI or via the API:
+Copy `.github/workflows/regression.yml`. It is `workflow_dispatch` only — it never auto-triggers. It takes a `module` input alongside `suite_file` (TD-20) so it knows which reactor module's basedir to resolve the suite file against. Trigger it from the GitHub Actions UI or via the API:
 
 ```bash
 gh workflow run regression.yml \
   -f browser=chrome \
   -f environment=qa \
   -f headless=true \
+  -f module=your-module \
   -f suite_file=myproject-testng.xml
 ```
 
 ### Add your project-specific config injection
 
-If your project needs secrets injected before tests run, add a step before the `mvn test` step:
+If your project needs secrets injected before tests run, add a step before the `mvn test` step. Point it at whichever module reads the config (typically `autoframex-core`, since `ConfigManager`/`ProjectDirector` live there):
 
 ```yaml
 - name: Inject project config
   env:
     MY_CONFIG: ${{ secrets.MY_PROJECT_CONFIG }}
   run: |
-    mkdir -p src/main/resources
-    echo "$MY_CONFIG" > src/main/resources/myProjectConfig.properties
+    mkdir -p autoframex-core/src/main/resources
+    echo "$MY_CONFIG" > autoframex-core/src/main/resources/myProjectConfig.properties
 ```
 
 ---
@@ -101,21 +115,26 @@ If your project needs secrets injected before tests run, add a step before the `
 
 ### Run autoFrameX tests locally in a container
 
+The image builds and installs every reactor module (TD-20); `MODULE` selects
+which one the container's `mvn test` targets, and `SUITE_FILE` must be a
+suite that module actually owns.
+
 ```bash
 # Build the image
 docker build -t autoframex .
 
-# Run with default settings (testng.xml, chrome, headless, qa)
+# Run with default settings (autoframex-testkit / testng.xml, chrome, headless, qa)
 docker run --rm \
-  -v $(pwd)/reports:/app/reports \
-  -v $(pwd)/logs:/app/logs \
+  -v $(pwd)/autoframex-testkit/reports:/app/autoframex-testkit/reports \
+  -v $(pwd)/autoframex-testkit/logs:/app/autoframex-testkit/logs \
   autoframex
 
-# Override suite and environment
+# Override module, suite, and environment
 docker run --rm \
+  -e MODULE=your-module \
   -e SUITE_FILE=myproject-testng.xml \
   -e ENVIRONMENT=staging \
-  -v $(pwd)/reports:/app/reports \
+  -v $(pwd)/your-module/reports:/app/your-module/reports \
   autoframex
 ```
 
@@ -126,16 +145,17 @@ Create a `Dockerfile` in your project that builds FROM the autoFrameX image:
 ```dockerfile
 FROM autoframex:latest
 
-# Add your project-specific config files
+# Add your project-specific config files (autoframex-core owns ConfigManager/ProjectDirector)
 COPY src/main/resources/myProjectConfig.properties \
-     /app/src/main/resources/myProjectConfig.properties
+     /app/autoframex-core/src/main/resources/myProjectConfig.properties
 
-# Override the default suite
+# Override the default module/suite
+ENV MODULE=your-module
 ENV SUITE_FILE=myproject-testng.xml
 ENV ENVIRONMENT=qa
 ```
 
-This inherits Chrome, Maven, all framework dependencies, and the compiled framework classes. Your project only adds its own source and config on top.
+This inherits Chrome, Maven, all framework dependencies, and the compiled framework classes for every module. Your project only adds its own source and config on top.
 
 ### Use docker-compose for local execution
 
@@ -146,13 +166,18 @@ Copy `docker-compose.yml` and run:
 docker-compose up
 
 # Override via environment variables
-SUITE_FILE=myproject-testng.xml ENVIRONMENT=staging docker-compose up
+MODULE=your-module SUITE_FILE=myproject-testng.xml ENVIRONMENT=staging docker-compose up
 
 # Or create a .env file
-echo "SUITE_FILE=myproject-testng.xml" > .env
+echo "MODULE=your-module" > .env
+echo "SUITE_FILE=myproject-testng.xml" >> .env
 echo "ENVIRONMENT=staging" >> .env
 docker-compose up
 ```
+
+Note: `docker-compose.yml`'s volume mounts are hardcoded to the `MODULE`
+default (`autoframex-testkit`) — if you override `MODULE`, update the
+`volumes:` paths in your copy to match (`./your-module/reports:/app/your-module/reports`, etc.).
 
 Test artifacts (HTML reports, NDJSON observability events, Surefire XML) are written to the mounted host directories after the container exits.
 

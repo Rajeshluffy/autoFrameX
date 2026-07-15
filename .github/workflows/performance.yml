@@ -41,12 +41,18 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Compile
-        run: mvn clean compile -q
+      - name: Build and install all modules (multi-module reactor — TD-20)
+        run: mvn clean install -DskipTests -Djacoco.skip=true -q
 
       - name: Run performance tests
+        # NOTE (pre-existing, unrelated to TD-20): testng-ci.xml doesn't declare
+        # the "performance" group/package at all, so this step has run 0
+        # matching tests since before the module split — flagged separately,
+        # not fixed here. -pl only updates *where* this (already-mismatched)
+        # suite file now lives (autoframex-selenium).
         run: |
           mvn test \
+            -pl autoframex-selenium \
             -Dtestng.suite.file=testng-ci.xml \
             -Dgroups=performance \
             -Denv=${{ inputs.environment }} \
@@ -61,7 +67,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: performance-reports-${{ inputs.environment }}
-          path: reports/**/*.html
+          path: '**/reports/**/*.html'
           if-no-files-found: ignore
           retention-days: 30
 
@@ -70,7 +76,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-events-performance-${{ inputs.environment }}
-          path: logs/test-events.json
+          path: '**/logs/test-events.json'
           if-no-files-found: ignore
           retention-days: 30
 
@@ -79,5 +85,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: surefire-results-performance
-          path: target/surefire-reports/
+          path: '**/target/surefire-reports/'
           retention-days: 30
