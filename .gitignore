@@ -59,4 +59,5 @@ desktop.ini
 # -----------------------------
 # Claude Code
 # -----------------------------
-.claude/worktrees/
+.claude/
+/bin/
