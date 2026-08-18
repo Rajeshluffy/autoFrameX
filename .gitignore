@@ -24,6 +24,7 @@ target/
 # -----------------------------
 # Test Executions & Reports
 # -----------------------------
+/docs/
 test-output/
 reports/
 *.html
