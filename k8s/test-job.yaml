@@ -1,0 +1,71 @@
+# Template — NOT applied directly. The Jenkinsfile copies this file per
+# suite run (TestNG / AlfaDOCK / GPN) and substitutes the __TOKEN__
+# placeholders below via sed before `kubectl apply -f -`, so each suite gets
+# its own Job name and hostPath (they can run in parallel — see the
+# "Run Parallel Suites" stage — without clobbering each other's reports).
+#
+# Manual one-off run: copy this file, replace every __TOKEN__, then:
+#   kubectl apply -f namespace.yaml
+#   kubectl apply -f your-copy.yaml
+#
+# Image is built by ../Dockerfile and loaded into the Minikube node by the
+# Jenkinsfile via `docker save` + `docker load` — no external registry needed.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: __JOB_NAME__
+  namespace: autoframex
+  labels:
+    app: autoframex-test
+    suite: __JOB_NAME__
+spec:
+  # Single attempt, no retries — a flaky UI/API test retrying itself via k8s
+  # Job semantics would just mask real failures; retries belong at the
+  # TestNG/RetryEngine layer (already built into autoFrameX), not here.
+  backoffLimit: 0
+  # Auto-delete the Job (and its Pod) 1 hour after it finishes, so results
+  # don't pile up — the Jenkinsfile extracts reports before this fires.
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app: autoframex-test
+        suite: __JOB_NAME__
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: autoframex-test
+          image: autoframex-test:__IMAGE_TAG__
+          imagePullPolicy: Never
+          env:
+            - name: MODULE
+              value: "__MODULE__"
+            - name: SUITE_FILE
+              value: "__SUITE_FILE__"
+            - name: BROWSER
+              value: "__BROWSER__"
+            - name: ENVIRONMENT
+              value: "__ENVIRONMENT__"
+            - name: HEADLESS
+              value: "__HEADLESS__"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+          volumeMounts:
+            # Path matches ENTRYPOINT's -pl ${MODULE} in ../Dockerfile —
+            # Surefire's working directory is the invoking module's own
+            # basedir, not the reactor root.
+            - name: test-reports
+              mountPath: /app/__MODULE__/target/surefire-reports
+      volumes:
+        # hostPath on the Minikube node — the Jenkinsfile pulls this out via
+        # `docker exec minikube tar -c -C __HOST_REPORTS_PATH__ ...`, so it
+        # must stay in sync with that command's path.
+        - name: test-reports
+          hostPath:
+            path: __HOST_REPORTS_PATH__
+            type: DirectoryOrCreate
