@@ -85,6 +85,8 @@ public class ChromeBrowser implements Browser {
 		options.addArguments("--disable-infobars");
 		options.addArguments("--disable-dev-shm-usage");
 		options.addArguments("--no-sandbox");
+		options.addArguments("--disable-gpu");
+		options.addArguments("--remote-debugging-port=9222");
 		options.addArguments("--remote-allow-origins=*"); // Fixes ConnectionFailedException in newer Selenium versions
 		// --guest removed: guest mode bypasses setExperimentalOption("prefs") settings,
 		// which breaks download.prompt_for_download and automatic_downloads preferences
