@@ -86,7 +86,10 @@ public class ChromeBrowser implements Browser {
 		options.addArguments("--disable-dev-shm-usage");
 		options.addArguments("--no-sandbox");
 		options.addArguments("--disable-gpu");
-		//options.addArguments("--remote-debugging-port=9222");
+		// No fixed --remote-debugging-port: chromedriver auto-assigns a free port per
+		// instance. A hardcoded port made concurrent pool instances (parallel="classes"/
+		// "instances") collide on the same DevTools port, causing SessionNotCreatedException
+		// ("disconnected: unable to connect to renderer") for every instance but the first.
 		options.addArguments("--remote-allow-origins=*"); // Fixes ConnectionFailedException in newer Selenium versions
 		// --guest removed: guest mode bypasses setExperimentalOption("prefs") settings,
 		// which breaks download.prompt_for_download and automatic_downloads preferences
