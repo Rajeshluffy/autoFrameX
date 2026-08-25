@@ -13,6 +13,7 @@ A shared, enterprise-grade test automation framework built on Selenium 4, TestNG
 - [Configuration](#configuration)
 - [Running Tests](#running-tests)
 - [Framework Modules](#framework-modules)
+- [Automatic Performance Capture](#automatic-performance-capture)
 - [CI/CD](#cicd)
 - [Code Quality](#code-quality)
 
@@ -26,7 +27,8 @@ A shared, enterprise-grade test automation framework built on Selenium 4, TestNG
 - **Multi-browser support** — Chrome, Firefox, Edge, and Selenium Grid via `BrowserFactory`; browser selected at runtime
 - **Cucumber + PicoContainer DI** — BDD support with constructor-injected `ScenarioContext`; no static shared state between step classes
 - **REST Assured API layer** — typed request/response base classes with JSON Schema validation and a custom listener for Extent reporting
-- **Performance testing** — `PerformanceTestBase` with `measureApi`, `measurePageLoad`, and `runLoadTest` (P95/P99 stats)
+- **Automatic performance capture** — every click/type, page-load wait, and API call is timed and written into the Extent report on its own, with zero test-code changes; see [Automatic Performance Capture](#automatic-performance-capture)
+- **Performance testing** — `PerformanceTestBase` with `measureApi`, `measurePageLoad`, and `runLoadTest` (P95/P99 stats) for explicit, SLA-asserting measurements on top of the automatic capture above
 - **Security testing** — `SecurityTestBase` integrating OWASP ZAP for passive/active scans with auto-generated HTML reports
 - **Observability** — async NDJSON event stream (`TestEventCollector`), flaky test tracker, failure categorizer, and resource usage accumulator
 - **Extent Reports** — thread-safe HTML reporting with screenshot capture on failure and video recording support
@@ -259,8 +261,10 @@ different module's suite (see `docker-compose.yml`).
 `PerformanceTestBase` extends `ProjectSpecificMethods` and skips WebDriver acquisition for API-only tests. Key helpers:
 
 - `measureApi(supplier, slaMs)` — times a single API call, warns on SLA breach
-- `measurePageLoad(url, slaMs)` — reads Navigation Timing API from a live page
-- `runLoadTest(supplier, threads, iterations)` — concurrent load test returning P95/P99 stats
+- `measurePageLoad(pageName, slaMs)` — reads Navigation Timing API from a live page
+- `runLoadTest(supplier, threads, durationSeconds)` — every worker thread hammers `supplier` until `durationSeconds` elapses; returns P95/P99 latency stats
+
+These are explicit, opt-in, and SLA-asserting — call them yourself when you need a hard pass/warn threshold on one specific call. For passive, always-on timing visibility across every UI/API operation with no code changes, see [Automatic Performance Capture](#automatic-performance-capture) below.
 
 ### Security Module
 
@@ -289,11 +293,34 @@ Split across `autoframex-core` (no Selenium dependency) and
 | `EncryptionUtils` | AES-256 encrypt/decrypt for credentials | core |
 | `LogUtils` | SLF4J structured logging helpers | core |
 | `RetryUtils` | Programmatic retry with backoff | core |
+| `PerfClock` | Stopwatch helper behind automatic performance capture | core |
 | `WaitUtils` | Fluent/explicit wait helpers | selenium |
 | `ValidationUtils` | Common assertion helpers | selenium |
 | `ScreenshotUtils` | Full-page and element screenshots | selenium |
 | `ScreenshotStore` | Per-thread screenshot bytes for report embedding | selenium |
 | `VideoRecorder` | Failure-only video capture — WebDriver screenshots assembled via FFmpeg | selenium |
+
+---
+
+## Automatic Performance Capture
+
+Every UI element interaction, page-load wait, and API call is timed automatically and written into the Extent report as it happens — no test-author code changes needed. This is separate from `PerformanceTestBase`'s explicit helpers above: automatic capture is pure observability (what happened, on every call), the explicit helpers are for asserting a hard SLA on one call you've picked out.
+
+**What gets captured, and where it shows up:**
+
+| Operation | Instrumented in | Example report line |
+|---|---|---|
+| Click | `ClickActions.click()` | `Clicked element: Login (wait: 34ms, click: 294ms, total: 328ms)` |
+| Type | `TypeActions.clearAndType()` / `typeAndTab()` / `typeAndEnter()` | `Typed text: demo (wait: 81ms, type: 108ms, total: 189ms)` |
+| Element visibility check | `ElementInspectionActions.verifyDisplayed()` | `Element is displayed: a (render/visibility wait: 44ms)` |
+| Page load | `WaitActions.waitForPageAndApiReady()` — already called by every page object after a navigating action | `Page and all API calls are fully loaded (page load: 328ms)` |
+| API call (every verb) | `RestAssuredListener` — the REST Assured `Filter` every `RestAssuredBase` request already passes through | `API POST https://.../incident — 1411ms (status 201)` |
+
+`wait`/`render` time is how long the framework's own explicit wait spent before the element became clickable/visible — a real signal for slow-rendering UI, not just network latency.
+
+**Concurrent load tests get this too.** `ApiPerformanceUtils.runLoadTest()`'s worker threads propagate the calling thread's report node via `Reporter.captureCurrentNode()`/`runWithNode()` — without this, a plain `ThreadLocal` wouldn't carry over to pool-created threads, and every call made during a load test would silently vanish from the report. Confirmed against a real API: a 10-thread/30s load test went from 0 of 176 calls reported to 180 of 180 after the fix.
+
+**Scope, deliberately:** this covers API calls the test itself makes via `RestAssuredBase` — not raw background browser XHR/fetch traffic the app fires on its own, which would need Chrome DevTools Protocol Network-domain integration (a separate, much larger piece of work, not built).
 
 ---
 
