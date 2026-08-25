@@ -5,6 +5,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 
+import com.framework.utils.PerfClock;
 import com.framework.utils.Reporter;
 import com.framework.utils.WaitUtils;
 
@@ -30,12 +31,16 @@ public class ElementInspectionActions {
 
 	public boolean verifyDisplayed(WebElement ele) {
 		try {
+			long waitStartNanos = PerfClock.start();
 			WebElement visibleElement = waitActions.waitForVisibility(ele);
+			long waitMs = PerfClock.elapsedMs(waitStartNanos);
 			if (visibleElement != null && visibleElement.isDisplayed()) {
-				reporter.reportStep("Element is displayed: " + ElementSupport.describe(ele), "pass", false);
+				reporter.reportStep(String.format("Element is displayed: %s (render/visibility wait: %dms)",
+						ElementSupport.describe(ele), waitMs), "pass", false);
 				return true;
 			} else {
-				reporter.reportStep("Element not displayed: " + ElementSupport.describe(ele), "warning", false);
+				reporter.reportStep(String.format("Element not displayed: %s (render/visibility wait: %dms)",
+						ElementSupport.describe(ele), waitMs), "warning", false);
 				return false;
 			}
 		} catch (Exception e) {

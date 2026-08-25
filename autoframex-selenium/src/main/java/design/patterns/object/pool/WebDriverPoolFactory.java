@@ -133,18 +133,22 @@ public class WebDriverPoolFactory implements AutoCloseable {
         if (min <= 0) return;
 
         for (String bt : config.getSupportedBrowsers()) {
+            int succeeded = 0;
             for (int i = 0; i < min; i++) {
                 try {
                     RemoteWebDriver driver = createNewDriver(bt);
+                    incrementPoolSize(bt); // createNewDriver() no longer counts itself — see its Javadoc
                     PooledDriver pd = new PooledDriver(driver, bt); // state = IDLE
                     availableDrivers.get(bt).offer(pd);
+                    succeeded++;
                     logger.debug("Pre-warmed driver " + (i + 1) + "/" + min + " for " + bt);
                 } catch (Exception e) {
                     logger.warn("Pre-warm failed for " + bt + " (" + (i + 1) + "): " + e.getMessage());
                 }
             }
+            logger.info("Pre-warm complete for " + bt + ": " + succeeded + "/" + min + " drivers"
+                    + (succeeded < min ? " (degraded — see warnings above)" : ""));
         }
-        logger.info("Pre-warm complete: " + min + " drivers/browser");
     }
 
     // =========================================================================
@@ -185,12 +189,26 @@ public class WebDriverPoolFactory implements AutoCloseable {
                 reused = true;
                 statistics.incrementReused();
             } else {
-                // ── Step 2: create new if pool has capacity ───────────────────
-                int currentTotal = poolSizeCounters.get(browserType).get();
-                if (currentTotal < config.getMaxPoolSize()) {
-                    driver = createNewDriver(browserType);
-                    logger.debug("Created new driver: " + browserType
-                            + " [ID: " + System.identityHashCode(driver) + "]");
+                // ── Step 2: atomically reserve a capacity slot, then create ───
+                // Reservation (the counter CAS below) and driver creation are
+                // split into two steps so concurrent threads racing the capacity
+                // check can never both "pass" it — only one thread's CAS can move
+                // the counter past a given value, so at most maxPoolSize threads
+                // ever hold a reservation at once, closing the F3 TOCTOU race.
+                AtomicInteger counter = poolSizeCounters.get(browserType);
+                int before = counter.getAndUpdate(n -> n < config.getMaxPoolSize() ? n + 1 : n);
+                if (before < config.getMaxPoolSize()) {
+                    try {
+                        driver = createNewDriver(browserType);
+                        logger.debug("Created new driver: " + browserType
+                                + " [ID: " + System.identityHashCode(driver) + "]");
+                    } catch (RuntimeException e) {
+                        // Creation failed — release the reservation immediately so
+                        // it doesn't become a phantom slot (this is F1's failure
+                        // mode: a reservation with no live driver behind it).
+                        counter.decrementAndGet();
+                        throw e;
+                    }
                 } else {
                     // ── Step 3: pool full — blocking poll with timeout ────────
                     driver = borrowWithTimeout(browserType);
@@ -219,11 +237,22 @@ public class WebDriverPoolFactory implements AutoCloseable {
             return driver;
 
         } catch (DriverAcquisitionException e) {
-            if (driver != null) safelyDestroyAsync(driver, browserType);
+            // The driver, if any, is already counted in poolSizeCounters here —
+            // either freshly reserved+created above, or borrowed while still
+            // live from tryReuseFromPool()/borrowWithTimeout(). Destroying it
+            // without decrementing would leak a phantom slot (F1) exactly the
+            // way a genuine navigation failure after a successful create did.
+            if (driver != null) {
+                safelyDestroyAsync(driver, browserType);
+                decrementPoolSize(browserType);
+            }
             throw e;
         } catch (Exception e) {
             logger.error("Failed to acquire driver: " + browserType, e);
-            if (driver != null) safelyDestroyAsync(driver, browserType);
+            if (driver != null) {
+                safelyDestroyAsync(driver, browserType);
+                decrementPoolSize(browserType);
+            }
             throw new DriverAcquisitionException("Cannot acquire driver: " + browserType, e);
         }
     }
@@ -433,11 +462,17 @@ public class WebDriverPoolFactory implements AutoCloseable {
         return pd.getDriver();
     }
 
+    /**
+     * Launches a new browser process. Does <b>not</b> touch {@link #poolSizeCounters} —
+     * capacity accounting is the caller's responsibility (an atomic CAS reservation
+     * in {@link #acquire}'s Step 2, or a direct {@link #incrementPoolSize} call in
+     * {@link #preWarm}), since only the caller knows whether it already reserved
+     * the slot this creation is filling.
+     */
     private RemoteWebDriver createNewDriver(String browserType) {
         try {
             RemoteWebDriver driver = driverFactory.createDriver(browserType, config);
             statistics.incrementCreated();
-            incrementPoolSize(browserType);
             return driver;
         } catch (Exception e) {
             statistics.incrementFailed();

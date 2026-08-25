@@ -174,7 +174,14 @@ public class WaitActions {
 				Object result = driver().executeScript(checkScript);
 				return result instanceof Boolean && (Boolean) result;
 			}, timeoutSeconds, 300);
-			reporter.reportStep("Page and all API calls are fully loaded", "info", false);
+			// Automatic page-load timing: every page object already calls this
+			// method after every navigating action, so this is the one place
+			// that gives every page transition a load-time measurement for free
+			// (see PageTimingSupport's Javadoc for why the JS logic lives here
+			// rather than in autoframex-performance).
+			long loadMs = PageTimingSupport.getPageLoadTimeMs(driver());
+			reporter.reportStep("Page and all API calls are fully loaded (page load: " + loadMs + "ms)",
+					"info", false);
 		} catch (Exception e) {
 			reporter.reportStep("Timed out waiting for page/API to be ready: " + e.getMessage(), "warning", false);
 		}

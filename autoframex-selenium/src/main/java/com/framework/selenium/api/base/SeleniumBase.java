@@ -59,15 +59,6 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 	 */
 	protected Actions act;
 
-	/**
-	 * Driver manager reference — moved here from {@code Reporter} (TD-20's
-	 * multi-module split): {@code Reporter} lives in the core module and must
-	 * not depend on {@code design.patterns.object.pool} (the selenium module).
-	 * Any external subclass that previously relied on inheriting this field
-	 * from {@code Reporter} still gets it, just one level down the hierarchy.
-	 */
-	protected DriverPoolManager driverManager;
-
 	private final WaitActions waitActions = new WaitActions(this::getDriver, this);
 	private final LocatorActions locatorActions = new LocatorActions(this::getDriver, this);
 	private final ClickActions clickActions = new ClickActions(this::getDriver, this, waitActions, locatorActions);
@@ -96,12 +87,20 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 		}
 	}
 
-	/** Gets or lazily creates the DriverPoolManager instance. */
+	/**
+	 * Resolves the {@link DriverPoolManager} bound to the calling thread's
+	 * context. Deliberately not cached on an instance field — under
+	 * {@code parallel="methods"}/{@code "classes"}, TestNG runs multiple
+	 * threads against one shared instance of the test class, and an
+	 * unsynchronized "cache on first call" field lets whichever thread wins
+	 * the race pin every other thread to its context, silently defeating
+	 * {@link DriverPoolManager}'s per-thread multi-context resolution
+	 * (framework-3.1 architecture review, finding F5). {@code getInstance()}
+	 * is already a lock-free {@code ConcurrentHashMap.computeIfAbsent}, so
+	 * caching bought negligible performance for a correctness risk.
+	 */
 	protected DriverPoolManager getDriverManager() {
-		if (driverManager == null) {
-			driverManager = DriverPoolManager.getInstance();
-		}
-		return driverManager;
+		return DriverPoolManager.getInstance();
 	}
 
 	/**

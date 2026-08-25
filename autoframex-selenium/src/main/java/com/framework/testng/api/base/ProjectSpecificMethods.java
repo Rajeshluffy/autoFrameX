@@ -530,14 +530,13 @@ public class ProjectSpecificMethods extends SeleniumBase {
 	}
 
 	/**
-	 * Exposes the {@link DriverPoolManager} singleton.
-	 * Overrides the same method in {@link com.framework.utils.Reporter} to
-	 * ensure both use the same instance.
+	 * Resolves the {@link DriverPoolManager} bound to the calling thread's
+	 * context. Overrides {@link SeleniumBase#getDriverManager()} with the same
+	 * always-resolve-fresh behavior — see that method's Javadoc for why this
+	 * is deliberately not cached on an instance field (framework-3.1
+	 * architecture review, finding F5).
 	 */
 	protected DriverPoolManager getDriverManager() {
-		if (driverManager == null) {
-			driverManager = DriverPoolManager.getInstance();
-		}
-		return driverManager;
+		return DriverPoolManager.getInstance();
 	}
 }

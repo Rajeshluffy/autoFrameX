@@ -9,6 +9,7 @@ import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 import com.framework.selenium.api.design.Locators;
+import com.framework.utils.PerfClock;
 import com.framework.utils.Reporter;
 import com.framework.utils.WaitUtils;
 
@@ -47,7 +48,9 @@ public class ClickActions {
 		}
 
 		try {
+			long waitStartNanos = PerfClock.start();
 			WebElement clickableElement = waitActions.waitForClickable(ele);
+			long waitMs = PerfClock.elapsedMs(waitStartNanos);
 			if (clickableElement == null) {
 				reporter.reportStep("Element not clickable: " + ElementSupport.describe(ele), "fail", true);
 				return;
@@ -55,12 +58,18 @@ public class ClickActions {
 
 			String text = ElementSupport.safeGetText(clickableElement);
 
+			long clickStartNanos = PerfClock.start();
 			if (clickableElement.isEnabled()) {
 				clickableElement.click();
-				reporter.reportStep("Clicked element: " + text, "info", false);
+				long clickMs = PerfClock.elapsedMs(clickStartNanos);
+				reporter.reportStep(String.format("Clicked element: %s (wait: %dms, click: %dms, total: %dms)",
+						text, waitMs, clickMs, waitMs + clickMs), "info", false);
 			} else {
 				driver().executeScript("arguments[0].click()", clickableElement);
-				reporter.reportStep("Clicked element using JavaScript: " + text, "info", false);
+				long clickMs = PerfClock.elapsedMs(clickStartNanos);
+				reporter.reportStep(String.format(
+						"Clicked element using JavaScript: %s (wait: %dms, click: %dms, total: %dms)",
+						text, waitMs, clickMs, waitMs + clickMs), "info", false);
 			}
 
 		} catch (StaleElementReferenceException e) {

@@ -1,0 +1,26 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+    CI-only TestNG suite for autoframex-performance.
+
+    Runs the module's browser-free unit tests. First suite file in this
+    module — added alongside PagePerformanceUtilsDelegationTest, which
+    confirms PagePerformanceUtils.getPageLoadTimeMs/getFullTimingMetrics
+    genuinely delegate to autoframex-selenium's PageTimingSupport (the
+    framework-3.1 automatic performance-capture refactor) rather than
+    duplicating the Navigation Timing JS.
+
+    Not currently wired into the root .github/workflows/ci.yml — that
+    workflow only runs autoframex-selenium's testng-ci.xml today. Run
+    manually with:
+        mvn -pl autoframex-performance test -Dtestng.suite.file=testng-ci.xml
+-->
+<suite name="autoFrameX Performance CI Suite" verbose="1" parallel="none">
+
+    <test name="Framework Unit Tests">
+        <classes>
+            <class name="com.framework.performance.PagePerformanceUtilsDelegationTest"/>
+        </classes>
+    </test>
+
+</suite>

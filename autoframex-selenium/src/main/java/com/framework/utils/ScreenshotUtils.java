@@ -1,7 +1,6 @@
 package com.framework.utils;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.slf4j.Logger;
@@ -48,7 +47,12 @@ public final class ScreenshotUtils {
             FileUtils.copyFile(src, new File(path));
             logger.debug("Viewport screenshot saved: " + path);
             return path;
-        } catch (IOException e) {
+        } catch (Exception e) {
+            // Broad catch is deliberate: getScreenshotAs() throws WebDriverException
+            // (a RuntimeException) when the session is already dead — exactly the
+            // state a driver is most likely in when this is called from
+            // captureFailureEvidence() after a test has already failed. Narrowing
+            // this to IOException let that case propagate uncaught.
             logger.warn("Viewport screenshot failed: " + e.getMessage());
             return null;
         }
@@ -72,7 +76,8 @@ public final class ScreenshotUtils {
             FileUtils.copyFile(src, new File(path));
             logger.debug("Element screenshot saved: " + path);
             return path;
-        } catch (IOException e) {
+        } catch (Exception e) {
+            // See captureViewport()'s comment — same dead-session risk here.
             logger.warn("Element screenshot failed: " + e.getMessage());
             return null;
         }
@@ -96,7 +101,8 @@ public final class ScreenshotUtils {
             FileUtils.copyFile(src, new File(path));
             logger.debug("Element screenshot saved: " + path);
             return path;
-        } catch (IOException e) {
+        } catch (Exception e) {
+            // See captureViewport()'s comment — same dead-session risk here.
             logger.warn("Element screenshot (fixed-name) failed: " + e.getMessage());
             return null;
         }
@@ -226,7 +232,9 @@ public final class ScreenshotUtils {
             FileUtils.writeStringToFile(new File(path), dom, "UTF-8");
             logger.debug("DOM snapshot saved: " + path);
             return path;
-        } catch (IOException e) {
+        } catch (Exception e) {
+            // getPageSource() also throws WebDriverException on a dead session —
+            // see captureViewport()'s comment.
             logger.warn("DOM snapshot failed: " + e.getMessage());
             return null;
         }

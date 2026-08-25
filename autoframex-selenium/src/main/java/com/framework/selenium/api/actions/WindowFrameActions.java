@@ -15,6 +15,8 @@ import com.framework.selenium.api.design.Locators;
 import com.framework.utils.Reporter;
 import com.framework.utils.WaitUtils;
 
+import design.patterns.object.pool.DriverPoolManager;
+
 /** Window/frame/session management — extracted from {@code SeleniumBase} as part of the TD-07 composition refactor. */
 public class WindowFrameActions {
 
@@ -166,9 +168,22 @@ public class WindowFrameActions {
 		}
 	}
 
+	/**
+	 * Ends the current WebDriver session.
+	 *
+	 * <p>Routed through {@link DriverPoolManager#destroy} rather than calling
+	 * {@code driver().quit()} directly (framework-3.1 architecture review,
+	 * finding F4): a direct {@code quit()} killed the session but left the
+	 * pool's {@code activeDrivers} bookkeeping unaware the driver had died —
+	 * on a passed test, {@code teardownDriver()} would then re-queue the dead
+	 * driver as healthy, handing the next borrower a zombie session.
+	 * {@code destroy()} removes the driver from the pool's active set,
+	 * decrements its live-count, and clears this thread's driver context, so
+	 * a subsequent {@code teardownDriver()} correctly finds nothing to release.
+	 */
 	public void quit() {
 		try {
-			driver().quit();
+			DriverPoolManager.getInstance().destroy(driver());
 			reporter.reportStep("Browser session ended", "info", false);
 		} catch (Exception e) {
 			reporter.reportStep("Failed to quit browser: " + e.getMessage(), "warning", false);

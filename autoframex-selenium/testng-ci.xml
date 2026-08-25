@@ -23,11 +23,74 @@
     <!-- Framework unit tests — no WebDriver, no browser required.
          RetryTest is intentionally always-failing (it verifies the retry engine's
          behavior, not a regression) and lives in testng-ci-retry.xml instead, so it
-         never affects this suite's pass/fail signal. -->
+         never affects this suite's pass/fail signal.
+
+         MultiCustomBrowserRegistryTest, RemoteGridBrowserDecouplingTest, and
+         PoolCounterAccountingTest existed in the test tree but were never wired into
+         this suite — good, fast, browser-free tests that ran locally but gated
+         nothing in CI. PoolCounterAccountingTest is the regression lock for the F1
+         (pool-size-counter leak) and F3 (capacity-check TOCTOU race) fixes from the
+         framework-3.1 architecture review — see WebDriverPoolFactory.acquire().
+         ScreenshotUtilsDeadSessionTest locks in the same review's screenshot-capture
+         fix (captureViewport/captureDomSnapshot/captureFailureEvidence no longer
+         throw WebDriverException on a dead session). DriverManagerContextResolutionTest
+         and WindowFrameActionsQuitBookkeepingTest lock in findings F5 (instance-cached
+         driverManager field pinning the wrong multi-context pool) and F4 (quit()
+         bypassing pool bookkeeping) respectively.
+
+         Phase 2 additions (general coverage, not tied to a single finding):
+         ConfigResolverTest/ConfigManagerTest (autoframex-core, reached via the
+         test-jar dependency below) cover the 4-tier config priority chain and
+         multi-context registry. PoolConfigBuilderTest and
+         DriverPoolManagerMultiContextTest cover validation guards and registry
+         behavior not already exercised by the F-finding tests.
+         BrowserOptionsIsolationTest covers ChromeBrowser/FireFoxBrowser/EdgeBrowser's
+         options-building (the only part of design.patterns.factory.browser testable
+         without a real browser process — that package sat at ~19% coverage) and
+         also regression-guards the already-fixed hardcoded-CDP-port finding.
+         VideoRecorderTest exercises the real FFmpeg pipeline (present on CI
+         runners) and caught a genuine bug while being written: captureFrame()
+         incremented frameCounter before attempting the screenshot, so a driver
+         that failed every capture still reported a nonzero frame count and
+         wastefully invoked FFmpeg against an empty frames directory instead of
+         skipping cleanly — fixed alongside this test.
+
+         PerfClockTest (autoframex-core) covers the stopwatch helper behind the
+         automatic per-operation performance-capture feature (element wait/click/
+         type timing, page-load timing, API-call timing — see ClickActions,
+         TypeActions, WaitActions.waitForPageAndApiReady, and
+         RestAssuredListener). The PagePerformanceUtils/PageTimingSupport
+         delegation test for that same feature lives in autoframex-performance's
+         own suite instead (testng-ci.xml there) — autoframex-selenium can't
+         reach autoframex-performance's test-jar without a circular module
+         dependency, the same constraint that moved the JS logic itself down
+         into PageTimingSupport in the first place.
+
+         ReporterNodePropagationTest locks in a real bug found live while
+         verifying the above: ApiPerformanceUtils.runLoadTest()'s worker
+         threads never inherited Reporter's ThreadLocal<ExtentTest> node, so
+         every API call made inside a concurrent load test silently dropped
+         its timing step — confirmed against a real ServiceNow instance
+         (176 calls, 0 report lines before the fix; 180 calls, 180 report
+         lines after). Reporter.captureCurrentNode()/runWithNode() fix it. -->
     <test name="Framework Unit Tests">
         <classes>
             <class name="com.framework.testng.ExtentBugTest"/>
             <class name="com.framework.testng.ArchitectureRulesTest"/>
+            <class name="com.framework.config.data.ConfigResolverTest"/>
+            <class name="com.framework.config.data.ConfigManagerTest"/>
+            <class name="com.framework.utils.PerfClockTest"/>
+            <class name="com.framework.utils.ReporterNodePropagationTest"/>
+            <class name="design.patterns.object.pool.MultiCustomBrowserRegistryTest"/>
+            <class name="design.patterns.factory.browser.RemoteGridBrowserDecouplingTest"/>
+            <class name="design.patterns.factory.browser.BrowserOptionsIsolationTest"/>
+            <class name="design.patterns.object.pool.PoolCounterAccountingTest"/>
+            <class name="design.patterns.object.pool.PoolConfigBuilderTest"/>
+            <class name="design.patterns.object.pool.DriverPoolManagerMultiContextTest"/>
+            <class name="com.framework.utils.ScreenshotUtilsDeadSessionTest"/>
+            <class name="com.framework.utils.VideoRecorderTest"/>
+            <class name="com.framework.selenium.api.base.DriverManagerContextResolutionTest"/>
+            <class name="design.patterns.object.pool.WindowFrameActionsQuitBookkeepingTest"/>
         </classes>
     </test>
 

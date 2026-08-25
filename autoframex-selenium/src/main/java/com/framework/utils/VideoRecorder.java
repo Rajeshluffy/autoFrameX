@@ -203,12 +203,23 @@ public class VideoRecorder {
 
     private void captureFrame() {
         try {
-            int seq = frameCounter.incrementAndGet();
+            File tmp = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+
+            // Sequence number (and frameCounter itself) is only assigned/incremented
+            // after a frame genuinely lands on disk. Incrementing before the attempt
+            // let a driver that fails every screenshot (e.g. died mid-test) still
+            // report a nonzero frameCounter — stop()'s "zero frames captured" guard
+            // then couldn't tell "no frames" from "N failed attempts", and
+            // assembleVideo() would invoke FFmpeg against an empty frames directory
+            // instead of skipping cleanly. This executor is single-threaded
+            // (newSingleThreadScheduledExecutor), so no concurrent captureFrame()
+            // call can ever race this get()-then-later-increment.
+            int seq = frameCounter.get() + 1;
             String name = FRAME_PREFIX + String.format("%05d", seq) + ".png";
             File dest = new File(framesDir, name);
 
-            File tmp = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
             FileUtils.copyFile(tmp, dest);
+            frameCounter.incrementAndGet();
 
         } catch (Exception e) {
             // Never propagate from a ScheduledExecutorService — it would cancel future ticks.

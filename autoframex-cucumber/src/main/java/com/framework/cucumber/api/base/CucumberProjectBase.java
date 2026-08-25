@@ -140,13 +140,13 @@ public abstract class CucumberProjectBase extends SeleniumBase {
     }
 
     /**
-     * Exposes the {@link DriverPoolManager} singleton.
+     * Resolves the {@link DriverPoolManager} bound to the calling thread's
+     * context. Deliberately not cached on an instance field — see
+     * {@code SeleniumBase.getDriverManager()}'s Javadoc for why (framework-3.1
+     * architecture review, finding F5).
      */
     @Override
     protected DriverPoolManager getDriverManager() {
-        if (driverManager == null) {
-            driverManager = DriverPoolManager.getInstance();
-        }
-        return driverManager;
+        return DriverPoolManager.getInstance();
     }
 }

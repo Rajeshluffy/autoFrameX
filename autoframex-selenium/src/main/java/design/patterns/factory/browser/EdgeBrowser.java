@@ -48,7 +48,9 @@ public class EdgeBrowser implements Browser {
         return new EdgeDriver(options);
     }
 
-    private EdgeOptions getBrowserOptions() {
+    /** Package-private (not {@code private}) so same-package unit tests can inspect
+     * the built {@link EdgeOptions} without launching a real Edge process. */
+    EdgeOptions getBrowserOptions() {
         EdgeOptions options = new EdgeOptions();
 
         options.addArguments("--disable-extensions");

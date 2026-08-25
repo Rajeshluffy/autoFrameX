@@ -42,7 +42,9 @@ public class ChromeBrowser implements Browser {
 		return new ChromeDriver(options);
 	}
 
-	private ChromeOptions getBrowserOptions() {
+	/** Package-private (not {@code private}) so same-package unit tests can inspect
+	 * the built {@link ChromeOptions} without launching a real Chrome process. */
+	ChromeOptions getBrowserOptions() {
 		// 1. Initialize Options first
 		ChromeOptions options = new ChromeOptions();
 

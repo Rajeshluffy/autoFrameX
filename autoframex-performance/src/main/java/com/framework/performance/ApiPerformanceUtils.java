@@ -12,7 +12,9 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.aventstack.extentreports.ExtentTest;
 import com.api.design.ResponseAPI;
+import com.framework.utils.Reporter;
 import com.framework.utils.ValidationUtils;
 
 /**
@@ -81,8 +83,15 @@ public final class ApiPerformanceUtils {
         long deadline = System.currentTimeMillis() + (long) durationSeconds * 1_000;
         ExecutorService pool = Executors.newFixedThreadPool(threads);
 
+        // Reporter's ExtentTest node is a plain ThreadLocal — these worker
+        // threads never inherit it, so automatic per-call API timing
+        // (RestAssuredListener -> Reporter.reportApiStep) would silently no-op
+        // for every call made here otherwise. Capture the calling thread's node
+        // once and bind it into each worker for the duration of its loop.
+        ExtentTest reportNode = Reporter.captureCurrentNode();
+
         for (int i = 0; i < threads; i++) {
-            pool.submit(() -> {
+            pool.submit(() -> Reporter.runWithNode(reportNode, () -> {
                 while (System.currentTimeMillis() < deadline) {
                     long start = System.nanoTime();
                     try {
@@ -100,7 +109,7 @@ public final class ApiPerformanceUtils {
                         failureCount.incrementAndGet();
                     }
                 }
-            });
+            }));
         }
 
         pool.shutdown();

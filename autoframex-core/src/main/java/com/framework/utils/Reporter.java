@@ -264,6 +264,98 @@ public abstract class Reporter {
     // =========================================================================
 
     /**
+     * Static twin of {@link #reportStep(String, String, boolean)} for callers with
+     * no {@code Reporter}/{@code SeleniumBase} instance — namely
+     * {@code com.api.rest.assured.base.RestAssuredListener} (autoframex-api),
+     * which times every API call as a REST Assured {@code Filter} and needs to
+     * write the result into this thread's current ExtentTest node. Reads the
+     * same {@code static final ThreadLocal<ExtentTest> test} field every
+     * instance method already uses, so it lands in the same report node a
+     * concurrently-running UI action's steps do.
+     *
+     * <p>Screenshots never apply to an API call, so this intentionally has no
+     * {@code bSnap} parameter — always {@code false}. Unlike
+     * {@link #reportStep(String, String, boolean)}, a {@code "FAIL"} status here
+     * does <b>not</b> throw {@code TestStepFailedException} — this runs inside
+     * REST Assured's filter chain mid-HTTP-call, where throwing would corrupt
+     * request handling rather than fail the test cleanly. Automatic API timing
+     * is pure observability (see the framework-3.1 performance-capture design):
+     * every call is logged at {@code INFO} (2xx/3xx) or {@code WARNING} (4xx/5xx),
+     * never {@code FAIL} — {@code "FAIL"} is only handled here for completeness
+     * if a future caller needs it.
+     *
+     * @param desc   step description (e.g. {@code "API GET /incident — 214ms (status 200)"})
+     * @param status PASS | FAIL | WARNING | SKIPPED | INFO
+     */
+    public static void reportApiStep(String desc, String status) {
+        ExtentTest currentTest = test.get();
+        if (currentTest == null) {
+            logger.debug("No test node - cannot report API step: " + desc);
+            return;
+        }
+        synchronized (currentTest) {
+            switch (status.toUpperCase()) {
+                case "PASS":
+                    currentTest.pass(desc);
+                    break;
+                case "FAIL":
+                    currentTest.fail(desc);
+                    break;
+                case "WARNING":
+                    currentTest.warning(desc);
+                    break;
+                case "SKIPPED":
+                    currentTest.skip("Skipped: " + desc);
+                    break;
+                case "INFO":
+                default:
+                    currentTest.info(desc);
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Captures the calling thread's current ExtentTest node so it can be bound
+     * onto a different (typically pool-worker) thread via {@link #runWithNode}.
+     *
+     * <p>Needed because {@code test} is a plain {@code ThreadLocal} — a new
+     * thread (e.g. one from an {@code ExecutorService}) never inherits it, so
+     * {@link #reportApiStep} silently no-ops for API calls made from inside a
+     * worker pool. Found live: {@code ApiPerformanceUtils.runLoadTest()}'s
+     * concurrent workers dropped every one of their calls' timing until this
+     * was wired in.
+     *
+     * @return the current node, or {@code null} if none is bound on this thread
+     */
+    public static ExtentTest captureCurrentNode() {
+        return test.get();
+    }
+
+    /**
+     * Runs {@code task} with {@code node} bound as this thread's current
+     * ExtentTest node for the duration of the call — see {@link #captureCurrentNode}.
+     * Always clears the binding afterward, since thread-pool threads are reused
+     * for unrelated work afterward and must not leak a stale node into it.
+     *
+     * @param node the node captured on another thread via {@link #captureCurrentNode}
+     *             (may be {@code null} — then this is a plain passthrough)
+     * @param task the work to run with that node bound
+     */
+    public static void runWithNode(ExtentTest node, Runnable task) {
+        if (node == null) {
+            task.run();
+            return;
+        }
+        test.set(node);
+        try {
+            task.run();
+        } finally {
+            test.remove();
+        }
+    }
+
+    /**
      * Reports a test step with status and optional screenshot.
      *
      * @param desc   step description
