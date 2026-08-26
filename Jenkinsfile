@@ -242,8 +242,16 @@ pipeline {
         stage('Run Parallel Suites') {
             // Each runs as its own K8s Job on the Minikube node (see
             // runSuiteAsK8sJob at the top of this file) — distinct Job names
-            // and hostPaths, so true parallel execution is safe, same as the
-            // native `parallel {}` block this replaced.
+            // and hostPaths, so true parallel execution is safe.
+            //
+            // Uses the classic Scripted-Pipeline parallel(map) form inside a
+            // single script {} block, NOT declarative's nested `parallel {
+            // stage('X') {...} }` syntax — confirmed via two real Jenkins
+            // runs that declarative's form can't resolve a top-level `def`
+            // script method from inside its branch stages, with or without
+            // an explicit `this.` receiver ("No such DSL method
+            // 'runSuiteAsK8sJob' found among steps [...]"). This form is a
+            // long-established pattern for exactly this case.
             //
             // NOTE: THREAD_COUNT is not wired through to the containerized
             // path — ../Dockerfile's ENTRYPOINT doesn't expose a
@@ -251,42 +259,26 @@ pipeline {
             // directly in the suite XML if you need it, or extend the
             // Dockerfile/k8s/test-job.yaml template to add a THREAD_COUNT
             // env var if per-run overrides become necessary.
-            parallel {
-
-                stage('TestNG Suite') {
-                    steps {
-                        script {
+            steps {
+                script {
+                    parallel(
+                        'TestNG Suite': {
                             // MODULE/SUITE_FILE pair together identify which
                             // reactor module owns the suite (TD-20) — default
                             // testng.xml lives in autoframex-testkit.
-                            //
-                            // this. is required here: confirmed via a real
-                            // Jenkins run that Jenkins' CPS engine can't
-                            // resolve a top-level `def` script method called
-                            // from inside a parallel {} branch closure
-                            // without it ("No such DSL method
-                            // 'runSuiteAsK8sJob' found among steps [...]") —
-                            // tryInjectConfig above works without this.
-                            // because it's called from a plain (non-parallel)
-                            // stage.
-                            this.runSuiteAsK8sJob('autoframex-testng-suite', params.MODULE, params.SUITE_FILE,
+                            runSuiteAsK8sJob('autoframex-testng-suite', params.MODULE, params.SUITE_FILE,
                                 params.BROWSER, params.ENVIRONMENT, params.HEADLESS)
-                        }
-                    }
-                }
-
-                stage('AlfaDOCK Suite') {
-                    steps {
-                        script {
+                        },
+                        'AlfaDOCK Suite': {
                             // NOTE (pre-existing, unrelated to TD-20): alfaDOCKtestng.xml
                             // is not present anywhere in this repo — it's expected to be
                             // supplied by the consuming AlfaDOCK project's own module.
                             // Module targets autoframex-testkit as a placeholder; point
                             // this at whichever module that downstream project actually owns.
-                            this.runSuiteAsK8sJob('autoframex-alfadock-suite', 'autoframex-testkit', 'alfaDOCKtestng.xml',
+                            runSuiteAsK8sJob('autoframex-alfadock-suite', 'autoframex-testkit', 'alfaDOCKtestng.xml',
                                 params.BROWSER, params.ENVIRONMENT, params.HEADLESS)
                         }
-                    }
+                    )
                 }
             }
         }
