@@ -59,7 +59,7 @@ A shared, enterprise-grade test automation framework built on Selenium 4, TestNG
 
 ## Project Structure
 
-As of TD-20, autoFrameX is an 8-module Maven reactor — each module owns a
+autoFrameX is an 8-module Maven reactor — each module owns a
 distinct concern, so a consuming team only pulls in the dependencies of the
 modules it actually needs (e.g. an API-only team depends on `autoframex-core`
 + `autoframex-api`, not the whole tree).
