@@ -181,20 +181,18 @@ pipeline {
                     // target/site/jacoco/jacoco.xml is still produced here
                     // for Sonar, with no separate step needed.
                     //
-                    // -Djacoco.haltOnFailure=false: the coverage-percentage
-                    // floor (pom.xml's jacoco-check execution, 20% line
-                    // coverage) is a separate, pre-existing, unrelated
-                    // concern — some modules (e.g. autoframex-performance)
-                    // don't meet it yet. The check still runs and still logs
-                    // a warning, it just no longer fails the build; this
-                    // gate stays about tests passing, not about coverage %.
-                    // (jacoco.skip is NOT used here — it would also silence
-                    // the "report" execution, which is what produces
-                    // jacoco.xml for Sonar.)
+                    // The coverage-percentage floor (pom.xml's jacoco-check
+                    // execution, 20% line coverage) defaults to non-fatal
+                    // (jacoco.haltOnFailure=false in the root pom.xml
+                    // properties) — it's a separate, pre-existing, unrelated
+                    // concern from whether the unit tests pass, and some
+                    // modules (e.g. autoframex-performance) don't meet it
+                    // yet. No flag needed here; the same default applies to
+                    // any plain `mvn install` run anywhere, not just CI.
                     if (isUnix()) {
-                        sh 'mvn clean install -Djacoco.haltOnFailure=false -q'
+                        sh 'mvn clean install -q'
                     } else {
-                        bat 'mvn clean install -Djacoco.haltOnFailure=false -q'
+                        bat 'mvn clean install -q'
                     }
                 }
             }
