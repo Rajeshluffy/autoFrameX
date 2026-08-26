@@ -1,0 +1,30 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+    Split out of testng-ci.xml (autoframex-selenium's build-gating suite):
+    these 2 VideoRecorderTest methods need a real `ffmpeg` binary on PATH to
+    assert a real MP4 actually gets produced, unlike the rest of
+    VideoRecorderTest's methods (zero-frame/discard-on-pass/null-driver
+    paths, which never invoke FFmpeg at all). Confirmed via a real Jenkins
+    run that this Jenkins agent doesn't have ffmpeg installed — running
+    these there produced a hard failure ("Cannot run program 'ffmpeg':
+    No such file or directory"), not a meaningful pass/fail signal.
+
+    Run wherever ffmpeg is actually available (confirmed working on local
+    dev machines this session):
+        mvn test -pl autoframex-selenium -Dtestng.suite.file=testng-ci-ffmpeg.xml
+-->
+<suite name="autoFrameX Selenium FFmpeg Tests" verbose="1" parallel="none">
+
+    <test name="VideoRecorder FFmpeg Tests">
+        <classes>
+            <class name="com.framework.utils.VideoRecorderTest">
+                <methods>
+                    <include name="concurrentRecordingsUseIsolatedFrameDirectories"/>
+                    <include name="failedTestWithCapturedFramesProducesARealMp4"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+</suite>

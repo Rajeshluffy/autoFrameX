@@ -48,12 +48,20 @@
          options-building (the only part of design.patterns.factory.browser testable
          without a real browser process — that package sat at ~19% coverage) and
          also regression-guards the already-fixed hardcoded-CDP-port finding.
-         VideoRecorderTest exercises the real FFmpeg pipeline (present on CI
-         runners) and caught a genuine bug while being written: captureFrame()
-         incremented frameCounter before attempting the screenshot, so a driver
-         that failed every capture still reported a nonzero frame count and
-         wastefully invoked FFmpeg against an empty frames directory instead of
-         skipping cleanly — fixed alongside this test.
+         VideoRecorderTest caught a genuine bug while being written:
+         captureFrame() incremented frameCounter before attempting the
+         screenshot, so a driver that failed every capture still reported a
+         nonzero frame count and wastefully invoked FFmpeg against an empty
+         frames directory instead of skipping cleanly — fixed alongside this
+         test. 5 of its 7 methods run here (no real FFmpeg needed — they
+         cover the zero-frame/discard-on-pass/null-driver paths). The other 2
+         (concurrentRecordingsUseIsolatedFrameDirectories,
+         failedTestWithCapturedFramesProducesARealMp4) genuinely need a real
+         `ffmpeg` binary to assert a real MP4 gets produced — confirmed via a
+         real Jenkins run that this Jenkins agent doesn't have one installed,
+         so they're excluded here and live in testng-ci-ffmpeg.xml instead
+         (non-gating, run only where ffmpeg is actually available — e.g.
+         local dev, or a CI stage that installs it first).
 
          PerfClockTest (autoframex-core) covers the stopwatch helper behind the
          automatic per-operation performance-capture feature (element wait/click/
@@ -88,7 +96,12 @@
             <class name="design.patterns.object.pool.PoolConfigBuilderTest"/>
             <class name="design.patterns.object.pool.DriverPoolManagerMultiContextTest"/>
             <class name="com.framework.utils.ScreenshotUtilsDeadSessionTest"/>
-            <class name="com.framework.utils.VideoRecorderTest"/>
+            <class name="com.framework.utils.VideoRecorderTest">
+                <methods>
+                    <exclude name="concurrentRecordingsUseIsolatedFrameDirectories"/>
+                    <exclude name="failedTestWithCapturedFramesProducesARealMp4"/>
+                </methods>
+            </class>
             <class name="com.framework.selenium.api.base.DriverManagerContextResolutionTest"/>
             <class name="design.patterns.object.pool.WindowFrameActionsQuitBookkeepingTest"/>
         </classes>
