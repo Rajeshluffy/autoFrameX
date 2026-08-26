@@ -11,6 +11,18 @@
 
 	<artifactId>autoframex-cucumber</artifactId>
 
+	<properties>
+		<!-- The only test class here (runners.CucumberRunner) drives live
+		     UI+API scenarios against a real target application — not a fast,
+		     isolated unit test suitable for gating an ordinary build. Skip
+		     Surefire here explicitly rather than falling back to the parent's
+		     testng.xml default, which doesn't exist in this module and would
+		     crash the build. It still runs, deliberately, via the
+		     "Cucumber PicoContainer DI" test block in
+		     autoframex-testkit/testng.xml when that suite is invoked. -->
+		<skipTests>true</skipTests>
+	</properties>
+
 	<!--
 	    Cucumber BDD glue: com.framework.cucumber.api.base (main), plus the
 	    onboarding example runner/step-defs (test) that intentionally span

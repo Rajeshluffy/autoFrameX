@@ -1,0 +1,24 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+    autoframex-core build-gating unit test suite.
+
+    This is the module's own default (see the testng.suite.file property
+    override in autoframex-core/pom.xml) — it runs automatically whenever
+    this module is built (`mvn install`/`mvn test`, no flags needed), and a
+    failure here fails the build immediately. All classes below are plain
+    unit tests with no Selenium/browser/network dependency.
+-->
+<suite name="autoframex-core Unit Tests" verbose="1" parallel="none">
+
+    <test name="Core Unit Tests">
+        <classes>
+            <class name="com.framework.testng.ExtentBugTest"/>
+            <class name="com.framework.config.data.ConfigResolverTest"/>
+            <class name="com.framework.config.data.ConfigManagerTest"/>
+            <class name="com.framework.utils.PerfClockTest"/>
+            <class name="com.framework.utils.ReporterNodePropagationTest"/>
+        </classes>
+    </test>
+
+</suite>

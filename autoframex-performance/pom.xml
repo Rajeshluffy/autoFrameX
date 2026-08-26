@@ -11,6 +11,13 @@
 
 	<artifactId>autoframex-performance</artifactId>
 
+	<properties>
+		<!-- This module's own default suite override: the parent's testng.xml
+		     default doesn't exist here (would crash Surefire), so `mvn
+		     install`/`mvn test` (no flags) now runs testng-ci.xml automatically. -->
+		<testng.suite.file>testng-ci.xml</testng.suite.file>
+	</properties>
+
 	<!--
 	    Performance testing utilities: com.framework.performance. Uses only Java
 	    stdlib concurrency + RestAssured (already pulled in via autoframex-api) —

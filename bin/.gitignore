@@ -1,0 +1,63 @@
+# -----------------------------
+# Maven / Build Output
+# -----------------------------
+target/
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# -----------------------------
+# IDE Specific Files
+# -----------------------------
+.classpath
+.project
+.settings/
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+
+# -----------------------------
+# Test Executions & Reports
+# -----------------------------
+test-output/
+reports/
+*.html
+*.pdf
+
+# -----------------------------
+# Logs & Screenshots
+# -----------------------------
+*.log
+logs/
+screenshots/
+ScreenShots/
+
+# -----------------------------
+# User-Requested Resources
+# -----------------------------
+# Paths updated for the TD-20 multi-module split — these files land in
+# autoframex-core now (ConfigManager/ProjectDirector's module), not the
+# repo root.
+autoframex-core/src/main/resources/alfaDOCKConfig.properties
+autoframex-core/src/main/resources/leafTapConfig.properties
+autoframex-core/src/test/resources/alfaDOCKConfig.properties
+autoframex-core/src/test/resources/leafTapConfig.properties
+
+# -----------------------------
+# Operating System Files
+# -----------------------------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# -----------------------------
+# Claude Code
+# -----------------------------
+.claude/worktrees/
+/bin/

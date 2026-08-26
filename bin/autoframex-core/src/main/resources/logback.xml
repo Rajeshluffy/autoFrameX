@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <!-- %mask masks credential-shaped substrings (password=, Bearer ...) in every
+       log line automatically — see com.framework.utils.logging.MaskingMessageConverter.
+       Applies to both appenders below so masking is never opt-in per call site. -->
+  <conversionRule conversionWord="mask" converterClass="com.framework.utils.logging.MaskingMessageConverter"/>
+
+  <!-- Console output with timestamp, thread, level, logger, and message -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %mask%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- File output in JSON format for ELK Stack ingestion via Filebeat.
+       MaskingLogstashEncoder wraps LogstashEncoder to mask the same way. -->
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/test-execution.log</file>
+    <encoder class="com.framework.utils.logging.MaskingLogstashEncoder">
+      <customFields>{"env":"${env:-local}","testSuite":"${testSuite:-autoFrameX}"}</customFields>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>logs/archive/test-%d{yyyy-MM-dd}-%i.log.gz</fileNamePattern>
+      <maxFileSize>100MB</maxFileSize>
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+  </appender>
+
+  <!-- Async wrapper around FILE — non-blocking, high throughput -->
+  <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+    <queueSize>1024</queueSize>
+    <appender-ref ref="FILE"/>
+  </appender>
+
+  <!-- Root logger: INFO to console + async file -->
+  <root level="INFO">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="ASYNC"/>
+  </root>
+
+  <!-- Framework internals at DEBUG for detailed step tracing -->
+  <logger name="com.framework" level="DEBUG"/>
+  <logger name="step.defs"     level="DEBUG"/>
+  <logger name="runners"       level="DEBUG"/>
+  <logger name="design.patterns" level="INFO"/>
+
+  <!-- Suppress noisy third-party loggers -->
+  <logger name="org.openqa.selenium" level="WARN"/>
+  <!-- DEBUG logs full request/response bodies (headers, tokens) on every run;
+       masking now covers what it logs, but INFO stays the safer default —
+       bump this logger to DEBUG locally when you need request/response detail. -->
+  <logger name="io.restassured"      level="INFO"/>
+  <logger name="org.apache.http"     level="WARN"/>
+  <logger name="io.netty"            level="WARN"/>
+
+</configuration>

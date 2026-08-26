@@ -11,6 +11,17 @@
 
 	<artifactId>autoframex-testkit</artifactId>
 
+	<properties>
+		<!-- This module's own default suite override: testng.xml (the
+		     reactor's overall root default) includes a live Cucumber
+		     scenario that needs a real browser + app, unsuitable for an
+		     unattended `mvn install`. testng-build.xml is the fast,
+		     self-contained subset used for automatic build gating; testng.xml
+		     is still used explicitly wherever a real target app is available
+		     (e.g. -Dtestng.suite.file=testng.xml). -->
+		<testng.suite.file>testng-build.xml</testng.suite.file>
+	</properties>
+
 	<!--
 	    No main code of its own — hosts only the one suite (testng.xml) that
 	    spans more than one module's classpath at once (ExtentBugTest [core] +

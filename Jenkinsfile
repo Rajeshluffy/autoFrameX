@@ -39,6 +39,46 @@ def runSuiteAsK8sJob(String jobName, String module, String suiteFile, String bro
     """
 }
 
+// Copies a Jenkins "Secret file" credential into autoframex-core's resources
+// as destFileName — but tolerates the credential not existing yet, logging a
+// warning and continuing instead of failing the whole build.
+//
+// withCredentials([...]) fails immediately (before any step inside its block
+// runs) if a declared credentialsId isn't configured in Jenkins — that used
+// to hard-fail this pipeline's very first real stage on a fresh Jenkins
+// instance with zero setup, even though the framework's own default suite
+// (autoframex-testkit/testng.xml) has no dependency on AlfaDOCK/Leaftaps
+// config at all. Wrapping each injection independently in try/catch means:
+//   - A fresh Jenkins instance can run the default suite with zero
+//     credential setup.
+//   - The AlfaDOCK/GPN suite stages further down still get a real,
+//     narrowly-scoped failure of their own if the file they actually need
+//     never got injected — this doesn't paper over that, it just stops one
+//     missing credential from blocking every other stage too.
+def tryInjectConfig(String credentialsId, String destFileName) {
+    try {
+        withCredentials([file(credentialsId: credentialsId, variable: 'CONFIG_FILE')]) {
+            if (isUnix()) {
+                sh """
+                    mkdir -p autoframex-core/src/main/resources
+                    cp "\$CONFIG_FILE" autoframex-core/src/main/resources/${destFileName}
+                """
+            } else {
+                bat """
+                    if not exist autoframex-core\\src\\main\\resources mkdir autoframex-core\\src\\main\\resources
+                    copy /Y "%CONFIG_FILE%" "autoframex-core\\src\\main\\resources\\${destFileName}"
+                """
+            }
+        }
+        echo "Injected credential '${credentialsId}' -> autoframex-core/src/main/resources/${destFileName}"
+    } catch (err) {
+        echo "Credential '${credentialsId}' is not configured in Jenkins — skipping ${destFileName}. " +
+             "Only the AlfaDOCK/GPN suite stages need this; the default suite " +
+             "(autoframex-testkit/testng.xml) does not. Add a 'Secret file' credential " +
+             "with ID '${credentialsId}' in Jenkins → Credentials if you need those suites to run."
+    }
+}
+
 pipeline {
     agent any
 
@@ -89,9 +129,10 @@ pipeline {
 
         // Docker + Minikube — used only by the "target application" suite
         // stages below (TestNG/AlfaDOCK/GPN). Checkout/Inject Configs/
-        // Build & Install/Framework Unit Tests/SonarQube stay native: Sonar
-        // reads target/site/jacoco/jacoco.xml from the Framework Unit Tests
-        // run, which only exists if that run happens on the agent itself.
+        // Build & Install/SonarQube stay native: Sonar reads
+        // target/site/jacoco/jacoco.xml, produced directly by Build & Install
+        // now that each module runs its own unit tests inline (see that
+        // stage below) — no separate test stage needed.
         KUBECTL = 'docker exec minikube /var/lib/minikube/binaries/v1.35.1/kubectl --kubeconfig=/etc/kubernetes/admin.conf'
     }
 
@@ -109,25 +150,14 @@ pipeline {
                 // ConfigManager/ProjectDirector, which read these project
                 // config files via the configClass parameter, now live in
                 // the autoframex-core module, not the repo root.
-                withCredentials([
-                    file(credentialsId: 'alfadock-config', variable: 'ALFA_CONFIG'),
-                    file(credentialsId: 'leaftap-config',  variable: 'LEAF_CONFIG')
-                ]) {
-                    script {
-                        if (isUnix()) {
-                            sh '''
-                                mkdir -p autoframex-core/src/main/resources
-                                cp "$ALFA_CONFIG" autoframex-core/src/main/resources/alfaDOCKConfig.properties
-                                cp "$LEAF_CONFIG"  autoframex-core/src/main/resources/leafTapConfig.properties
-                            '''
-                        } else {
-                            bat '''
-                                if not exist autoframex-core\\src\\main\\resources mkdir autoframex-core\\src\\main\\resources
-                                copy /Y "%ALFA_CONFIG%" "autoframex-core\\src\\main\\resources\\alfaDOCKConfig.properties"
-                                copy /Y "%LEAF_CONFIG%"  "autoframex-core\\src\\main\\resources\\leafTapConfig.properties"
-                            '''
-                        }
-                    }
+                //
+                // Each injection is independently best-effort (see
+                // tryInjectConfig above) — this stage always succeeds, even
+                // on a fresh Jenkins instance with neither credential
+                // configured yet, since the default suite doesn't need them.
+                script {
+                    tryInjectConfig('alfadock-config', 'alfaDOCKConfig.properties')
+                    tryInjectConfig('leaftap-config',  'leafTapConfig.properties')
                 }
             }
         }
@@ -139,11 +169,39 @@ pipeline {
                     // upstream reactor artifacts (autoframex-core,
                     // autoframex-selenium, ...) resolvable from the local
                     // repo before any -pl-scoped stage below can build.
+                    //
+                    // No -DskipTests: each module now carries its own default
+                    // suite (testng.suite.file / skipTests property override
+                    // in that module's pom.xml), so the reactor build runs
+                    // every module's relevant fast unit tests automatically,
+                    // in dependency order, and Maven's default fail-fast
+                    // behavior stops the whole build at the first failing
+                    // module — this stage IS the unit-test gate. JaCoCo's
+                    // "report" execution is bound to the test phase, so
+                    // target/site/jacoco/jacoco.xml is still produced here
+                    // for Sonar, with no separate step needed.
+                    //
+                    // -Djacoco.haltOnFailure=false: the coverage-percentage
+                    // floor (pom.xml's jacoco-check execution, 20% line
+                    // coverage) is a separate, pre-existing, unrelated
+                    // concern — some modules (e.g. autoframex-performance)
+                    // don't meet it yet. The check still runs and still logs
+                    // a warning, it just no longer fails the build; this
+                    // gate stays about tests passing, not about coverage %.
+                    // (jacoco.skip is NOT used here — it would also silence
+                    // the "report" execution, which is what produces
+                    // jacoco.xml for Sonar.)
                     if (isUnix()) {
-                        sh 'mvn clean install -DskipTests -Djacoco.skip=true -q'
+                        sh 'mvn clean install -Djacoco.haltOnFailure=false -q'
                     } else {
-                        bat 'mvn clean install -DskipTests -Djacoco.skip=true -q'
+                        bat 'mvn clean install -Djacoco.haltOnFailure=false -q'
                     }
+                }
+            }
+            post {
+                always {
+                    junit testResults: '**/surefire-reports/*.xml',
+                          allowEmptyResults: true
                 }
             }
         }
@@ -170,25 +228,6 @@ pipeline {
                     rm autoframex-test.tar
                     docker exec minikube rm /autoframex-test.tar
                 '''
-            }
-        }
-
-        stage('Framework Unit Tests') {
-            steps {
-                script {
-                    // testng-ci.xml now lives in autoframex-selenium (TD-20).
-                    if (isUnix()) {
-                        sh 'mvn test -pl autoframex-selenium -Dtestng.suite.file=testng-ci.xml -Dsurefire.reportNameSuffix=framework-unit'
-                    } else {
-                        bat 'mvn test -pl autoframex-selenium -Dtestng.suite.file=testng-ci.xml -Dsurefire.reportNameSuffix=framework-unit'
-                    }
-                }
-            }
-            post {
-                always {
-                    junit testResults: '**/surefire-reports/*framework-unit*.xml',
-                          allowEmptyResults: true
-                }
             }
         }
 
@@ -285,15 +324,19 @@ pipeline {
                 )
 
                 // Quality gate: fail build if failure rate exceeds threshold.
-                // Threshold is 50% to accommodate RetryTest's intentional failures
-                // in the Framework Unit Tests stage.
-                // Downstream projects running real suites should lower this to 10-20%.
+                // Was 50%, specifically to accommodate RetryTest's intentional
+                // failures in the default suite's "Framework Unit Tests" block.
+                // RetryTest no longer runs there (see autoframex-testkit/testng.xml —
+                // it moved to autoframex-selenium/testng-ci-retry.xml, run
+                // separately and non-gating), so the aggregate result here now
+                // reflects genuine pass/fail — lowered to a real threshold.
+                // Tune per project if a suite has known, accepted flakiness.
                 if (summary.totalCount > 0) {
                     def failureRate = (summary.failCount * 100.0) / summary.totalCount
                     echo "Quality gate: ${summary.failCount}/${summary.totalCount} failed (${String.format('%.1f', failureRate)}%)"
-                    if (failureRate > 50) {
+                    if (failureRate > 20) {
                         currentBuild.result = 'FAILURE'
-                        error("Quality gate failed: ${String.format('%.1f', failureRate)}% failure rate exceeds 50% threshold")
+                        error("Quality gate failed: ${String.format('%.1f', failureRate)}% failure rate exceeds 20% threshold")
                     }
                 }
             }

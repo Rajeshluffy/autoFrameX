@@ -39,17 +39,6 @@ screenshots/
 ScreenShots/
 
 # -----------------------------
-# User-Requested Resources
-# -----------------------------
-# Paths updated for the TD-20 multi-module split — these files land in
-# autoframex-core now (ConfigManager/ProjectDirector's module), not the
-# repo root.
-autoframex-core/src/main/resources/alfaDOCKConfig.properties
-autoframex-core/src/main/resources/leafTapConfig.properties
-autoframex-core/src/test/resources/alfaDOCKConfig.properties
-autoframex-core/src/test/resources/leafTapConfig.properties
-
-# -----------------------------
 # Operating System Files
 # -----------------------------
 .DS_Store
@@ -57,8 +46,4 @@ Thumbs.db
 ehthumbs.db
 desktop.ini
 
-# -----------------------------
-# Claude Code
-# -----------------------------
-.claude/
-/bin/
+

@@ -28,7 +28,20 @@ Thumbs.db
 # Documentation (not needed inside the image)
 docs/
 
-# Sensitive config files (injected at runtime via env vars or volume mounts)
-src/main/resources/alfaDOCKConfig.properties
-src/main/resources/leafTapConfig.properties
-src/test/resources/Config.properties
+# Sensitive config files (injected at runtime via env vars or volume mounts).
+# Bare filenames (no path prefix) so each rule matches at any depth — the old
+# "src/main/resources/..." form couldn't match anything in this multi-module
+# reactor, since every module's resources live under <module>/src/main/resources/,
+# never a bare src/main/resources/ at the repo root.
+#
+# alfaDOCKConfig.properties / leafTapConfig.properties don't actually live in
+# this repo (they belong to the alfaDock/Leaftaps consumer repos) — defensive
+# only, in case a local copy is ever dropped in here for testing.
+alfaDOCKConfig.properties
+leafTapConfig.properties
+# Config.properties DOES exist here (autoframex-testkit/src/test/resources/
+# resources/Config.properties) and is git-tracked deliberately — its own
+# header says "non-sensitive defaults, safe to commit" (real credentials come
+# from SERVICE_NOW_* env vars, not this file). Excluded from the Docker build
+# context anyway since it's a test fixture, not something the image needs.
+Config.properties

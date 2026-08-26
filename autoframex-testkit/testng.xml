@@ -39,10 +39,20 @@
     <parameter name="headless"  value="${headless}"/>
 
     <!-- ── Smoke / unit tests (no browser required) ─────────────────────── -->
+    <!-- RetryTest deliberately does NOT live here: its methods are
+         intentionally always-failing (they verify the retry engine's own
+         retry/backoff behavior, not a regression), and including it in this
+         suite's pass/fail-gating "Framework Unit Tests" block permanently
+         inflates the failure rate every quality gate downstream has to
+         tolerate — the Jenkinsfile used to carry a 50% failure threshold
+         specifically to accommodate that. Matches the same split already
+         used in autoframex-selenium/testng-ci.xml (gating) +
+         testng-ci-retry.xml (non-gating, RetryTest only). Run RetryTest
+         directly with:
+             mvn test -pl autoframex-selenium -Dtestng.suite.file=testng-ci-retry.xml -->
     <test name="Framework Unit Tests">
         <classes>
             <class name="com.framework.testng.ExtentBugTest"/>
-            <class name="com.framework.testng.RetryTest"/>
         </classes>
     </test>
 

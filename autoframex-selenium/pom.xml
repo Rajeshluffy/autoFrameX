@@ -11,6 +11,14 @@
 
 	<artifactId>autoframex-selenium</artifactId>
 
+	<properties>
+		<!-- This module's own default suite override: the parent's testng.xml
+		     default doesn't exist here (would crash Surefire), so `mvn
+		     install`/`mvn test` (no flags) now runs the fast, browser-free
+		     testng-ci.xml suite automatically instead. -->
+		<testng.suite.file>testng-ci.xml</testng.suite.file>
+	</properties>
+
 	<!--
 	    Selenium WebDriver support: com.framework.selenium.api.* (action classes,
 	    SeleniumBase facade, BasePage), com.framework.testng.api.base (TestNG

@@ -13,6 +13,15 @@
 
 	<!-- REST-Assured API testing layer: com.api.rest.assured.base. -->
 
+	<properties>
+		<!-- No unit tests exist in this module yet (only a WireMock test-scope
+		     dependency, unused). Skip Surefire here explicitly rather than
+		     falling back to the parent's testng.xml default, which doesn't
+		     exist in this module and would crash the build. Remove this once
+		     real tests are added. -->
+		<skipTests>true</skipTests>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>autoFrameX</groupId>

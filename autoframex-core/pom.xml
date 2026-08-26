@@ -11,6 +11,14 @@
 
 	<artifactId>autoframex-core</artifactId>
 
+	<properties>
+		<!-- This module's own default suite, so `mvn install`/`mvn test` here
+		     (no flags) runs its unit tests automatically instead of falling
+		     back to the parent's testng.xml default, which doesn't exist in
+		     this module and crashes Surefire. -->
+		<testng.suite.file>testng.xml</testng.suite.file>
+	</properties>
+
 	<!--
 	    Config resolution (com.framework.config.data), reporting/observability
 	    (com.framework.utils, com.framework.observability), and the shared

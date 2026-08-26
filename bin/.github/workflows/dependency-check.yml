@@ -1,0 +1,48 @@
+name: Dependency Check — SCA Scan (Weekly + Manual)
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'   # Mondays 06:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  dependency-check:
+    name: OWASP Dependency-Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Run OWASP Dependency-Check
+        # NVD_API_KEY (optional, repo secret) drastically speeds up the CVE
+        # feed update and avoids rate-limiting; the scan still runs without
+        # one, just slower. failBuildOnCVSS is set in pom.xml.
+        # No -pl here: invoked at the reactor root with no module scoping, so
+        # (unlike ci.yml/performance.yml/security.yml) this genuinely scans
+        # every module's dependencies, not just autoframex-selenium's — each
+        # module gets its own report under its own target/ (TD-20).
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          if [ -n "$NVD_API_KEY" ]; then
+            mvn dependency-check:check -Dnvd.api.key="$NVD_API_KEY"
+          else
+            mvn dependency-check:check
+          fi
+
+      - name: Upload Dependency-Check report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: '**/target/dependency-check-report.html'
+          if-no-files-found: ignore
+          retention-days: 30

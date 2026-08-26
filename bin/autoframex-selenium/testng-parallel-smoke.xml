@@ -1,0 +1,37 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+    Parallel-execution smoke suite for autoFrameX.
+
+    Genuinely exercises parallel="methods" with a real WebDriver pool and real
+    browsers — unlike testng-data-provider.xml / testng-targeted.xml, which are
+    parallel-capable templates that ship with no test classes wired in and are
+    never actually run by CI. This suite closes that gap: it runs on every push
+    via ci.yml so a regression in pool/thread-safety behavior under real
+    concurrency is caught automatically, not just documented as a template.
+
+    thread-count matches autoFrameX.pool.max.size (5) so this also proves the
+    pool's borrow/release/reuse cycle under genuine contention (8 methods > 5
+    threads means some methods must wait for a driver to be released and
+    reused) without configuring the suite to exceed the pool it's validating.
+-->
+<suite name="autoFrameX Parallel Execution Smoke Suite" verbose="1" parallel="methods" thread-count="5">
+
+    <listeners>
+        <listener class-name="com.framework.testng.api.base.TestAnnotationTransformer"/>
+    </listeners>
+
+    <parameter name="execution.mode" value="targeted"/>
+    <parameter name="configClass"    value="com.framework.config.data.AutoFrameXConfiguration"/>
+    <parameter name="browser"        value="chrome"/>
+    <parameter name="env"            value="qa"/>
+    <parameter name="headless"       value="true"/>
+    <parameter name="url"            value="https://example.com"/>
+
+    <test name="Parallel Smoke Tests">
+        <classes>
+            <class name="com.framework.testng.ParallelExecutionSmokeTest"/>
+        </classes>
+    </test>
+
+</suite>

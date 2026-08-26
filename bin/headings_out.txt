@@ -1,0 +1,79 @@
+Heading 2 | Confidentiality Statement
+Heading 2 | Revision History
+Heading 1 | Table of Contents
+Heading 1 | 1. Introduction
+Heading 2 | 1.1 Purpose
+Heading 2 | 1.2 Scope
+Heading 2 | 1.3 Intended Audience
+Heading 2 | 1.4 Supported Roles
+Heading 2 | 1.5 Terminology
+Heading 2 | 1.6 Acronyms
+Heading 1 | 2. System Overview
+Heading 2 | 2.1 Application Architecture (Observed)
+Heading 2 | 2.2 Major Modules
+Heading 2 | 2.3 Purpose of the Large Monitor Module
+Heading 2 | 2.4 Navigation Structure
+Heading 2 | 2.5 System Capabilities Summary
+Heading 1 | 3. Getting Started
+Heading 2 | 3.1 Login
+Heading 3 | Procedure: Log In
+Heading 2 | 3.2 Authentication Notes
+Heading 2 | 3.3 User Roles and Permissions
+Heading 2 | 3.4 Dashboard Overview
+Heading 2 | 3.5 Navigation
+Heading 1 | 4. Module Documentation: Large Monitor
+Heading 2 | 4.1 Module Overview
+Heading 2 | 4.2 Interface Overview — Toolbar
+Heading 2 | 4.3 Filter Panel
+Heading 3 | Interface Elements
+Heading 3 | Procedure: Narrow the Board to In-Progress Grinding Work
+Heading 2 | 4.4 Search and Advanced Search
+Heading 3 | Quick Search
+Heading 3 | Advanced Search
+Heading 3 | Procedure: Find All Orders for a Customer With Any Outstanding Process
+Heading 2 | 4.5 Option Dialog
+Heading 3 | 4.5.1 Columns Tab
+Heading 3 | 4.5.2 Filter Tab
+Heading 3 | 4.5.3 Search Tab
+Heading 3 | 4.5.4 Toolbar Tab
+Heading 3 | 4.5.5 Display Tab
+Heading 3 | 4.5.6 Dev Options Tab
+Heading 2 | 4.6 Data Grid
+Heading 3 | Columns (as configured for this tenant)
+Heading 3 | Layout
+Heading 3 | Row Color Coding
+Heading 3 | Interactivity
+Heading 1 | 5. Workflows
+Heading 2 | 5.1 Daily Shop-Floor Monitoring Workflow
+Heading 2 | 5.2 Interactive Lookup Workflow
+Heading 2 | 5.3 Adjusting the Board's Default View (Administrator Workflow)
+Heading 1 | 6. Business Rules
+Heading 2 | 6.1 Data Scope and Access
+Heading 2 | 6.2 Default Filtering Rules
+Heading 2 | 6.3 Color-Coding Rules
+Heading 2 | 6.4 Refresh and Auto-Paging Rules
+Heading 2 | 6.5 Column Configuration Rules
+Heading 2 | 6.6 Naming/Value Conventions Observed
+Heading 1 | 7. Error Messages
+Heading 1 | 8. Troubleshooting Guide
+Heading 3 | Symptom: Board shows no data / an unexpectedly small data set
+Heading 3 | Symptom: Board appears "frozen" on a loading spinner
+Heading 3 | Symptom: Logged out unexpectedly / redirected to login
+Heading 1 | 9. Best Practices
+Heading 1 | 10. Frequently Asked Questions
+Heading 3 | Q: Why don't I see completed (Finished) orders on the board?
+Heading 3 | Q: Can I click on a row to see full order details?
+Heading 3 | Q: What do the row colors mean?
+Heading 3 | Q: How often does the board update?
+Heading 3 | Q: How do I change how many columns of data are shown side by side?
+Heading 3 | Q: Can the board read search results out loud or accept voice input?
+Heading 3 | Q: Is there a mobile view?
+Heading 1 | 11. Appendix
+Heading 2 | Appendix A — Column Field Catalog
+Heading 3 | A.1 Order-Level Fields
+Heading 3 | A.2 Order Item / Part-Level Fields
+Heading 3 | A.3 Process-Level Fields
+Heading 2 | Appendix B — Glossary
+Heading 2 | Appendix C — Keyboard Shortcuts
+Heading 2 | Appendix D — References
+Heading 2 | Appendix E — Documentation Method and Limitations

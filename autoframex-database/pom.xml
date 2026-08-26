@@ -11,6 +11,14 @@
 
 	<artifactId>autoframex-database</artifactId>
 
+	<properties>
+		<!-- No unit tests exist in this module yet. Skip Surefire here
+		     explicitly rather than falling back to the parent's testng.xml
+		     default, which doesn't exist in this module and would crash the
+		     build. Remove this once real tests are added. -->
+		<skipTests>true</skipTests>
+	</properties>
+
 	<!--
 	    Database connection pooling (design.patterns.database.*) — its own module
 	    (missing from the original TD-20 sketch) since not every consuming team
