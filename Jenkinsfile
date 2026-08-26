@@ -259,7 +259,17 @@ pipeline {
                             // MODULE/SUITE_FILE pair together identify which
                             // reactor module owns the suite (TD-20) — default
                             // testng.xml lives in autoframex-testkit.
-                            runSuiteAsK8sJob('autoframex-testng-suite', params.MODULE, params.SUITE_FILE,
+                            //
+                            // this. is required here: confirmed via a real
+                            // Jenkins run that Jenkins' CPS engine can't
+                            // resolve a top-level `def` script method called
+                            // from inside a parallel {} branch closure
+                            // without it ("No such DSL method
+                            // 'runSuiteAsK8sJob' found among steps [...]") —
+                            // tryInjectConfig above works without this.
+                            // because it's called from a plain (non-parallel)
+                            // stage.
+                            this.runSuiteAsK8sJob('autoframex-testng-suite', params.MODULE, params.SUITE_FILE,
                                 params.BROWSER, params.ENVIRONMENT, params.HEADLESS)
                         }
                     }
@@ -273,7 +283,7 @@ pipeline {
                             // supplied by the consuming AlfaDOCK project's own module.
                             // Module targets autoframex-testkit as a placeholder; point
                             // this at whichever module that downstream project actually owns.
-                            runSuiteAsK8sJob('autoframex-alfadock-suite', 'autoframex-testkit', 'alfaDOCKtestng.xml',
+                            this.runSuiteAsK8sJob('autoframex-alfadock-suite', 'autoframex-testkit', 'alfaDOCKtestng.xml',
                                 params.BROWSER, params.ENVIRONMENT, params.HEADLESS)
                         }
                     }
@@ -286,7 +296,7 @@ pipeline {
                 script {
                     // NOTE (pre-existing, unrelated to TD-20): gpn.xml is not present
                     // anywhere in this repo — see the AlfaDOCK Suite comment above.
-                    runSuiteAsK8sJob('autoframex-gpn-suite', 'autoframex-testkit', 'gpn.xml',
+                    this.runSuiteAsK8sJob('autoframex-gpn-suite', 'autoframex-testkit', 'gpn.xml',
                         params.BROWSER, params.ENVIRONMENT, params.HEADLESS)
                 }
             }
