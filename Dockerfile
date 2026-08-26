@@ -5,14 +5,21 @@ LABEL org.opencontainers.image.description="autoFrameX test framework with Chrom
 LABEL org.opencontainers.image.source="https://github.com/your-org/autoFrameX"
 
 # Install Chrome via official Google .deb (stable, Debian-compatible base image)
+#
+# libasound2 was renamed to libasound2t64 in newer Debian/Ubuntu releases (the
+# "time_t 64-bit" ALSA package transition) — the maven:3.9-eclipse-temurin-17
+# base image isn't pinned to a digest, so its underlying OS release (and
+# therefore which package name exists) can change under us between builds.
+# Try the new name first, fall back to the old one, so this survives either.
 RUN apt-get update -qq && \
+    (apt-get install -y --no-install-recommends libasound2t64 || \
+     apt-get install -y --no-install-recommends libasound2) && \
     apt-get install -y --no-install-recommends \
         wget \
         gnupg \
         ca-certificates \
         fonts-liberation \
         libappindicator3-1 \
-        libasound2 \
         libatk-bridge2.0-0 \
         libatk1.0-0 \
         libcups2 \
