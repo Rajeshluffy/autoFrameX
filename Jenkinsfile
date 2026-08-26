@@ -82,6 +82,16 @@ def tryInjectConfig(String credentialsId, String destFileName) {
 pipeline {
     agent any
 
+    tools {
+        // Requires a Maven "Tool" named exactly 'Maven3' configured in
+        // Jenkins → Manage Jenkins → Tools → Maven installations (check
+        // "Install automatically" and pick any 3.x version — the name is
+        // what has to match, not the version). Without this, mvn isn't on
+        // PATH on a stock Jenkins agent/controller image and every stage
+        // that shells out to it fails with "mvn: not found" (exit 127).
+        maven 'Maven3'
+    }
+
     parameters {
         choice(
             name: 'BROWSER',

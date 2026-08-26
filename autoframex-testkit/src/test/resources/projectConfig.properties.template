@@ -1,13 +1,58 @@
-# Environment URLs
-leaftaps.dev.url=http://leaftaps.com/opentaps/control/main
-leaftaps.qa.url=http://leaftaps.com/opentaps/control/main
+# ==============================================================================
+# TEMPLATE — copy into your own project's resources as <yourProject>Config.properties
+# (e.g. leafTapConfig.properties, alfaDOCKConfig.properties). Not loaded by
+# anything itself — the "yourproject.*" keys below are examples; your actual
+# keys are whatever @Key(...) annotations your ProjectAppConfiguration
+# implementation declares (see the Java snippet at the bottom of this file
+# and com.framework.config.data.ProjectAppConfiguration's javadoc for the
+# full contract this is implementing).
+#
+# Never commit real credentials here — override username/password/db.password
+# via environment variables or your CI's secret store instead.
+# ==============================================================================
 
-# LeafTaps login Details
-leaftaps.userName=<YOUR_USERNAME>
-leaftaps.password=<YOUR_PASSWORD>
+# ── Environment URLs (ProjectDirector routes to one of these via the
+#    "environment" TestNG/CLI parameter: dev/qa/prod — see ProjectDirector.resolveUrl) ──
+yourproject.aut.dev.url=https://dev.yourapp.example.com/
+yourproject.aut.qa.url=https://qa.yourapp.example.com/
+yourproject.aut.prod.url=
 
-# DB Connection Details
-leaftaps.db.url=jdbc:mps
-leaftaps.db.userName=<YOUR_DB_USERNAME>
-leaftaps.db.password=<YOUR_DB_PASSWORD>
-leaftaps.db.query=select PARTY_ID from opentaps.PERSON order by RAND() limit 1
+# ── Primary login credentials ────────────────────────────────────────────────
+yourproject.username=<YOUR_USERNAME>
+yourproject.password=<YOUR_PASSWORD>
+
+# ── Database (optional — leave blank if your project doesn't need one;
+#    ProjectAppConfiguration defaults these to "" so it's safe to omit) ──────
+yourproject.db.url=
+yourproject.db.username=
+yourproject.db.password=
+yourproject.db.query=
+
+# ==============================================================================
+# Paired Java interface — create this once per project (e.g.
+# com.yourproject.config.data.YourProjectConfiguration), matching the @Key
+# names above, then reference the class from your testng.xml:
+#   <parameter name="configClass" value="com.yourproject.config.data.YourProjectConfiguration"/>
+#
+# @LoadPolicy(LoadType.MERGE)
+# @Config.Sources({
+#     "classpath:yourProjectConfig.properties",
+#     "classpath:frameworkConfig.properties"   // framework defaults (browser/wait/pool/retry)
+# })
+# public interface YourProjectConfiguration extends ProjectAppConfiguration {
+#
+#     @Key("yourproject.aut.dev.url")  String devUrl();
+#     @Key("yourproject.aut.qa.url")   String qaUrl();
+#     @Key("yourproject.aut.prod.url") String prodUrl();
+#
+#     @Key("yourproject.username") String username();
+#     @Key("yourproject.password") String password();
+#     default String primaryUserName() { return username(); }
+#     default String primaryPassword() { return password(); }
+#
+#     @Key("yourproject.db.url")      String dbUrl();
+#     @Key("yourproject.db.username") String dbUserName();
+#     @Key("yourproject.db.password") String dbPassword();
+#     @Key("yourproject.db.query")    String dbQuery();
+# }
+# ==============================================================================
