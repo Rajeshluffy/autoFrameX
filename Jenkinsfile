@@ -82,16 +82,6 @@ def tryInjectConfig(String credentialsId, String destFileName) {
 pipeline {
     agent any
 
-    tools {
-        // Requires a Maven "Tool" named exactly 'Maven3' configured in
-        // Jenkins → Manage Jenkins → Tools → Maven installations (check
-        // "Install automatically" and pick any 3.x version — the name is
-        // what has to match, not the version). Without this, mvn isn't on
-        // PATH on a stock Jenkins agent/controller image and every stage
-        // that shells out to it fails with "mvn: not found" (exit 127).
-        maven 'Maven3'
-    }
-
     parameters {
         choice(
             name: 'BROWSER',
@@ -137,12 +127,12 @@ pipeline {
         // or set JAVA_HOME as a node-level environment variable on each agent.
         // Do NOT hardcode a path here — it breaks Linux/Mac agents.
 
-        // Docker + Minikube — used only by the "target application" suite
-        // stages below (TestNG/AlfaDOCK/GPN). Checkout/Inject Configs/
-        // Build & Install/SonarQube stay native: Sonar reads
-        // target/site/jacoco/jacoco.xml, produced directly by Build & Install
-        // now that each module runs its own unit tests inline (see that
-        // stage below) — no separate test stage needed.
+        // Docker + Minikube — used both by Build & Install (runs inside a
+        // maven:3.9-eclipse-temurin-17 container — see that stage) and by
+        // the "target application" suite stages below (TestNG/AlfaDOCK/GPN).
+        // Sonar reads target/site/jacoco/jacoco.xml, produced directly by
+        // Build & Install now that each module runs its own unit tests
+        // inline — no separate test stage needed.
         KUBECTL = 'docker exec minikube /var/lib/minikube/binaries/v1.35.1/kubectl --kubeconfig=/etc/kubernetes/admin.conf'
     }
 
@@ -173,6 +163,19 @@ pipeline {
         }
 
         stage('Build & Install') {
+            // Runs inside the same maven:3.9-eclipse-temurin-17 image as
+            // ../Dockerfile, rather than requiring mvn on the host agent's
+            // PATH (a stock Jenkins agent/controller doesn't ship Maven —
+            // this stage previously failed with "mvn: not found", exit 127).
+            // reuseNode: true keeps this container on the SAME workspace/
+            // node as the rest of the pipeline (so later stages still see
+            // target/, .m2 caches, etc.) instead of scheduling elsewhere.
+            agent {
+                docker {
+                    image 'maven:3.9-eclipse-temurin-17'
+                    reuseNode true
+                }
+            }
             steps {
                 script {
                     // install (not just compile): downstream modules need
