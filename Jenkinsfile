@@ -1,43 +1,18 @@
-// Deploys one suite run as a K8s Job on the Minikube node already loaded
-// with autoframex-test:${env.BUILD_ID} (see "Load Image into Minikube"),
-// waits for it to finish, and pulls its surefire-reports back into the
-// Jenkins workspace at k8s-results/<jobName>/surefire-reports/. Each job
-// gets its own destination (not <module>/target/surefire-reports/, which
-// TestNG/AlfaDOCK/GPN suites all share by default as autoframex-testkit —
-// reusing that path across three runs would let a later job's reports
-// overwrite an earlier one's). "**/surefire-reports/*.xml" in post{} already
-// matches any depth, so the existing junit/quality-gate glob still finds
-// these with no changes.
-def runSuiteAsK8sJob(String jobName, String module, String suiteFile, String browser, String environment, String headless) {
-    def hostReportsPath = "/tmp/autoframex-${jobName}-surefire-reports"
-    // "target/surefire-reports" segment matches post{}'s existing
-    // archiveArtifacts pattern ("**/target/surefire-reports/**") as well.
-    def destDir = "k8s-results/${jobName}/target/surefire-reports"
-    sh """
-        cat k8s/namespace.yaml | ${env.KUBECTL} apply -f -
-        ${env.KUBECTL} delete job ${jobName} -n autoframex --ignore-not-found=true
-
-        sed \
-            -e "s#__JOB_NAME__#${jobName}#g" \
-            -e "s#__IMAGE_TAG__#${env.BUILD_ID}#g" \
-            -e "s#__MODULE__#${module}#g" \
-            -e "s#__SUITE_FILE__#${suiteFile}#g" \
-            -e "s#__BROWSER__#${browser}#g" \
-            -e "s#__ENVIRONMENT__#${environment}#g" \
-            -e "s#__HEADLESS__#${headless}#g" \
-            -e "s#__HOST_REPORTS_PATH__#${hostReportsPath}#g" \
-            k8s/test-job.yaml > /tmp/${jobName}-job.yaml
-
-        cat /tmp/${jobName}-job.yaml | ${env.KUBECTL} apply -f -
-
-        ${env.KUBECTL} wait --for=condition=complete job/${jobName} -n autoframex --timeout=600s || true
-
-        mkdir -p ${destDir}
-        docker exec minikube tar -c -C ${hostReportsPath} . | tar -x -C ${destDir} || true
-
-        ${env.KUBECTL} delete job ${jobName} -n autoframex --ignore-not-found=true
-    """
-}
+// K8s-Job-per-suite deploy: each stage below runs its own inline copy of
+// this shell script (not a shared `def` function) — confirmed via three
+// real Jenkins runs that this Jenkins/Pipeline-plugin combination can't
+// resolve a top-level script method from inside ANY parallel execution
+// context (declarative `parallel { stage {...} }`, scripted `parallel(map)`
+// with or without an explicit `this.` receiver — all threw the identical
+// "No such DSL method 'runSuiteAsK8sJob' found among steps [...]"). Plain
+// `sh` steps + string interpolation are proven to work everywhere in this
+// file, so that's what every suite-run stage below uses directly instead.
+//
+// Each job gets its own destination (not <module>/target/surefire-reports/,
+// which TestNG/AlfaDOCK/GPN suites all share by default as autoframex-testkit
+// — reusing that path across runs would let a later job's reports overwrite
+// an earlier one's). "**/surefire-reports/*.xml" in post{} already matches
+// any depth, so the existing junit/quality-gate glob still finds these.
 
 // Copies a Jenkins "Secret file" credential into autoframex-core's resources
 // as destFileName — but tolerates the credential not existing yet, logging a
@@ -240,18 +215,10 @@ pipeline {
         }
 
         stage('Run Parallel Suites') {
-            // Each runs as its own K8s Job on the Minikube node (see
-            // runSuiteAsK8sJob at the top of this file) — distinct Job names
-            // and hostPaths, so true parallel execution is safe.
-            //
-            // Uses the classic Scripted-Pipeline parallel(map) form inside a
-            // single script {} block, NOT declarative's nested `parallel {
-            // stage('X') {...} }` syntax — confirmed via two real Jenkins
-            // runs that declarative's form can't resolve a top-level `def`
-            // script method from inside its branch stages, with or without
-            // an explicit `this.` receiver ("No such DSL method
-            // 'runSuiteAsK8sJob' found among steps [...]"). This form is a
-            // long-established pattern for exactly this case.
+            // Each runs as its own K8s Job on the Minikube node — distinct
+            // Job names and hostPaths, so true parallel execution is safe.
+            // See the comment at the top of this file for why the shell
+            // script is inlined here instead of a shared function.
             //
             // NOTE: THREAD_COUNT is not wired through to the containerized
             // path — ../Dockerfile's ENTRYPOINT doesn't expose a
@@ -266,8 +233,30 @@ pipeline {
                             // MODULE/SUITE_FILE pair together identify which
                             // reactor module owns the suite (TD-20) — default
                             // testng.xml lives in autoframex-testkit.
-                            runSuiteAsK8sJob('autoframex-testng-suite', params.MODULE, params.SUITE_FILE,
-                                params.BROWSER, params.ENVIRONMENT, params.HEADLESS)
+                            sh """
+                                cat k8s/namespace.yaml | ${env.KUBECTL} apply -f -
+                                ${env.KUBECTL} delete job autoframex-testng-suite -n autoframex --ignore-not-found=true
+
+                                sed \
+                                    -e "s#__JOB_NAME__#autoframex-testng-suite#g" \
+                                    -e "s#__IMAGE_TAG__#${env.BUILD_ID}#g" \
+                                    -e "s#__MODULE__#${params.MODULE}#g" \
+                                    -e "s#__SUITE_FILE__#${params.SUITE_FILE}#g" \
+                                    -e "s#__BROWSER__#${params.BROWSER}#g" \
+                                    -e "s#__ENVIRONMENT__#${params.ENVIRONMENT}#g" \
+                                    -e "s#__HEADLESS__#${params.HEADLESS}#g" \
+                                    -e "s#__HOST_REPORTS_PATH__#/tmp/autoframex-autoframex-testng-suite-surefire-reports#g" \
+                                    k8s/test-job.yaml > /tmp/autoframex-testng-suite-job.yaml
+
+                                cat /tmp/autoframex-testng-suite-job.yaml | ${env.KUBECTL} apply -f -
+
+                                ${env.KUBECTL} wait --for=condition=complete job/autoframex-testng-suite -n autoframex --timeout=600s || true
+
+                                mkdir -p k8s-results/autoframex-testng-suite/target/surefire-reports
+                                docker exec minikube tar -c -C /tmp/autoframex-autoframex-testng-suite-surefire-reports . | tar -x -C k8s-results/autoframex-testng-suite/target/surefire-reports || true
+
+                                ${env.KUBECTL} delete job autoframex-testng-suite -n autoframex --ignore-not-found=true
+                            """
                         },
                         'AlfaDOCK Suite': {
                             // NOTE (pre-existing, unrelated to TD-20): alfaDOCKtestng.xml
@@ -275,8 +264,30 @@ pipeline {
                             // supplied by the consuming AlfaDOCK project's own module.
                             // Module targets autoframex-testkit as a placeholder; point
                             // this at whichever module that downstream project actually owns.
-                            runSuiteAsK8sJob('autoframex-alfadock-suite', 'autoframex-testkit', 'alfaDOCKtestng.xml',
-                                params.BROWSER, params.ENVIRONMENT, params.HEADLESS)
+                            sh """
+                                cat k8s/namespace.yaml | ${env.KUBECTL} apply -f -
+                                ${env.KUBECTL} delete job autoframex-alfadock-suite -n autoframex --ignore-not-found=true
+
+                                sed \
+                                    -e "s#__JOB_NAME__#autoframex-alfadock-suite#g" \
+                                    -e "s#__IMAGE_TAG__#${env.BUILD_ID}#g" \
+                                    -e "s#__MODULE__#autoframex-testkit#g" \
+                                    -e "s#__SUITE_FILE__#alfaDOCKtestng.xml#g" \
+                                    -e "s#__BROWSER__#${params.BROWSER}#g" \
+                                    -e "s#__ENVIRONMENT__#${params.ENVIRONMENT}#g" \
+                                    -e "s#__HEADLESS__#${params.HEADLESS}#g" \
+                                    -e "s#__HOST_REPORTS_PATH__#/tmp/autoframex-autoframex-alfadock-suite-surefire-reports#g" \
+                                    k8s/test-job.yaml > /tmp/autoframex-alfadock-suite-job.yaml
+
+                                cat /tmp/autoframex-alfadock-suite-job.yaml | ${env.KUBECTL} apply -f -
+
+                                ${env.KUBECTL} wait --for=condition=complete job/autoframex-alfadock-suite -n autoframex --timeout=600s || true
+
+                                mkdir -p k8s-results/autoframex-alfadock-suite/target/surefire-reports
+                                docker exec minikube tar -c -C /tmp/autoframex-autoframex-alfadock-suite-surefire-reports . | tar -x -C k8s-results/autoframex-alfadock-suite/target/surefire-reports || true
+
+                                ${env.KUBECTL} delete job autoframex-alfadock-suite -n autoframex --ignore-not-found=true
+                            """
                         }
                     )
                 }
@@ -288,8 +299,30 @@ pipeline {
                 script {
                     // NOTE (pre-existing, unrelated to TD-20): gpn.xml is not present
                     // anywhere in this repo — see the AlfaDOCK Suite comment above.
-                    this.runSuiteAsK8sJob('autoframex-gpn-suite', 'autoframex-testkit', 'gpn.xml',
-                        params.BROWSER, params.ENVIRONMENT, params.HEADLESS)
+                    sh """
+                        cat k8s/namespace.yaml | ${env.KUBECTL} apply -f -
+                        ${env.KUBECTL} delete job autoframex-gpn-suite -n autoframex --ignore-not-found=true
+
+                        sed \
+                            -e "s#__JOB_NAME__#autoframex-gpn-suite#g" \
+                            -e "s#__IMAGE_TAG__#${env.BUILD_ID}#g" \
+                            -e "s#__MODULE__#autoframex-testkit#g" \
+                            -e "s#__SUITE_FILE__#gpn.xml#g" \
+                            -e "s#__BROWSER__#${params.BROWSER}#g" \
+                            -e "s#__ENVIRONMENT__#${params.ENVIRONMENT}#g" \
+                            -e "s#__HEADLESS__#${params.HEADLESS}#g" \
+                            -e "s#__HOST_REPORTS_PATH__#/tmp/autoframex-autoframex-gpn-suite-surefire-reports#g" \
+                            k8s/test-job.yaml > /tmp/autoframex-gpn-suite-job.yaml
+
+                        cat /tmp/autoframex-gpn-suite-job.yaml | ${env.KUBECTL} apply -f -
+
+                        ${env.KUBECTL} wait --for=condition=complete job/autoframex-gpn-suite -n autoframex --timeout=600s || true
+
+                        mkdir -p k8s-results/autoframex-gpn-suite/target/surefire-reports
+                        docker exec minikube tar -c -C /tmp/autoframex-autoframex-gpn-suite-surefire-reports . | tar -x -C k8s-results/autoframex-gpn-suite/target/surefire-reports || true
+
+                        ${env.KUBECTL} delete job autoframex-gpn-suite -n autoframex --ignore-not-found=true
+                    """
                 }
             }
         }
