@@ -118,7 +118,13 @@ pipeline {
         // target/site/jacoco/jacoco.xml, produced directly by Build &
         // Install now that each module runs its own unit tests
         // inline — no separate test stage needed.
-        KUBECTL = 'docker exec minikube /var/lib/minikube/binaries/v1.35.1/kubectl --kubeconfig=/etc/kubernetes/admin.conf'
+        // -i is required: without it, `docker exec` doesn't attach the
+        // host's stdin to the container process, so every `cat foo.yaml |
+        // ${env.KUBECTL} apply -f -` pipe silently delivers zero bytes —
+        // confirmed via a real Jenkins run ("error: no objects passed to
+        // apply") that this was broken before -i was added. Harmless for
+        // the KUBECTL invocations that don't read stdin (delete/wait).
+        KUBECTL = 'docker exec -i minikube /var/lib/minikube/binaries/v1.35.1/kubectl --kubeconfig=/etc/kubernetes/admin.conf'
     }
 
     stages {
