@@ -134,7 +134,17 @@ pipeline {
         // confirmed via a real Jenkins run ("error: no objects passed to
         // apply") that this was broken before -i was added. Harmless for
         // the KUBECTL invocations that don't read stdin (delete/wait).
-        KUBECTL = 'docker exec -i minikube /var/lib/minikube/binaries/v1.35.1/kubectl --kubeconfig=/etc/kubernetes/admin.conf'
+        //
+        // The kubectl path contains minikube's Kubernetes version, which
+        // changes whenever the minikube container is recreated (v1.35.1 went
+        // missing after an upgrade to v1.37.0), so it is looked up in the
+        // running container instead of hardcoded. The fallback only applies
+        // when minikube can't be reached at all.
+        KUBECTL_BIN = sh(returnStdout: true, script: '''
+            p=$(docker exec minikube sh -c 'ls /var/lib/minikube/binaries/*/kubectl 2>/dev/null | sort -V | tail -n1') || true
+            echo "${p:-/var/lib/minikube/binaries/v1.37.0/kubectl}"
+        ''').trim()
+        KUBECTL = "docker exec -i minikube ${env.KUBECTL_BIN} --kubeconfig=/etc/kubernetes/admin.conf"
     }
 
     stages {
