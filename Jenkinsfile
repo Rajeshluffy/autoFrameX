@@ -211,10 +211,19 @@ pipeline {
                     // modules (e.g. autoframex-performance) don't meet it
                     // yet. No flag needed here; the same default applies to
                     // any plain `mvn install` run anywhere, not just CI.
-                    if (isUnix()) {
-                        sh 'mvn clean install -q'
-                    } else {
-                        bat 'mvn clean install -q'
+                    //
+                    // ENVIRONMENT is blanked for this build only: Jenkins exports
+                    // the job parameter as an env var, and ConfigResolver ranks
+                    // env vars above -D properties, so a build with ENVIRONMENT=qa
+                    // overrode the -Denvironment=prod that
+                    // BrowserSecurityPolicyTest sets. The parameter is the target
+                    // of the suite stages below, not of the unit tests.
+                    withEnv(['ENVIRONMENT=']) {
+                        if (isUnix()) {
+                            sh 'mvn clean install -q'
+                        } else {
+                            bat 'mvn clean install -q'
+                        }
                     }
                 }
             }
