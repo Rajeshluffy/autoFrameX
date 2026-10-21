@@ -14,6 +14,7 @@ A shared, enterprise-grade test automation framework built on Selenium 4, TestNG
 - [Running Tests](#running-tests)
 - [Framework Modules](#framework-modules)
 - [Automatic Performance Capture](#automatic-performance-capture)
+- [Automatic API Capture](#automatic-api-capture)
 - [CI/CD](#cicd)
 - [Code Quality](#code-quality)
 
@@ -23,11 +24,12 @@ A shared, enterprise-grade test automation framework built on Selenium 4, TestNG
 
 - **WebDriver Object Pool** — pre-warmed driver pool with configurable size, idle timeout, and per-driver reuse cap; eliminates cold-start latency in parallel runs
 - **Thread-safe parallel execution** — `ThreadLocal` driver binding; safe for `parallel="methods"` and `parallel="classes"`
-- **Auto-retry** — `RetryEngine` + `TestAnnotationTransformer` wires configurable retries onto every `@Test` without per-method annotation
+- **Auto-retry** — `RetryEngine` + `TestAnnotationTransformer` wires configurable retries onto every `@Test` without per-method annotation. Tests in an API group (`api`, `performance`) are not retried unless they opt in with `@Retry(limit = n)`, because a retry can repeat a call that is not safe to repeat
 - **Multi-browser support** — Chrome, Firefox, Edge, and Selenium Grid via `BrowserFactory`; browser selected at runtime
 - **Cucumber + PicoContainer DI** — BDD support with constructor-injected `ScenarioContext`; no static shared state between step classes
 - **REST Assured API layer** — typed request/response base classes with JSON Schema validation and a custom listener for Extent reporting
 - **Automatic performance capture** — every click/type, page-load wait, and API call is timed and written into the Extent report on its own, with zero test-code changes; see [Automatic Performance Capture](#automatic-performance-capture)
+- **Automatic API capture** — every API request the browser sends during a test (XHR/fetch/navigations) is recorded over the Chrome DevTools Protocol and saved as Postman-importable cURL files under `reports/<run>/apicapture/`, one folder per DataProvider row and invocation; see [Automatic API Capture](#automatic-api-capture)
 - **Performance testing** — `PerformanceTestBase` with `measureApi`, `measurePageLoad`, and `runLoadTest` (P95/P99 stats) for explicit, SLA-asserting measurements on top of the automatic capture above
 - **Security testing** — `SecurityTestBase` integrating OWASP ZAP for passive/active scans with auto-generated HTML reports
 - **Observability** — async NDJSON event stream (`TestEventCollector`), flaky test tracker, failure categorizer, and resource usage accumulator
@@ -159,16 +161,26 @@ autoFrameX.page.load.timeout=30
 # Retry
 autoFrameX.test.retry.max.limit=4
 autoFrameX.element.max.retry.attempts=3
+# API-style tests (TestNG groups below) are not retried unless they ask: @Retry(limit = n) always wins
+autoFrameX.test.retry.api.max.limit=0
+autoFrameX.test.retry.api.groups=api,performance
 
 # Driver pool
 autoFrameX.pool.max.size=5
 autoFrameX.pool.min.size=2
+# true (default): quit the browser after every passed test, so each test gets a new one.
+# false: return it to the pool and reuse it (faster, less isolation). A failed test always discards its browser.
+autoFrameX.pool.close.after.each=true
 autoFrameX.pool.borrow.timeout.seconds=30
 autoFrameX.pool.max.reuse.count=75
 
 # Selenium Grid
 autoFrameX.grid.enabled=false
 autoFrameX.grid.hub.url=http://localhost:4444/wd/hub
+
+# API capture (Chrome DevTools -> Postman cURL files)
+autoFrameX.api.capture.enabled=false   # opt-in: set true in the child project's own properties file or suite XML
+autoFrameX.api.capture.mask.secrets=false
 ```
 
 **Multi-project config routing**
@@ -178,6 +190,24 @@ Each `testng.xml` passes a `configClass` parameter pointing to a `ProjectAppConf
 ```xml
 <parameter name="configClass" value="com.myapp.config.data.MyAppConfiguration"/>
 ```
+
+### Safer defaults
+
+A few settings used to be hard-wired and are now decisions you can see and override. Each key can be given as a suite `<parameter>`, an environment variable or a `-D` property, in that order of priority.
+
+| Setting | Default | Notes |
+|---|---|---|
+| `autoFrameX.test.retry.api.max.limit` (`retryApiLimit`) | `0` | Retries for tests in the groups below. `@Retry(limit = n)` on a method or class always wins. |
+| `autoFrameX.test.retry.api.groups` (`retryApiGroups`) | `api,performance` | TestNG groups that count as API tests. |
+| `noSandbox` / `NO_SANDBOX` | on in CI and containers only | Chrome and Edge `--no-sandbox`. CI is detected from `CI`, `JENKINS_URL`, `GITHUB_ACTIONS`, `KUBERNETES_SERVICE_HOST`, `container` or `/.dockerenv`. |
+| `acceptInsecureCerts` / `ACCEPT_INSECURE_CERTS` | on except for production | Accept invalid TLS certificates. Production is `environment=prod` or `production`. |
+| `relaxedDownloads` / `RELAXED_DOWNLOADS` | on except for production | Chrome download protection switched off for download tests. |
+
+Other behaviour that changed with the same review:
+
+- **OAuth:** a token request that is rejected now throws with the HTTP status and the server's `error` / `error_description`; it used to return `null` and let later calls go out without credentials. The cache lasts as long as the server's `expires_in` (minus 30 s), one hour if it sends none. `setOAuth` no longer also sets up Basic auth with the user's password, and when Basic, OAuth and a bearer token are all configured only one is applied: bearer, then OAuth, then Basic.
+- **Database:** `DBManager` gives each thread its own connection (reopened if stale), keys managers by JDBC URL and user rather than by configuration class, and throws a `FrameworkException` with the `SQLException` as its cause when a connection or query fails. `executeQuery` no longer returns `null` on error. Call `DBManager.closeAll()` at the end of a suite; it also runs when the JVM exits.
+- **Excel data files** are opened read-only, so a data-provider run no longer rewrites `accounts.xlsx` and leaves it modified in git.
 
 ---
 
@@ -250,7 +280,7 @@ different module's suite (see `docker-compose.yml`).
 
 ### Cucumber
 
-`CucumberProjectBase` wires Cucumber into the TestNG lifecycle. `CucumberScenarioContext` is a PicoContainer-injected shared state object — step definition classes receive it via constructor injection, eliminating static fields.
+`CucumberProjectBase` wires Cucumber into the TestNG lifecycle, including [API capture](#automatic-api-capture): with `apiCaptureEnabled` on, each scenario's browser calls are recorded from the very first page load into `reports/<run>/apicapture/<feature>/<scenario>_line<N>_<NN>/` (the scenario's line number tells the rows of a Scenario Outline apart). `CucumberScenarioContext` is a PicoContainer-injected shared state object — step definition classes receive it via constructor injection, eliminating static fields.
 
 ### REST Assured API Layer
 
@@ -273,6 +303,9 @@ These are explicit, opt-in, and SLA-asserting — call them yourself when you ne
 - `@BeforeSuite` verifies ZAP is reachable
 - `@AfterSuite` generates an HTML report into `reports/zap/`
 - Helpers for passive scan, active scan, alert assertions, and secret masking via `SecretDetector`
+- A security check never passes because nothing was checked: `runPassiveScan(url)` waits for the crawl and for ZAP's analysis queue to drain, and `assertNoCriticalAlerts(url)` re-checks the queue, refuses to pass when ZAP has recorded no traffic for the target, and treats any HTTP error, ZAP error body or unexpected reply as a failure rather than as "no alerts"
+- `startPassiveScan(url)` in `SecurityTestBase` now waits as well (up to 5 minutes; `runPassiveScan(url, seconds)` sets the budget). It used to return as soon as the crawl was accepted
+- `autoframex-security` has its own unit suite (`testng.xml`) that runs against a fake ZAP server, so it needs no ZAP install. Its replies are modelled on ZAP's documented API and have not been compared with a live ZAP
 
 ### Observability
 
@@ -320,7 +353,67 @@ Every UI element interaction, page-load wait, and API call is timed automaticall
 
 **Concurrent load tests get this too.** `ApiPerformanceUtils.runLoadTest()`'s worker threads propagate the calling thread's report node via `Reporter.captureCurrentNode()`/`runWithNode()` — without this, a plain `ThreadLocal` wouldn't carry over to pool-created threads, and every call made during a load test would silently vanish from the report. Confirmed against a real API: a 10-thread/30s load test went from 0 of 176 calls reported to 180 of 180 after the fix.
 
-**Scope, deliberately:** this covers API calls the test itself makes via `RestAssuredBase` — not raw background browser XHR/fetch traffic the app fires on its own, which would need Chrome DevTools Protocol Network-domain integration (a separate, much larger piece of work, not built).
+**Scope:** this times the API calls the test itself makes via `RestAssuredBase`. The raw XHR/fetch traffic the app fires on its own in the browser is covered separately, by [Automatic API Capture](#automatic-api-capture) below.
+
+---
+
+## Automatic API Capture
+
+Every API request the browser sends while a test runs — XHR, `fetch`, document navigations, WebSockets — is recorded over the Chrome DevTools Protocol (`Network` domain) and written into the run's report folder as Postman-importable cURL commands. No test-code changes: `ProjectSpecificMethods` starts the capture in `@BeforeMethod` once the driver is bound and flushes it in `@AfterMethod` before the driver goes back to the pool.
+
+**Folder layout** — one folder per DataProvider row *and* per invocation, so retries and repeated rows never overwrite each other:
+
+```
+reports/<run>/apicapture/
+  TC001_VerifyLogin/                      <- @TestMetadata.name (class simple name as fallback)
+    verifyLogin_ACC001_01/                <- <method>_<accountId>_<NN>; NN counts runs of this method in the JVM
+      001_GET_login.txt                   <- exactly one cURL per file (Postman -> Import -> Raw text)
+      002_POST_authenticate.txt
+      collected_apis.txt                  <- every request in send order, with status + resource type
+      01_GPN_loaded/                      <- optional bookmark folder, see captureApiSnapshot / captureApis below
+    verifyLogin_ACC002_02/
+      ...
+```
+
+`<accountId>` is the DataProvider row key (`AccountData.getAccountId()`); non-data-driven tests get `targeted`. Each invocation also logs one `INFO` step in the Extent report with the request count and folder.
+
+**What is filtered out:** static assets (by CDP resource type — Stylesheet, Image, Font, Script, … — and by file extension as a fallback), CORS preflights, and `data:`/`blob:`/browser-internal URLs. Large POST bodies that Chrome leaves out of the event are fetched while the request is in flight; bodies that still can't be read (binary/multipart) are flagged in `collected_apis.txt`.
+
+**Configuration** (`frameworkConfig.properties`, overridable via `-D`, env var, or suite `<parameter>` like every other key):
+
+| Key | Default | Effect |
+|---|---|---|
+| `autoFrameX.api.capture.enabled` (`apiCaptureEnabled` / `API_CAPTURE_ENABLED`) | `false` | Opt-in per project. Set it to `true` in the child project's own properties file (searched before `frameworkConfig.properties`) or in a suite XML with `<parameter name="apiCaptureEnabled" value="true"/>`. `false` opens no CDP session at all. |
+| `autoFrameX.api.capture.mask.secrets` (`apiCaptureMaskSecrets` / `API_CAPTURE_MASK_SECRETS`) | `false` | Write `***` for Authorization/Cookie-style headers and credential-looking body fields. Off by default because the files exist to be replayed; turn it on for reports that leave the team. |
+
+**Browser support:** Chromium-based browsers only (Chrome, Edge). Firefox has no CDP, so the capture is skipped with an `INFO` log and the test runs normally. On Selenium Grid the driver is augmented to reach the node's CDP endpoint. Any failure to attach is logged and never fails a test. The implementation (`ApiCaptureActions`) deliberately does not use `driver.getDevTools()`: Selenium bundles CDP packages only for the three Chrome releases current at its own release and hands back a no-op stub for anything much newer (Chrome 155 on Selenium 4.33, for example), and it follows only one page. Instead the class opens its own WebSocket to the browser and speaks the long-stable `Target`/`Network` protocol directly, so a Chrome or Selenium upgrade never breaks the build or the capture. Verified end-to-end on Chrome 155 with Selenium 4.33.
+
+**Every window and iframe is followed.** The capture uses browser-level auto-attach: a window the application opens (for example GPN launched from the AlfaDOCK home page) is held paused by Chrome until recording is switched on for it and only then released, so even its very first request is captured and no test code has to know the window exists. Cross-origin iframes are followed the same way. CORS preflight `OPTIONS` calls are not recorded, and a request that never gets a response keeps status `-` with Chrome's reason (for example `net::ERR_ABORTED`) written under it in `collected_apis.txt`.
+
+**Bookmarks: `captureApiSnapshot` and `captureApis`.** Recording is continuous and automatic; these two methods (on `SeleniumBase`, so tests, page objects and Cucumber steps all have them, the same way they have `click`) only cut a labelled bookmark in the recording. Each bookmark waits until the page is quiet (nothing in flight and nothing new started for 500 ms, at most 15 s), then saves every request and response since the previous bookmark into its own numbered folder and keeps recording.
+
+```java
+gpnPageFinder();                                    // ends with captureApiSnapshot("GPN_loaded")
+captureApis("filter_clicked", () -> click(filter));  // run the action, wait for quiet, bookmark
+List<CapturedApi> calls = captureApis("save_clicked", () -> click(save));
+click(other); captureApiSnapshot("other_clicked"); // same thing in two steps
+```
+
+`captureApis` keeps only the calls made from the moment the action starts, so one action's late response cannot leak into the next, and it returns them so a test can assert on them (for example that the save call answered 200). The wait is counted from the end of the action, so a call fired shortly after a click (a debounce under 500 ms) is still caught; for a longer debounce use the overload `captureApis(phase, action, quietMillis, maxWaitMillis)`. If the action throws, the calls so far are still saved and the exception is rethrown. When capture is not running, both methods do nothing (the action still runs), so they are safe in shared code.
+
+```
+apicapture/<testcase>/<method>_<row>_<run>/
+  collected_apis.txt             the full timeline, every request in order
+  001_POST_save.txt              one cURL per request (Postman -> Import -> Raw text)
+  001_POST_save_response.txt     status, headers and body of the answer
+  01_GPN_loaded/                 bookmark folders, numbered in the order taken
+  02_filter_clicked/
+  03_save_clicked/
+```
+
+**Responses.** Every request keeps the response status and headers. The body is saved for XHR/fetch calls (not documents, images or no-content answers), cut at 500,000 characters, and binary bodies are skipped with a note. With `apiCaptureMaskSecrets` on, `Set-Cookie`-style headers and credential-looking body fields are written as `***`. A test records at most 5,000 requests.
+
+**Known limits.** Capture starts the moment the browser is acquired, before it opens the start page, so the first page load is recorded. Calls made before a browser exists (`@BeforeSuite`, `@BeforeClass`) are not. A call fired after the page has been quiet for longer than the wait lands in the next bookmark instead. A request cancelled by a page navigation has no response; its file says why when Chrome reports it. WebSockets and event streams are recorded but never hold up a bookmark. Requests made by background workers are not recorded.
 
 ---
 

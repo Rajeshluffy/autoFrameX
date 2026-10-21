@@ -3,10 +3,15 @@ package com.api.rest.assured.base;
 import java.util.HashMap;
 import java.util.Map;
 import static io.restassured.RestAssured.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 
 public class RequestSpecBuilder {
+
+	private static final Logger logger = LoggerFactory.getLogger(RequestSpecBuilder.class);
 
 	private String baseUri;
 	private String basePath;
@@ -231,8 +236,9 @@ public class RequestSpecBuilder {
 		this.grantType = grantType;
 		this.clientId = clientId;
 		this.clientSecret = clientSecret;
-		this.username = username;
-		this.password = password;
+		// username/password are the resource owner's credentials for the token request only. They
+		// used to be stored in the Basic-auth fields too, so build() also configured Basic auth
+		// with them next to the OAuth token.
 
 		auth.setOAuthBaseUrl(baseUri + oAuthBasePath);
 		token = auth.getOAuthToken(grantType, clientId, clientSecret, username, password);
@@ -255,6 +261,36 @@ public class RequestSpecBuilder {
 	public RequestSpecBuilder setBearerToken(String token) {
 		this.bearerToken = token;
 		return this;
+	}
+
+	/**
+	 * Applies exactly one authentication scheme. Precedence when several were configured:
+	 * an explicit bearer token, then the OAuth token, then Basic auth. Mixing them used to put
+	 * more than one credential on a request; now the lower ones are ignored and a warning
+	 * names what was configured.
+	 */
+	private void applyAuthentication(RequestSpecification requestSpecification) {
+		boolean basic = username != null && password != null;
+		boolean oauth = token != null && !token.isEmpty();
+		boolean bearer = bearerToken != null && !bearerToken.isEmpty();
+
+		int configured = (basic ? 1 : 0) + (oauth ? 1 : 0) + (bearer ? 1 : 0);
+		if (configured > 1) {
+			logger.warn("More than one authentication scheme configured (basic={}, oauth={}, bearer={}) - "
+					+ "using {} only", basic, oauth, bearer, bearer ? "the bearer token" : "the OAuth token");
+		}
+
+		if (bearer) {
+			requestSpecification.header("Authorization", "Bearer " + bearerToken);
+		} else if (oauth) {
+			requestSpecification.auth().oauth2(token);
+		} else if (basic) {
+			if (preemptive) {
+				requestSpecification.auth().preemptive().basic(username, password);
+			} else {
+				requestSpecification.auth().basic(username, password);
+			}
+		}
 	}
 
 	/**
@@ -290,14 +326,6 @@ public class RequestSpecBuilder {
 			requestSpecification.pathParam(pathParamKey, pathParamValue);
 		}
 
-		if (username != null && password != null) {
-			if (preemptive) {
-				requestSpecification.auth().preemptive().basic(username, password);
-			} else {
-				requestSpecification.auth().basic(username, password);
-			}
-		}
-
 		if (!queryParams.isEmpty()) {
 			requestSpecification.queryParams(queryParams);
 		}
@@ -314,13 +342,7 @@ public class RequestSpecBuilder {
 			requestSpecification.headers(headers);
 		}
 
-		if (token != null) {
-			requestSpecification.auth().oauth2(token);
-		}
-		
-		if (bearerToken != null) {
-			requestSpecification.header("Authorization", "Bearer " + bearerToken);
-		}
+		applyAuthentication(requestSpecification);
 
 		return requestSpecification;
 	}

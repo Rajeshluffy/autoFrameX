@@ -8,6 +8,7 @@ import org.testng.IRetryAnalyzer;
 import org.testng.ITestResult;
 
 import com.framework.config.data.ConfigManager;
+import com.framework.config.data.ProjectConfig;
 
 /**
  * Decides whether a failing test should be retried.
@@ -16,6 +17,9 @@ import com.framework.config.data.ConfigManager;
  * <ol>
  *   <li>{@link Retry#limit()} on the test method</li>
  *   <li>{@link Retry#limit()} on the test class</li>
+ *   <li>{@code autoFrameX.test.retry.api.max.limit} (default {@code 0}: no retry) for tests in an
+ *       API group ({@code autoFrameX.test.retry.api.groups}, default {@code api,performance}) -
+ *       an API call may not be safe to repeat, so retrying is opt-in</li>
  *   <li>{@code autoFrameX.test.retry.max.limit} in {@code frameworkConfig.properties}</li>
  * </ol>
  *
@@ -68,21 +72,69 @@ public class RetryEngine implements IRetryAnalyzer {
 
     /**
      * Resolves the effective retry limit for a test result.
-     * Checks method annotation, then class annotation, then global config.
+     * Checks method annotation, then class annotation, then the API limit (for API groups), then global config.
      */
     private int resolveLimit(ITestResult result) {
+        Integer methodLimit = null;
+        Integer classLimit = null;
         Method method = result.getMethod().getConstructorOrMethod().getMethod();
         if (method != null) {
             Retry methodAnnotation = method.getAnnotation(Retry.class);
             if (methodAnnotation != null) {
-                return Math.max(0, methodAnnotation.limit());
+                methodLimit = methodAnnotation.limit();
             }
             Retry classAnnotation = method.getDeclaringClass().getAnnotation(Retry.class);
             if (classAnnotation != null) {
-                return Math.max(0, classAnnotation.limit());
+                classLimit = classAnnotation.limit();
             }
         }
-        return ConfigManager.getInstance().getConfig().getRetryLimit();
+        ProjectConfig config = ConfigManager.getInstance().getConfig();
+        boolean apiTest = isApiTest(result.getMethod().getGroups(), config.getRetryApiGroups());
+        return limitFor(methodLimit, classLimit, apiTest, config.getRetryApiLimit(), config.getRetryLimit());
+    }
+
+    /**
+     * The retry limit for one test, in priority order: the method's {@code @Retry}, the
+     * class's {@code @Retry}, the API limit when the test belongs to an API group, then
+     * the global limit. A negative value is treated as 0.
+     *
+     * @param methodLimit {@code @Retry} on the method, or {@code null}
+     * @param classLimit  {@code @Retry} on the class, or {@code null}
+     * @param apiTest     whether the test is in one of the configured API groups
+     */
+    static int limitFor(Integer methodLimit, Integer classLimit, boolean apiTest, int apiLimit, int globalLimit) {
+        if (methodLimit != null) {
+            return Math.max(0, methodLimit);
+        }
+        if (classLimit != null) {
+            return Math.max(0, classLimit);
+        }
+        return Math.max(0, apiTest ? apiLimit : globalLimit);
+    }
+
+    /**
+     * {@code true} when the test is in at least one of the comma-separated groups in
+     * {@code apiGroupsCsv} (case-insensitive). Retrying such a test can repeat a call
+     * that is not safe to repeat, so it gets the API limit instead of the global one.
+     *
+     * @param testGroups the TestNG groups the test method belongs to (method and class level)
+     */
+    static boolean isApiTest(String[] testGroups, String apiGroupsCsv) {
+        if (testGroups == null || testGroups.length == 0 || apiGroupsCsv == null || apiGroupsCsv.isBlank()) {
+            return false;
+        }
+        for (String configured : apiGroupsCsv.split(",")) {
+            String wanted = configured.trim();
+            if (wanted.isEmpty()) {
+                continue;
+            }
+            for (String group : testGroups) {
+                if (wanted.equalsIgnoreCase(group)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     // -------------------------------------------------------------------------

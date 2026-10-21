@@ -166,4 +166,54 @@ public interface FrameworkConfiguration extends Config {
     @Key("autoFrameX.grid.hub.url")
     @DefaultValue("http://localhost:4444/wd/hub")
     String gridHubUrl();
+
+    // ------------------------------------------------------------------
+    // API Capture (Chrome DevTools Network domain)
+    // ------------------------------------------------------------------
+
+    /**
+     * When {@code true} every API request the browser sends during a
+     * test (XHR, fetch, document navigations; static assets excluded) is recorded
+     * through the Chrome DevTools Protocol and written as Postman-importable cURL
+     * files under {@code reports/<run>/apicapture/<testcase>/<method>_<account>_<NN>/}.
+     * Chromium browsers only; silently skipped for Firefox or when DevTools cannot
+     * be reached. See {@code com.framework.selenium.api.actions.ApiCaptureActions}.
+     *
+     * <p><b>Opt-in per project:</b> the framework default is {@code false}. Each
+     * child project switches it on in its own properties file (searched before
+     * {@code frameworkConfig.properties}) or per suite with
+     * {@code <parameter name="apiCaptureEnabled" value="true"/>}.
+     */
+    @Key("autoFrameX.api.capture.enabled")
+    @DefaultValue("false")
+    boolean apiCaptureEnabled();
+
+    /**
+     * When {@code true}, Authorization/Cookie-style header values and
+     * credential-looking fields in request bodies are replaced with {@code ***}
+     * in the captured cURL files. Off by default because the files exist to be
+     * replayed; turn it on for runs whose reports leave the team (CI archives, etc.).
+     */
+    @Key("autoFrameX.api.capture.mask.secrets")
+    @DefaultValue("false")
+    boolean apiCaptureMaskSecrets();
+
+    // ------------------------------------------------------------------
+    // Retry policy for API-style tests
+    // ------------------------------------------------------------------
+
+    /**
+     * Retry limit for tests in one of the {@link #retryApiGroups()} TestNG groups.
+     * Defaults to {@code 0}: retrying an API test can repeat a call that is not safe to
+     * repeat (create, pay, delete), so it must be asked for, either here or per test
+     * with {@code @Retry(limit = n)}, which always wins.
+     */
+    @Key("autoFrameX.test.retry.api.max.limit")
+    @DefaultValue("0")
+    short retryApiLimit();
+
+    /** Comma-separated TestNG groups whose tests count as API tests for {@link #retryApiLimit()}. */
+    @Key("autoFrameX.test.retry.api.groups")
+    @DefaultValue("api,performance")
+    String retryApiGroups();
 }

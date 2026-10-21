@@ -36,6 +36,10 @@ public class ProjectConfig {
 	private final String gridHubUrl;
 	private final ExecutionMode executionMode;
 	private final String excelDataFile;
+	private final boolean apiCaptureEnabled;
+	private final boolean apiCaptureMaskSecrets;
+	private final short retryApiLimit;
+	private final String retryApiGroups;
 
 	// -------------------------------------------------------------------------
 	// Constructor (package-private, intended for ProjectConfigBuilder only)
@@ -50,7 +54,9 @@ public class ProjectConfig {
 			int scriptTimeout, int pageLoadTimeout, boolean closeAfterEach,
 			int poolMinSize, int poolBorrowTimeoutSeconds, int poolMaxReuseCount,
 			boolean gridEnabled, String gridHubUrl,
-			ExecutionMode executionMode, String excelDataFile) {
+			ExecutionMode executionMode, String excelDataFile,
+			boolean apiCaptureEnabled, boolean apiCaptureMaskSecrets,
+			short retryApiLimit, String retryApiGroups) {
 
 		this.browserName = browserName;
 		this.remote = remote;
@@ -83,6 +89,10 @@ public class ProjectConfig {
 		this.gridHubUrl = gridHubUrl;
 		this.executionMode = executionMode != null ? executionMode : ExecutionMode.TARGETED;
 		this.excelDataFile = excelDataFile != null ? excelDataFile : "";
+		this.apiCaptureEnabled = apiCaptureEnabled;
+		this.apiCaptureMaskSecrets = apiCaptureMaskSecrets;
+		this.retryApiLimit = retryApiLimit;
+		this.retryApiGroups = retryApiGroups != null ? retryApiGroups : "";
 	}
 
 	// -------------------------------------------------------------------------
@@ -119,5 +129,9 @@ public class ProjectConfig {
 	public String getGridHubUrl() { return gridHubUrl; }
 	public ExecutionMode getExecutionMode() { return executionMode; }
 	public String getExcelDataFile() { return excelDataFile; }
+	public boolean isApiCaptureEnabled() { return apiCaptureEnabled; }
+	public boolean isApiCaptureMaskSecrets() { return apiCaptureMaskSecrets; }
+	public short getRetryApiLimit() { return retryApiLimit; }
+	public String getRetryApiGroups() { return retryApiGroups; }
 
 }

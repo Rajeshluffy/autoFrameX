@@ -98,6 +98,16 @@ pipeline {
             defaultValue: '1',
             description: 'Parallel thread count for Surefire (parallel=methods)'
         )
+        booleanParam(
+            name: 'RUN_ALFADOCK_SUITE',
+            defaultValue: false,
+            description: 'Also run alfaDOCKtestng.xml as a K8s Job. Off by default: that suite file is supplied by the AlfaDOCK project, not this repo, so the Job fails without it.'
+        )
+        booleanParam(
+            name: 'RUN_GPN_SUITE',
+            defaultValue: false,
+            description: 'Also run gpn.xml as a K8s Job. Off by default: that suite file is supplied by the GPN project, not this repo, so the Job fails without it.'
+        )
     }
 
     options {
@@ -132,6 +142,27 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Validate Parameters') {
+            // MODULE and SUITE_FILE are free-text and end up inside shell
+            // scripts below (sed expressions, file paths). Anyone who can start
+            // a build could otherwise smuggle shell syntax into them, so only
+            // plain module / file names are accepted. BROWSER and ENVIRONMENT
+            // are Jenkins choice parameters and already constrained.
+            steps {
+                script {
+                    if (!(params.MODULE ==~ /autoframex-[a-z0-9-]+/)) {
+                        error("MODULE '${params.MODULE}' must look like autoframex-<name> (letters, digits, '-')")
+                    }
+                    if (!(params.SUITE_FILE ==~ /[A-Za-z0-9_.-]+\.xml/)) {
+                        error("SUITE_FILE '${params.SUITE_FILE}' must be a plain *.xml file name (no paths or shell characters)")
+                    }
+                    if (!(params.THREAD_COUNT ==~ /[0-9]{1,3}/)) {
+                        error("THREAD_COUNT '${params.THREAD_COUNT}' must be a number")
+                    }
+                }
             }
         }
 
@@ -200,10 +231,13 @@ pipeline {
                 // Reuses the repo-root Dockerfile (already TD-20 reactor-aware —
                 // MODULE/SUITE_FILE/BROWSER/ENVIRONMENT/HEADLESS are all env
                 // vars its ENTRYPOINT already reads). Build context = repo
-                // root; the injected config properties from "Inject Configs"
-                // above are already sitting under autoframex-core/src/main/
-                // resources/ in this workspace, so the image's Layer 2 COPY
-                // picks them up automatically.
+                // root. The credential files injected by "Inject Configs" are
+                // deliberately NOT part of the image: .dockerignore excludes
+                // them (**/alfaDOCKConfig.properties, **/leafTapConfig.properties)
+                // so secrets never land in an image layer. The default testng.xml
+                // suite doesn't need them. A suite that does (AlfaDOCK / Leaftaps)
+                // must get its file at runtime, e.g. a Kubernetes Secret mounted
+                // into the Job's pod -- not implemented yet, see RUN_ALFADOCK_SUITE.
                 sh 'docker build --platform linux/amd64 --provenance=false -t autoframex-test:${BUILD_ID} .'
             }
         }
@@ -221,55 +255,82 @@ pipeline {
         }
 
         stage('Run Parallel Suites') {
-            // Each runs as its own K8s Job on the Minikube node — distinct
-            // Job names and hostPaths, so true parallel execution is safe.
-            // See the comment at the top of this file for why the shell
-            // script is inlined here instead of a shared function.
+            // Each runs as its own K8s Job on the Minikube node (distinct Job
+            // names and hostPaths, so true parallel execution is safe). See the
+            // comment at the top of this file for why the shell script is
+            // inlined here instead of a shared function.
+            //
+            // AlfaDOCK is opt-in (RUN_ALFADOCK_SUITE): alfaDOCKtestng.xml is not
+            // in this repo, it is supplied by the consuming AlfaDOCK project.
+            // Leaving it on by default meant a guaranteed-failing Job on every run.
             //
             // NOTE: THREAD_COUNT is not wired through to the containerized
-            // path — ../Dockerfile's ENTRYPOINT doesn't expose a
+            // path -- ../Dockerfile's ENTRYPOINT doesn't expose a
             // -Dsurefire.threadCount override. Set parallel/thread-count
             // directly in the suite XML if you need it, or extend the
             // Dockerfile/k8s/test-job.yaml template to add a THREAD_COUNT
             // env var if per-run overrides become necessary.
             steps {
                 script {
-                    parallel(
-                        'TestNG Suite': {
-                            // MODULE/SUITE_FILE pair together identify which
-                            // reactor module owns the suite (TD-20) — default
-                            // testng.xml lives in autoframex-testkit.
-                            sh """
-                                cat k8s/namespace.yaml | ${env.KUBECTL} apply -f -
-                                ${env.KUBECTL} delete job autoframex-testng-suite -n autoframex --ignore-not-found=true
+                    def branches = [:]
 
-                                sed \
-                                    -e "s#__JOB_NAME__#autoframex-testng-suite#g" \
-                                    -e "s#__IMAGE_TAG__#${env.BUILD_ID}#g" \
-                                    -e "s#__MODULE__#${params.MODULE}#g" \
-                                    -e "s#__SUITE_FILE__#${params.SUITE_FILE}#g" \
-                                    -e "s#__BROWSER__#${params.BROWSER}#g" \
-                                    -e "s#__ENVIRONMENT__#${params.ENVIRONMENT}#g" \
-                                    -e "s#__HEADLESS__#${params.HEADLESS}#g" \
-                                    -e "s#__HOST_REPORTS_PATH__#/tmp/autoframex-autoframex-testng-suite-surefire-reports#g" \
-                                    k8s/test-job.yaml > /tmp/autoframex-testng-suite-job.yaml
+                    branches['TestNG Suite'] = {
+                        // MODULE/SUITE_FILE pair together identify which reactor
+                        // module owns the suite (TD-20) -- default testng.xml lives
+                        // in autoframex-testkit. Both are validated in the
+                        // 'Validate Parameters' stage before they reach this script.
+                        sh """
+                            cat k8s/namespace.yaml | ${env.KUBECTL} apply -f -
+                            ${env.KUBECTL} delete job autoframex-testng-suite -n autoframex --ignore-not-found=true
 
-                                cat /tmp/autoframex-testng-suite-job.yaml | ${env.KUBECTL} apply -f -
+                            sed \
+                                -e "s#__JOB_NAME__#autoframex-testng-suite#g" \
+                                -e "s#__IMAGE_TAG__#${env.BUILD_ID}#g" \
+                                -e "s#__MODULE__#${params.MODULE}#g" \
+                                -e "s#__SUITE_FILE__#${params.SUITE_FILE}#g" \
+                                -e "s#__BROWSER__#${params.BROWSER}#g" \
+                                -e "s#__ENVIRONMENT__#${params.ENVIRONMENT}#g" \
+                                -e "s#__HEADLESS__#${params.HEADLESS}#g" \
+                                -e "s#__HOST_REPORTS_PATH__#/tmp/autoframex-autoframex-testng-suite-surefire-reports#g" \
+                                k8s/test-job.yaml > /tmp/autoframex-testng-suite-job.yaml
 
-                                ${env.KUBECTL} wait --for=condition=complete job/autoframex-testng-suite -n autoframex --timeout=600s || true
+                            cat /tmp/autoframex-testng-suite-job.yaml | ${env.KUBECTL} apply -f -
 
-                                mkdir -p k8s-results/autoframex-testng-suite/target/surefire-reports
-                                docker exec minikube tar -c -C /tmp/autoframex-autoframex-testng-suite-surefire-reports . | tar -x -C k8s-results/autoframex-testng-suite/target/surefire-reports || true
+                            # Wait for the Job to reach Complete OR Failed, whichever comes first.
+                            # `kubectl wait --for=condition=complete` alone sits out its whole timeout
+                            # when the Job fails (backoffLimit: 0), so a broken suite used to cost
+                            # 10 minutes before anything noticed. 120 x 5s = same 10 minute ceiling.
+                            JOB_RESULT=timeout
+                            for i in \$(seq 1 120); do
+                                SUCCEEDED=\$(${env.KUBECTL} get job autoframex-testng-suite -n autoframex -o jsonpath='{.status.succeeded}') || true
+                                FAILED=\$(${env.KUBECTL} get job autoframex-testng-suite -n autoframex -o jsonpath='{.status.failed}') || true
+                                if [ "\${SUCCEEDED:-0}" -ge 1 ]; then JOB_RESULT=complete; break; fi
+                                if [ "\${FAILED:-0}" -ge 1 ]; then JOB_RESULT=failed; break; fi
+                                sleep 5
+                            done
+                            echo "autoframex-testng-suite finished: \$JOB_RESULT"
+                            if [ "\$JOB_RESULT" != "complete" ]; then
+                                ${env.KUBECTL} logs job/autoframex-testng-suite -n autoframex --tail=60 || true
+                            fi
 
-                                ${env.KUBECTL} delete job autoframex-testng-suite -n autoframex --ignore-not-found=true
-                            """
-                        },
-                        'AlfaDOCK Suite': {
-                            // NOTE (pre-existing, unrelated to TD-20): alfaDOCKtestng.xml
-                            // is not present anywhere in this repo — it's expected to be
-                            // supplied by the consuming AlfaDOCK project's own module.
+                            mkdir -p k8s-results/autoframex-testng-suite/target/surefire-reports
+                            docker exec minikube tar -c -C /tmp/autoframex-autoframex-testng-suite-surefire-reports . | tar -x -C k8s-results/autoframex-testng-suite/target/surefire-reports || true
+
+                            ${env.KUBECTL} delete job autoframex-testng-suite -n autoframex --ignore-not-found=true
+
+                            # A suite that produced no report XML never really ran. Fail this stage
+                            # loudly instead of letting the quality gate see "nothing to count".
+                            if ! ls k8s-results/autoframex-testng-suite/target/surefire-reports/*.xml >/dev/null 2>&1; then
+                                echo "ERROR: autoframex-testng-suite produced no surefire XML (job result: \$JOB_RESULT)"
+                                exit 1
+                            fi
+                        """
+                    }
+
+                    if (params.RUN_ALFADOCK_SUITE) {
+                        branches['AlfaDOCK Suite'] = {
                             // Module targets autoframex-testkit as a placeholder; point
-                            // this at whichever module that downstream project actually owns.
+                            // this at whichever module the AlfaDOCK project actually owns.
                             sh """
                                 cat k8s/namespace.yaml | ${env.KUBECTL} apply -f -
                                 ${env.KUBECTL} delete job autoframex-alfadock-suite -n autoframex --ignore-not-found=true
@@ -287,24 +348,48 @@ pipeline {
 
                                 cat /tmp/autoframex-alfadock-suite-job.yaml | ${env.KUBECTL} apply -f -
 
-                                ${env.KUBECTL} wait --for=condition=complete job/autoframex-alfadock-suite -n autoframex --timeout=600s || true
+                                # Wait for the Job to reach Complete OR Failed, whichever comes first.
+                                # `kubectl wait --for=condition=complete` alone sits out its whole timeout
+                                # when the Job fails (backoffLimit: 0), so a broken suite used to cost
+                                # 10 minutes before anything noticed. 120 x 5s = same 10 minute ceiling.
+                                JOB_RESULT=timeout
+                                for i in \$(seq 1 120); do
+                                    SUCCEEDED=\$(${env.KUBECTL} get job autoframex-alfadock-suite -n autoframex -o jsonpath='{.status.succeeded}') || true
+                                    FAILED=\$(${env.KUBECTL} get job autoframex-alfadock-suite -n autoframex -o jsonpath='{.status.failed}') || true
+                                    if [ "\${SUCCEEDED:-0}" -ge 1 ]; then JOB_RESULT=complete; break; fi
+                                    if [ "\${FAILED:-0}" -ge 1 ]; then JOB_RESULT=failed; break; fi
+                                    sleep 5
+                                done
+                                echo "autoframex-alfadock-suite finished: \$JOB_RESULT"
+                                if [ "\$JOB_RESULT" != "complete" ]; then
+                                    ${env.KUBECTL} logs job/autoframex-alfadock-suite -n autoframex --tail=60 || true
+                                fi
 
                                 mkdir -p k8s-results/autoframex-alfadock-suite/target/surefire-reports
                                 docker exec minikube tar -c -C /tmp/autoframex-autoframex-alfadock-suite-surefire-reports . | tar -x -C k8s-results/autoframex-alfadock-suite/target/surefire-reports || true
 
                                 ${env.KUBECTL} delete job autoframex-alfadock-suite -n autoframex --ignore-not-found=true
+
+                                # A suite that produced no report XML never really ran. Fail this stage
+                                # loudly instead of letting the quality gate see "nothing to count".
+                                if ! ls k8s-results/autoframex-alfadock-suite/target/surefire-reports/*.xml >/dev/null 2>&1; then
+                                    echo "ERROR: autoframex-alfadock-suite produced no surefire XML (job result: \$JOB_RESULT)"
+                                    exit 1
+                                fi
                             """
                         }
-                    )
+                    }
+
+                    parallel(branches)
                 }
             }
         }
 
         stage('GPN Suite') {
+            // Opt-in for the same reason as AlfaDOCK above: gpn.xml is not in this repo.
+            when { expression { return params.RUN_GPN_SUITE } }
             steps {
                 script {
-                    // NOTE (pre-existing, unrelated to TD-20): gpn.xml is not present
-                    // anywhere in this repo — see the AlfaDOCK Suite comment above.
                     sh """
                         cat k8s/namespace.yaml | ${env.KUBECTL} apply -f -
                         ${env.KUBECTL} delete job autoframex-gpn-suite -n autoframex --ignore-not-found=true
@@ -322,23 +407,59 @@ pipeline {
 
                         cat /tmp/autoframex-gpn-suite-job.yaml | ${env.KUBECTL} apply -f -
 
-                        ${env.KUBECTL} wait --for=condition=complete job/autoframex-gpn-suite -n autoframex --timeout=600s || true
+                        # Wait for the Job to reach Complete OR Failed, whichever comes first.
+                        # `kubectl wait --for=condition=complete` alone sits out its whole timeout
+                        # when the Job fails (backoffLimit: 0), so a broken suite used to cost
+                        # 10 minutes before anything noticed. 120 x 5s = same 10 minute ceiling.
+                        JOB_RESULT=timeout
+                        for i in \$(seq 1 120); do
+                            SUCCEEDED=\$(${env.KUBECTL} get job autoframex-gpn-suite -n autoframex -o jsonpath='{.status.succeeded}') || true
+                            FAILED=\$(${env.KUBECTL} get job autoframex-gpn-suite -n autoframex -o jsonpath='{.status.failed}') || true
+                            if [ "\${SUCCEEDED:-0}" -ge 1 ]; then JOB_RESULT=complete; break; fi
+                            if [ "\${FAILED:-0}" -ge 1 ]; then JOB_RESULT=failed; break; fi
+                            sleep 5
+                        done
+                        echo "autoframex-gpn-suite finished: \$JOB_RESULT"
+                        if [ "\$JOB_RESULT" != "complete" ]; then
+                            ${env.KUBECTL} logs job/autoframex-gpn-suite -n autoframex --tail=60 || true
+                        fi
 
                         mkdir -p k8s-results/autoframex-gpn-suite/target/surefire-reports
                         docker exec minikube tar -c -C /tmp/autoframex-autoframex-gpn-suite-surefire-reports . | tar -x -C k8s-results/autoframex-gpn-suite/target/surefire-reports || true
 
                         ${env.KUBECTL} delete job autoframex-gpn-suite -n autoframex --ignore-not-found=true
+
+                        # A suite that produced no report XML never really ran. Fail this stage
+                        # loudly instead of letting the quality gate see "nothing to count".
+                        if ! ls k8s-results/autoframex-gpn-suite/target/surefire-reports/*.xml >/dev/null 2>&1; then
+                            echo "ERROR: autoframex-gpn-suite produced no surefire XML (job result: \$JOB_RESULT)"
+                            exit 1
+                        fi
                     """
                 }
             }
         }
 
         stage('SonarQube Analysis') {
-            // Requires: SONAR_TOKEN credential (Secret Text) and SONAR_HOST_URL
-            // credential (Secret Text) configured in Jenkins Credentials store.
-            // Skip this stage by setting SONAR_TOKEN to an empty string.
+            // Requires: 'sonar-token' and 'sonar-host-url' credentials (Secret
+            // Text) in the Jenkins Credentials store. The stage is skipped when
+            // either is missing. (It used to test env.SONAR_TOKEN, which only
+            // exists *inside* withCredentials below, so the stage never ran.)
             when {
-                expression { return env.SONAR_TOKEN != null && env.SONAR_TOKEN != '' }
+                expression {
+                    def configured = false
+                    try {
+                        withCredentials([
+                            string(credentialsId: 'sonar-token',    variable: 'PROBE_TOKEN'),
+                            string(credentialsId: 'sonar-host-url', variable: 'PROBE_HOST')
+                        ]) {
+                            configured = true
+                        }
+                    } catch (err) {
+                        echo "SonarQube credentials not configured -- skipping Sonar analysis."
+                    }
+                    return configured
+                }
             }
             steps {
                 withCredentials([
@@ -351,12 +472,15 @@ pipeline {
                         // data only really exists for whichever module(s) the stages
                         // above actually exercised (TD-20 — see sonar.yml for the
                         // same pattern).
-                        def cmd = "mvn sonar:sonar" +
-                            " -Dsonar.projectKey=autoFrameX" +
-                            " -Dsonar.host.url=${SONAR_HOST_URL}" +
-                            " -Dsonar.token=${SONAR_TOKEN}" +
-                            " -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml"
-                        if (isUnix()) { sh cmd } else { bat cmd }
+                        //
+                        // The token is read by the shell from the environment
+                        // (single-quoted so Groovy never interpolates it), keeping
+                        // it out of the Groovy string and the build's command log.
+                        if (isUnix()) {
+                            sh 'mvn sonar:sonar -Dsonar.projectKey=autoFrameX -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.token="$SONAR_TOKEN" -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml'
+                        } else {
+                            bat 'mvn sonar:sonar -Dsonar.projectKey=autoFrameX -Dsonar.host.url="%SONAR_HOST_URL%" -Dsonar.token="%SONAR_TOKEN%" -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml'
+                        }
                     }
                 }
             }

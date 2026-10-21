@@ -1,0 +1,13 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+    autoframex-cucumber unit suite: browser-free tests only. The live scenarios
+    (runners.CucumberRunner) run from autoframex-testkit/testng.xml.
+-->
+<suite name="autoframex-cucumber Unit Tests" verbose="1" parallel="none">
+    <test name="Cucumber base">
+        <classes>
+            <class name="com.framework.cucumber.api.base.CucumberProjectBaseTest"/>
+        </classes>
+    </test>
+</suite>

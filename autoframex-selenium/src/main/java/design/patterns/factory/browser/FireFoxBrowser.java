@@ -58,7 +58,7 @@ public class FireFoxBrowser implements Browser {
 		}
 
 		// 5. Security
-		options.setAcceptInsecureCerts(true);
+		options.setAcceptInsecureCerts(BrowserSecurityPolicy.acceptInsecureCerts()); // not for production runs
 
 		return options;
 	}

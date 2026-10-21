@@ -1,0 +1,12 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+    autoframex-database unit suite. Needs no database: DBManagerTest supplies fake connections.
+-->
+<suite name="autoframex-database Unit Tests" verbose="1" parallel="none">
+    <test name="DBManager">
+        <classes>
+            <class name="design.patterns.database.manager.DBManagerTest"/>
+        </classes>
+    </test>
+</suite>

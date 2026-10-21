@@ -80,7 +80,13 @@
          every API call made inside a concurrent load test silently dropped
          its timing step — confirmed against a real ServiceNow instance
          (176 calls, 0 report lines before the fix; 180 calls, 180 report
-         lines after). Reporter.captureCurrentNode()/runWithNode() fix it. -->
+         lines after). Reporter.captureCurrentNode()/runWithNode() fix it.
+
+         ApiCaptureActionsTest covers the browser-free half of the automatic
+         API capture feature (ApiCaptureActions: cURL rendering, static-asset
+         filtering, per-DataProvider-row folder naming, collected_apis.txt
+         layout). The live CDP attach/detach runs in every real-browser suite
+         once a project enables autoFrameX.api.capture.enabled. -->
     <test name="Framework Unit Tests">
         <classes>
             <class name="com.framework.testng.ExtentBugTest"/>
@@ -94,6 +100,9 @@
             <class name="design.patterns.factory.browser.BrowserOptionsIsolationTest"/>
             <class name="design.patterns.object.pool.PoolCounterAccountingTest"/>
             <class name="design.patterns.object.pool.PoolConfigBuilderTest"/>
+            <class name="design.patterns.object.pool.PoolTeardownPolicyTest"/>
+            <class name="com.framework.testng.api.base.RetryPolicyTest"/>
+            <class name="design.patterns.factory.browser.BrowserSecurityPolicyTest"/>
             <class name="design.patterns.object.pool.DriverPoolManagerMultiContextTest"/>
             <class name="com.framework.utils.ScreenshotUtilsDeadSessionTest"/>
             <class name="com.framework.utils.VideoRecorderTest">
@@ -104,6 +113,7 @@
             </class>
             <class name="com.framework.selenium.api.base.DriverManagerContextResolutionTest"/>
             <class name="design.patterns.object.pool.WindowFrameActionsQuitBookkeepingTest"/>
+            <class name="com.framework.selenium.api.actions.ApiCaptureActionsTest"/>
         </classes>
     </test>
 

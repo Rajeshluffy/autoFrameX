@@ -34,8 +34,8 @@ import com.framework.utils.FakerDataFactory;
  *
  *     {@literal @}Test(groups = "security")
  *     public void scanLoginPage() {
- *         startPassiveScan(zapBaseUrl(), "https://myapp.com/login");
- *         assertNoCriticalAlerts();
+ *         runPassiveScan("https://myapp.com/login");           // crawl, then wait for the analysis
+ *         assertNoCriticalAlerts("https://myapp.com/login");   // fails if nothing was scanned
  *     }
  * }
  * </pre>
@@ -54,6 +54,8 @@ public abstract class SecurityTestBase extends ProjectSpecificMethods {
     private static final String ZAP_URL_PROPERTY  = "zap.base.url";
     private static final String DEFAULT_ZAP_URL   = "http://localhost:8080";
     private static final String ZAP_REPORT_PATH   = "reports/zap/zap-security-report.html";
+    /** Crawl plus analysis budget used by {@link #startPassiveScan(String)}. */
+    private static final int DEFAULT_SCAN_TIMEOUT_SECONDS = 300;
 
     // =========================================================================
     // SUITE LIFECYCLE
@@ -92,7 +94,7 @@ public abstract class SecurityTestBase extends ProjectSpecificMethods {
             ZapSecurityUtils.generateHtmlReport(zapBaseUrl(), ZAP_REPORT_PATH);
             logger.info("✓ ZAP report saved to: {}", ZAP_REPORT_PATH);
         } catch (Exception e) {
-            logger.warn("ZAP report generation failed: {}", e.getMessage());
+            logger.error("ZAP report generation failed: {}", e.getMessage(), e);
         }
     }
 
@@ -118,10 +120,29 @@ public abstract class SecurityTestBase extends ProjectSpecificMethods {
     // =========================================================================
 
     /**
-     * Starts a ZAP passive scan (spider + passive scanners) against {@code targetUrl}.
+     * Crawls {@code targetUrl} with ZAP's spider and waits until the crawl and ZAP's
+     * passive analysis of everything it fetched have finished (up to 5 minutes), so an
+     * {@link #assertNoCriticalAlerts()} that follows reads a complete alert list.
+     *
+     * <p>This used to return as soon as the crawl was <em>accepted</em>, which let the
+     * assertion run on an empty alert list and pass without anything having been scanned.
      */
     protected void startPassiveScan(String targetUrl) {
-        ZapSecurityUtils.startPassiveScan(zapBaseUrl(), targetUrl);
+        runPassiveScan(targetUrl, DEFAULT_SCAN_TIMEOUT_SECONDS);
+    }
+
+    /**
+     * Same as {@link #startPassiveScan(String)} with an explicit time budget.
+     *
+     * @param timeoutSeconds budget for the crawl and the analysis together
+     */
+    protected void runPassiveScan(String targetUrl, int timeoutSeconds) {
+        ZapSecurityUtils.runPassiveScan(zapBaseUrl(), targetUrl, timeoutSeconds);
+    }
+
+    /** {@link #runPassiveScan(String, int)} with the default 5-minute budget. */
+    protected void runPassiveScan(String targetUrl) {
+        runPassiveScan(targetUrl, DEFAULT_SCAN_TIMEOUT_SECONDS);
     }
 
     /**
@@ -142,6 +163,16 @@ public abstract class SecurityTestBase extends ProjectSpecificMethods {
      */
     protected void assertNoCriticalAlerts() {
         ZapSecurityUtils.assertNoCriticalAlerts(zapBaseUrl());
+    }
+
+    /**
+     * Fails the test if ZAP found High-risk alerts for {@code targetUrl}, or if ZAP has
+     * recorded no traffic for it (nothing was scanned, so "no alerts" would mean nothing).
+     * Prefer this over the no-argument form: it checks the page you actually scanned,
+     * not whatever else happens to be in the ZAP session.
+     */
+    protected void assertNoCriticalAlerts(String targetUrl) {
+        ZapSecurityUtils.assertNoCriticalAlerts(zapBaseUrl(), targetUrl);
     }
 
     /**

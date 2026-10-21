@@ -57,12 +57,14 @@ public class EdgeBrowser implements Browser {
         options.addArguments("--disable-popup-blocking");
         options.addArguments("--disable-infobars");
         options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--no-sandbox");
+        if (BrowserSecurityPolicy.noSandbox()) { // CI/containers only unless overridden - see BrowserSecurityPolicy
+            options.addArguments("--no-sandbox");
+        }
         options.addArguments("--remote-allow-origins=*");
         options.addArguments("--start-maximized");
         options.addArguments("--disable-notifications");
         options.addArguments("--log-level=3");
-        options.setAcceptInsecureCerts(true);
+        options.setAcceptInsecureCerts(BrowserSecurityPolicy.acceptInsecureCerts()); // not for production runs
 
         if (isHeadlessMode()) {
             options.addArguments("--headless=new");

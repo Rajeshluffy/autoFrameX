@@ -13,6 +13,7 @@ import design.patterns.factory.browser.BrowserRegistry;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.function.Consumer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
@@ -204,6 +205,19 @@ public class DriverPoolManager {
 	 * @param methodParams method-specific parameters (can be null)
 	 */
 	public void setupDriver(Method method, ConcurrentMap<String, String> methodParams) {
+		setupDriver(method, methodParams, null);
+	}
+
+	/**
+	 * Same as {@link #setupDriver(Method, ConcurrentMap)}, and additionally calls
+	 * {@code beforeFirstNavigation} with the driver after it is acquired and before it opens
+	 * the start page, so work that has to see that first page load (API capture) can attach
+	 * in time. See {@link WebDriverPoolFactory#acquire(String, String, Consumer)}.
+	 *
+	 * @param beforeFirstNavigation called once with the acquired driver, or {@code null}
+	 */
+	public void setupDriver(Method method, ConcurrentMap<String, String> methodParams,
+			Consumer<RemoteWebDriver> beforeFirstNavigation) {
 		String testName = getTestName(method);
 		long threadId = Thread.currentThread().getId();
 
@@ -221,7 +235,7 @@ public class DriverPoolManager {
 					browserType, url));
 
 			// Acquire driver from pool (thread-safe operation)
-			RemoteWebDriver driver = driverPool.acquire(browserType, url);
+			RemoteWebDriver driver = driverPool.acquire(browserType, url, beforeFirstNavigation);
 
 			// Create wait instance
 			int waitTimeout = getWaitTimeout(methodParams);
@@ -244,6 +258,24 @@ public class DriverPoolManager {
 			cleanupContext(testName);
 			throw new RuntimeException("Driver setup failed for: " + testName, e);
 		}
+	}
+
+	/** What happens to a driver when its test ends. */
+	enum Teardown {
+		/** The test failed: never re-pool, quit asynchronously. */
+		DISCARD_FAILED,
+		/** The test passed and {@code closeAfterEach=true}: quit, the next test starts a new browser. */
+		QUIT,
+		/** The test passed and {@code closeAfterEach=false}: return the driver to the pool. */
+		REUSE
+	}
+
+	/** The single place that decides a driver's fate after a test, so the rule is testable without a browser. */
+	static Teardown teardownFor(boolean testPassed, boolean closeAfterEach) {
+		if (!testPassed) {
+			return Teardown.DISCARD_FAILED;
+		}
+		return closeAfterEach ? Teardown.QUIT : Teardown.REUSE;
 	}
 
 	/**
@@ -273,31 +305,30 @@ public class DriverPoolManager {
 			// Log test result with duration
 			logTestResult(testName, passed, context);
 
-			if (!passed) {
-				// Test failed — driver may be in undefined state (stale alert, broken
-				// navigation, half-complete XHR).  Transition to POISONED so it is
-				// never re-pooled; pool queues an async driver.quit() off the test thread.
-				driverPool.release(driver, true);
-				logger.info(String.format(
-						"Driver poisoned and queued for async quit (test failed): %s [Thread: %d]",
-						testName, threadId));
-			} else if (poolConfig.isCloseAfterEach()) {
-				// Passed + closeAfterEach=true: release healthy driver back to the pool.
-				// WebDriverPoolFactory.release(driver, false) handles all cleanup:
-				//   • dismisses any lingering alerts
-				//   • closes extra windows and navigates to about:blank
-				//   • clears cookies, localStorage, sessionStorage
-				//   • transitions state IDLE → available for next test
-				driverPool.release(driver, false);
-				logger.info(String.format(
-						"Driver released (windows closed, state reset, session kept): %s [Thread: %d]",
-						testName, threadId));
-			} else {
-				// Pool-reuse mode: return healthy driver without window teardown.
-				// Pool still resets cookies/storage before the next test borrows it.
-				driverPool.release(driver, false);
-				logger.info(String.format("Driver released for reuse: %s [Thread: %d]",
-						testName, threadId));
+			switch (teardownFor(passed, poolConfig.isCloseAfterEach())) {
+				case DISCARD_FAILED:
+					// Test failed - driver may be in undefined state (stale alert, broken
+					// navigation, half-complete XHR). Transition to POISONED so it is
+					// never re-pooled; pool queues an async driver.quit() off the test thread.
+					driverPool.release(driver, true);
+					logger.info(String.format(
+							"Driver poisoned and queued for async quit (test failed): %s [Thread: %d]",
+							testName, threadId));
+					break;
+				case QUIT:
+					// closeAfterEach=true: the next test gets a brand-new browser.
+					driverPool.retire(driver);
+					logger.info(String.format(
+							"Driver quit after test (closeAfterEach=true): %s [Thread: %d]",
+							testName, threadId));
+					break;
+				default:
+					// closeAfterEach=false: return the healthy driver for reuse. Extra windows and
+					// alerts are cleaned on release; cookies and storage are reset on the next borrow.
+					driverPool.release(driver, false);
+					logger.info(String.format("Driver released for reuse (closeAfterEach=false): %s [Thread: %d]",
+							testName, threadId));
+					break;
 			}
 
 		} catch (Exception e) {

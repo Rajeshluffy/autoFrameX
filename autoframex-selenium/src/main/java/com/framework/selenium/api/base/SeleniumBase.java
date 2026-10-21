@@ -1,5 +1,7 @@
 package com.framework.selenium.api.base;
 
+import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
@@ -16,6 +18,7 @@ import org.testng.annotations.BeforeTest;
 
 import com.framework.config.data.ConfigManager;
 import com.framework.selenium.api.actions.AlertActions;
+import com.framework.selenium.api.actions.ApiCaptureActions;
 import com.framework.selenium.api.actions.ClickActions;
 import com.framework.selenium.api.actions.ElementInspectionActions;
 import com.framework.selenium.api.actions.FileUploadActions;
@@ -71,6 +74,12 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 	private final JsActions jsActions = new JsActions(this::getDriver, this);
 	private final FileUploadActions fileUploadActions = new FileUploadActions(this, clickActions);
 	private final ElementInspectionActions elementInspectionActions = new ElementInspectionActions(this, waitActions);
+
+	// The running API capture belongs to one test invocation, but under parallel execution one
+	// SeleniumBase instance serves many threads, so it is bound to the calling thread instead
+	// of being kept in an instance field. Static so page objects (their own SeleniumBase
+	// instances) reach the same capture as the test that created them.
+	private static final ThreadLocal<ApiCaptureActions> API_CAPTURE = new ThreadLocal<>();
 
 	/**
 	 * Fetches the WebDriver instance for the current thread.
@@ -129,6 +138,120 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 	@AfterSuite(alwaysRun = true)
 	public synchronized void shutdownDriverPool() {
 		DriverPoolManager.shutdownAll();
+	}
+
+	// ========================================================================
+	// API CAPTURE
+	// ========================================================================
+	//
+	// Like click(), these are thin entry points: the recording, filtering, response reading
+	// and file writing all live in ApiCaptureActions. Everything here is a no-op, never an
+	// error, when capture is not running (apiCaptureEnabled is off, or the browser is not
+	// Chromium), so calls can stay in shared page objects and base classes.
+
+	/**
+	 * Starts recording every API call the browser makes, in every window, for the
+	 * calling thread. {@code ProjectSpecificMethods} calls this in {@code @BeforeMethod}
+	 * when {@code apiCaptureEnabled} is on; a framework that does not extend it (e.g. a
+	 * Cucumber hook) can call it directly.
+	 *
+	 * @return {@code true} if recording started
+	 */
+	public boolean startApiCapture(String testCaseName, String methodName, String dataKey, boolean maskSecrets) {
+		return startApiCapture(testCaseName, methodName, dataKey, maskSecrets, null);
+	}
+
+	/**
+	 * Same as {@link #startApiCapture(String, String, String, boolean)} for a driver that is
+	 * not registered with the pool yet. {@code ProjectSpecificMethods} and the Cucumber base
+	 * call this from the pool's before-navigation hook, so the first page load is recorded.
+	 *
+	 * @param driver the browser to record, or {@code null} for the thread's pooled driver
+	 */
+	public boolean startApiCapture(String testCaseName, String methodName, String dataKey, boolean maskSecrets,
+			RemoteWebDriver driver) {
+		stopApiCapture(); // leftover from a test that never reached its teardown
+		ApiCaptureActions capture = new ApiCaptureActions(
+				driver != null ? () -> driver : () -> getDriverManager().getDriver(), this);
+		boolean started = capture.start(testCaseName, methodName, dataKey, maskSecrets);
+		if (started) {
+			API_CAPTURE.set(capture);
+		}
+		return started;
+	}
+
+	/**
+	 * Stops recording and writes the full timeline into the test's capture folder.
+	 *
+	 * @return the folder written, or {@code null} when nothing was recording
+	 */
+	public Path stopApiCapture() {
+		ApiCaptureActions capture = API_CAPTURE.get();
+		if (capture == null) {
+			return null;
+		}
+		try {
+			return capture.stop();
+		} finally {
+			API_CAPTURE.remove();
+		}
+	}
+
+	/**
+	 * Bookmarks the recording: waits until the page is quiet, then saves every API
+	 * request and response since the previous bookmark into its own numbered folder
+	 * ({@code <NN>_<phase>}) under the test's capture folder, and keeps recording.
+	 * Call it after a step, e.g. {@code click(save); captureApiSnapshot("save_clicked");}.
+	 *
+	 * @param phase short label for the folder
+	 * @return the folder written, or {@code null} when capture is not running
+	 */
+	public Path captureApiSnapshot(String phase) {
+		ApiCaptureActions capture = API_CAPTURE.get();
+		if (capture == null) {
+			return null;
+		}
+		return capture.saveSnapshot(phase);
+	}
+
+	/**
+	 * Runs {@code action}, waits until the page is quiet, and saves the calls it
+	 * caused into their own folder. Only calls made from the moment the action starts
+	 * are kept, so one action's late response cannot leak into the next.
+	 * <pre>
+	 *   captureApis("filter_clicked", () -&gt; click(filter));
+	 *   List&lt;CapturedApi&gt; calls = captureApis("save_clicked", () -&gt; click(save));
+	 * </pre>
+	 * If the action throws, the calls made up to that point are still saved and the
+	 * exception is rethrown. If capture is not running, the action just runs.
+	 *
+	 * @return the calls the action caused (empty when capture is not running)
+	 */
+	public List<ApiCaptureActions.CapturedApi> captureApis(String phase, Runnable action) {
+		return captureApis(phase, action, ApiCaptureActions.DEFAULT_QUIET_MILLIS, ApiCaptureActions.DEFAULT_MAX_WAIT_MILLIS);
+	}
+
+	/**
+	 * Same as {@link #captureApis(String, Runnable)} with explicit waits: the page
+	 * must stay quiet for {@code quietMillis} after the action (raise it for an app
+	 * that fires its calls after a long debounce), and the wait never exceeds
+	 * {@code maxWaitMillis}.
+	 */
+	public List<ApiCaptureActions.CapturedApi> captureApis(String phase, Runnable action,
+			long quietMillis, long maxWaitMillis) {
+		ApiCaptureActions capture = API_CAPTURE.get();
+		if (capture == null) {
+			action.run();
+			return Collections.emptyList();
+		}
+		int mark = capture.currentSequence();
+		ApiCaptureActions.Snapshot snapshot = null;
+		try {
+			action.run();
+		} finally {
+			snapshot = capture.snapshotSince(phase, mark, quietMillis, maxWaitMillis);
+		}
+		return snapshot == null ? Collections.emptyList() : snapshot.getCalls();
 	}
 
 	// ========================================================================

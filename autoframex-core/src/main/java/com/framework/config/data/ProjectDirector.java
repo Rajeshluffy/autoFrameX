@@ -115,6 +115,10 @@ public class ProjectDirector {
         // ── Retry ─────────────────────────────────────────────────────────────
         builder.setRetryLimit(
                 resolveShort("retryLimit",          testngParams, "RETRY_LIMIT",      "retryLimit",          cfg.retry()));
+        builder.setRetryApiLimit(
+                resolveShort("retryApiLimit",      testngParams, "RETRY_API_LIMIT",  "retryApiLimit",      cfg.retryApiLimit()));
+        builder.setRetryApiGroups(
+                resolve("retryApiGroups",          testngParams, "RETRY_API_GROUPS", "retryApiGroups",     cfg.retryApiGroups()));
         builder.setElementMaxRetryAttempts(
                 resolveInt("elementMaxRetryAttempts",testngParams,"ELEMENT_MAX_RETRY","elementMaxRetryAttempts",cfg.elementMaxRetryAttempts()));
 
@@ -143,6 +147,12 @@ public class ProjectDirector {
                 resolve("execution.mode", testngParams, "EXECUTION_MODE", "execution.mode", "targeted")));
         builder.setExcelDataFile(
                 resolve("excel.data.file", testngParams, "EXCEL_DATA_FILE", "excel.data.file", ""));
+
+        // ── API capture (Chrome DevTools Network → Postman cURL files) ────────
+        builder.setApiCaptureEnabled(
+                resolveBoolean("apiCaptureEnabled",     testngParams, "API_CAPTURE_ENABLED",      "apiCaptureEnabled",     cfg.apiCaptureEnabled()));
+        builder.setApiCaptureMaskSecrets(
+                resolveBoolean("apiCaptureMaskSecrets", testngParams, "API_CAPTURE_MASK_SECRETS", "apiCaptureMaskSecrets", cfg.apiCaptureMaskSecrets()));
 
         // ── Credentials ───────────────────────────────────────────────────────
         builder.setCredentials(

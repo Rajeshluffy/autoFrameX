@@ -60,9 +60,29 @@ public final class EncryptionUtils {
     private static final int PBKDF2_ITERATIONS = 120_000;
     private static final int AES_KEY_LENGTH_BITS = 256;
 
-    // Patterns for masking sensitive values in log strings
-    private static final Pattern PASSWORD_PATTERN =
-            Pattern.compile("(?i)(password|passwd|pwd|secret|token|key|auth)\\s*[=:]\\s*\\S+");
+    // Patterns for masking sensitive values in log strings.
+    //
+    // They must cope with three shapes: plain "password=abc" / "password: abc",
+    // JSON bodies ("password":"abc"), and the same JSON after it has been
+    // serialized *into* a JSON log line, where inner quotes arrive escaped
+    // (\"password\":\"abc\") -- MaskingLogstashEncoder masks that whole line.
+    // The old single pattern (key\s*[=:]\s*\S+) missed the quoted forms, and
+    // against a compact JSON line its greedy \S+ swallowed every field after
+    // the match, corrupting the log record.
+    private static final String KEY =
+            "[\\w.-]*(?:password|passwd|pwd|secret|token|key|auth\\b)";
+    private static final String OPT_QUOTE = "(?:\\\\?[\"'])?";
+
+    /** Authorization: scheme credentials -- masks scheme and credentials together. */
+    private static final Pattern AUTH_HEADER_PATTERN = Pattern.compile(
+            "(?i)(authorization" + OPT_QUOTE + "\\s*[=:]\\s*" + OPT_QUOTE + ")"
+            + "(?:[A-Za-z]+\\s+)?[^\\s,;\"'\\\\}\\]]+");
+    /** key="quoted value" or key=\"escaped quoted value\" -- value may contain spaces. */
+    private static final Pattern QUOTED_VALUE_PATTERN = Pattern.compile(
+            "(?i)(" + KEY + OPT_QUOTE + "\\s*[=:]\\s*\\\\?\")((?:[^\"\\\\]|\\\\[^\"])*)");
+    /** key=value or key: value -- value runs to the next delimiter, not to end of line. */
+    private static final Pattern PLAIN_VALUE_PATTERN = Pattern.compile(
+            "(?i)(" + KEY + OPT_QUOTE + "\\s*[=:]\\s*)([^\\s,;&\"'\\\\}\\]]+)");
     private static final Pattern BEARER_PATTERN =
             Pattern.compile("(?i)(Bearer\\s+)([A-Za-z0-9\\-._~+/]+=*)");
 
@@ -77,14 +97,17 @@ public final class EncryptionUtils {
      *
      * @param plainText the value to encrypt
      * @return Base64-encoded ciphertext (salt and IV prepended), or {@code null} on error
+     * @throws IllegalStateException if no encryption key is configured (this is a
+     *         setup error, not a data error, so it is never turned into {@code null})
      */
     public static String encrypt(String plainText) {
         if (plainText == null || plainText.isEmpty()) return plainText;
+        String passphrase = resolvePassphrase();
         try {
             byte[] salt = generateSalt();
             byte[] iv = generateIv();
             Cipher cipher = Cipher.getInstance(ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE, deriveKey(salt), new GCMParameterSpec(GCM_TAG_LENGTH, iv));
+            cipher.init(Cipher.ENCRYPT_MODE, deriveKey(passphrase, salt), new GCMParameterSpec(GCM_TAG_LENGTH, iv));
             byte[] cipherText = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
 
             byte[] combined = new byte[salt.length + iv.length + cipherText.length];
@@ -103,10 +126,13 @@ public final class EncryptionUtils {
      * Decrypts a value previously produced by {@link #encrypt}.
      *
      * @param encryptedBase64 Base64-encoded ciphertext
-     * @return original plain-text value, or {@code null} on error
+     * @return original plain-text value, or {@code null} if the value is corrupt or
+     *         was encrypted with a different key
+     * @throws IllegalStateException if no encryption key is configured
      */
     public static String decrypt(String encryptedBase64) {
         if (encryptedBase64 == null || encryptedBase64.isEmpty()) return encryptedBase64;
+        String passphrase = resolvePassphrase();
         try {
             byte[] combined = Base64.getDecoder().decode(encryptedBase64);
             byte[] salt = new byte[PBKDF2_SALT_LENGTH];
@@ -117,7 +143,7 @@ public final class EncryptionUtils {
             System.arraycopy(combined, PBKDF2_SALT_LENGTH + GCM_IV_LENGTH, cipherText, 0, cipherText.length);
 
             Cipher cipher = Cipher.getInstance(ALGORITHM);
-            cipher.init(Cipher.DECRYPT_MODE, deriveKey(salt), new GCMParameterSpec(GCM_TAG_LENGTH, iv));
+            cipher.init(Cipher.DECRYPT_MODE, deriveKey(passphrase, salt), new GCMParameterSpec(GCM_TAG_LENGTH, iv));
             return new String(cipher.doFinal(cipherText), StandardCharsets.UTF_8);
         } catch (Exception e) {
             logger.error("Decryption failed: " + e.getMessage());
@@ -135,8 +161,9 @@ public final class EncryptionUtils {
      *
      * <p>Examples:
      * <pre>
-     *   "password=secret123"   → "password=***"
-     *   "Bearer eyJhbGci..."   → "Bearer ***"
+     *   "password=secret123"        → "password=***"
+     *   {"password":"abc def"}      → {"password":"***"}
+     *   "Bearer eyJhbGci..."        → "Bearer ***"
      * </pre>
      *
      * @param logLine raw log string that may contain sensitive data
@@ -144,8 +171,10 @@ public final class EncryptionUtils {
      */
     public static String maskSensitiveValues(String logLine) {
         if (logLine == null) return null;
-        String masked = PASSWORD_PATTERN.matcher(logLine).replaceAll("$1=***");
+        String masked = AUTH_HEADER_PATTERN.matcher(logLine).replaceAll("$1***");
         masked = BEARER_PATTERN.matcher(masked).replaceAll("$1***");
+        masked = QUOTED_VALUE_PATTERN.matcher(masked).replaceAll("$1***");
+        masked = PLAIN_VALUE_PATTERN.matcher(masked).replaceAll("$1***");
         return masked;
     }
 
@@ -179,9 +208,10 @@ public final class EncryptionUtils {
     }
 
     /** Derives the AES-256 key from the configured passphrase via PBKDF2WithHmacSHA256. */
-    private static SecretKey deriveKey(byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    private static SecretKey deriveKey(String passphrase, byte[] salt)
+            throws NoSuchAlgorithmException, InvalidKeySpecException {
         PBEKeySpec spec = new PBEKeySpec(
-                resolvePassphrase().toCharArray(), salt, PBKDF2_ITERATIONS, AES_KEY_LENGTH_BITS);
+                passphrase.toCharArray(), salt, PBKDF2_ITERATIONS, AES_KEY_LENGTH_BITS);
         SecretKeyFactory factory = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
         byte[] keyBytes = factory.generateSecret(spec).getEncoded();
         return new SecretKeySpec(keyBytes, "AES");

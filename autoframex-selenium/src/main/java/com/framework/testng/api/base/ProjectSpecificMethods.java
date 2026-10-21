@@ -175,8 +175,27 @@ public class ProjectSpecificMethods extends SeleniumBase {
 			methodParams.put("url", account.getUrl());
 		}
 
-		// 3. Acquire driver from pool and store in ThreadLocal
-		getDriverManager().setupDriver(method, methodParams);
+		// 3. Acquire driver from pool and store in ThreadLocal. API capture (when enabled) is
+		//    started through the pool's before-navigation hook, so even the very first page
+		//    load is recorded: reports/<run>/apicapture/<testcase>/<method>_<accountId>_<NN>/
+		//    (one folder per DataProvider row and per invocation). Chromium only; a failure to
+		//    attach is logged and never fails the test.
+		var projectConfig = ConfigManager.getInstance().getConfig();
+		java.util.function.Consumer<RemoteWebDriver> captureStarter = null;
+		if (projectConfig.isApiCaptureEnabled()) {
+			String captureTestCase = (testcaseName != null && !testcaseName.isEmpty())
+					? testcaseName : method.getDeclaringClass().getSimpleName();
+			String captureDataKey = apiCaptureDataKey(account, parameters);
+			boolean captureMask = projectConfig.isApiCaptureMaskSecrets();
+			captureStarter = browser -> {
+				try {
+					startApiCapture(captureTestCase, method.getName(), captureDataKey, captureMask, browser);
+				} catch (Exception e) {
+					logger.warn("API capture could not start for {}: {}", method.getName(), e.getMessage());
+				}
+			};
+		}
+		getDriverManager().setupDriver(method, methodParams, captureStarter);
 
 		// 4. Log the URL the browser was navigated to — visible in the HTML report
 		try {
@@ -196,6 +215,21 @@ public class ProjectSpecificMethods extends SeleniumBase {
 		}
 
 		logger.info("Driver ready for: " + method.getName());
+	}
+
+	/**
+	 * Data-row label used in the API-capture folder name
+	 * ({@code <method>_<dataKey>_<NN>}). Defaults to the bound
+	 * {@link AccountData#getAccountId()} ("targeted" for tests that do not use
+	 * the {@code fetchData} DataProvider). Override it in a project base class
+	 * whose DataProvider rows are not {@code AccountData} — e.g. return the
+	 * row's user name — so each row gets its own readable folder.
+	 *
+	 * @param account    the account bound for this invocation
+	 * @param parameters raw DataProvider parameters for this invocation (may be empty)
+	 */
+	protected String apiCaptureDataKey(AccountData account, Object[] parameters) {
+		return account.getAccountId();
 	}
 
 	// =========================================================================
@@ -233,6 +267,14 @@ public class ProjectSpecificMethods extends SeleniumBase {
 			} finally {
 				videoRecorder.remove();
 			}
+		}
+
+		// Flush the API capture while the browser is still reachable --
+		// teardownDriver() below may quit it (a failed test poisons the driver).
+		try {
+			stopApiCapture();
+		} catch (Exception e) {
+			logger.warn("API capture stop failed for {}: {}", method.getName(), e.getMessage());
 		}
 
 		try {

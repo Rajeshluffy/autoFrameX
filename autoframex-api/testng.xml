@@ -1,0 +1,13 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+    autoframex-api unit suite. Needs no network: the tests talk to a throw-away HTTP
+    server that imitates an OAuth token endpoint.
+-->
+<suite name="autoframex-api Unit Tests" verbose="1" parallel="none">
+    <test name="Authentication">
+        <classes>
+            <class name="com.api.rest.assured.base.RequestAuthenticationTest"/>
+        </classes>
+    </test>
+</suite>

@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
@@ -174,6 +175,18 @@ public class WebDriverPoolFactory implements AutoCloseable {
      * @return a healthy, navigated WebDriver bound to the current thread context
      */
     public RemoteWebDriver acquire(String browserType, String url) {
+        return acquire(browserType, url, null);
+    }
+
+    /**
+     * Same as {@link #acquire(String, String)}, and additionally calls {@code beforeNavigation}
+     * with the driver once it is obtained and <em>before</em> it is navigated to {@code url}.
+     * That is the moment to start anything that must see the very first page load, such as
+     * the API capture. A hook that throws is logged and ignored; it never fails the acquire.
+     *
+     * @param beforeNavigation called once per acquire with the driver, or {@code null}
+     */
+    public RemoteWebDriver acquire(String browserType, String url, Consumer<RemoteWebDriver> beforeNavigation) {
         validateNotShutdown();
         validateBrowserType(browserType);
 
@@ -218,6 +231,13 @@ public class WebDriverPoolFactory implements AutoCloseable {
             }
 
             // ── Step 4: navigate + state reset (on correct domain) ────────────
+            if (beforeNavigation != null) {
+                try {
+                    beforeNavigation.accept(driver);
+                } catch (RuntimeException e) {
+                    logger.warn("Before-navigation hook failed - continuing without it: " + e.getMessage());
+                }
+            }
             if (url != null && !url.isEmpty()) {
                 navigateToUrl(driver, url);
                 if (reused && config.isStateResetEnabled()) {
@@ -364,7 +384,7 @@ public class WebDriverPoolFactory implements AutoCloseable {
     }
 
     /**
-     * Backwards-compatible overload used by legacy callers (e.g. {@code closeWindowsAndRelease}).
+     * Backwards-compatible overload for callers that do not track test outcome.
      * Delegates to {@link #release(RemoteWebDriver, boolean)} with {@code poisoned=false}.
      */
     public void release(RemoteWebDriver driver) {
@@ -392,37 +412,21 @@ public class WebDriverPoolFactory implements AutoCloseable {
     }
 
     // =========================================================================
-    // CLOSE WINDOWS + RELEASE (used by DriverPoolManager when closeAfterEach=true)
+    // RETIRE (used by DriverPoolManager when closeAfterEach=true)
     // =========================================================================
 
     /**
-     * Closes all browser windows (browser disappears visually) without calling
-     * {@code quit()} — the WebDriver session stays alive and is returned to the
-     * pool. The next test that acquires this driver will call {@code driver.get(url)}
-     * which opens a fresh window in the still-running ChromeDriver process.
+     * Quits a healthy driver instead of returning it to the pool, so the next test
+     * starts in a brand-new browser. This is what {@code closeAfterEach=true} means:
+     * the browser is fully quit after every test (a failed test takes the
+     * {@link #release(RemoteWebDriver, boolean) poison} path instead). The quit runs
+     * off the calling thread, and the capacity slot is freed immediately.
+     *
+     * @param driver the driver whose test has just finished
      */
-    public void closeWindowsAndRelease(RemoteWebDriver driver) {
-        if (driver == null) return;
-
-        try {
-            Set<String> handles = driver.getWindowHandles();
-            String primary = handles.iterator().next();
-
-            for (String h : handles) {
-                if (!h.equals(primary)) {
-                    try { driver.switchTo().window(h).close(); } catch (Exception e) { /* best-effort */ }
-                }
-            }
-            driver.switchTo().window(primary);
-            driver.get("about:blank"); // visually "closes" the page; session alive
-
-        } catch (Exception e) {
-            logger.warn("closeWindowsAndRelease failed — falling back to poison release: " + e.getMessage());
-            release(driver, true);
-            return;
-        }
-
-        release(driver, false);
+    public void retire(RemoteWebDriver driver) {
+        destroy(driver);
+        logger.debug("Driver retired after test (closeAfterEach) [ID: " + System.identityHashCode(driver) + "]");
     }
 
     // =========================================================================

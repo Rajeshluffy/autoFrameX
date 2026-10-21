@@ -17,6 +17,9 @@
             <class name="com.framework.config.data.ConfigResolverTest"/>
             <class name="com.framework.config.data.ConfigManagerTest"/>
             <class name="com.framework.utils.PerfClockTest"/>
+            <class name="com.framework.utils.EncryptionUtilsTest"/>
+            <class name="com.framework.utils.DataLibraryReadOnlyTest"/>
+            <class name="com.framework.config.data.RetryApiConfigTest"/>
             <class name="com.framework.utils.ReporterNodePropagationTest"/>
         </classes>
     </test>

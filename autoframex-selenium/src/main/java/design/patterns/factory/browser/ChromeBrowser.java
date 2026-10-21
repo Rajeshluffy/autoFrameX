@@ -67,7 +67,8 @@ public class ChromeBrowser implements Browser {
 		prefs.put("download.prompt_for_download", false); // Automatically download without prompting
 		prefs.put("download.directory_upgrade", true);
 		prefs.put("safebrowsing.enabled", true);
-		prefs.put("safebrowsing.disable_download_protection", true); // Bypasses Chrome's dangerous file warnings
+		// Switching off Chrome's dangerous-file warnings is only for non-production runs (see BrowserSecurityPolicy).
+		prefs.put("safebrowsing.disable_download_protection", BrowserSecurityPolicy.relaxedDownloads());
 		prefs.put("profile.default_content_settings.popups", 0); // Disable Save As popups
 		
 		// Handle Multiple Downloads permission for different Chrome versions
@@ -86,7 +87,9 @@ public class ChromeBrowser implements Browser {
 		options.addArguments("--disable-popup-blocking");
 		options.addArguments("--disable-infobars");
 		options.addArguments("--disable-dev-shm-usage");
-		options.addArguments("--no-sandbox");
+		if (BrowserSecurityPolicy.noSandbox()) { // CI/containers only unless overridden - see BrowserSecurityPolicy
+			options.addArguments("--no-sandbox");
+		}
 		options.addArguments("--disable-gpu");
 		// No fixed --remote-debugging-port: chromedriver auto-assigns a free port per
 		// instance. A hardcoded port made concurrent pool instances (parallel="classes"/
@@ -107,7 +110,7 @@ public class ChromeBrowser implements Browser {
 
 		// Logging
 		options.addArguments("--log-level=3");
-		options.setAcceptInsecureCerts(true);
+		options.setAcceptInsecureCerts(BrowserSecurityPolicy.acceptInsecureCerts()); // not for production runs
 		options.addArguments("--start-maximized");
 		options.addArguments("--disable-notifications");
 		// options.addArguments("--incognito");

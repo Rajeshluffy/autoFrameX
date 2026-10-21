@@ -25,6 +25,8 @@ import java.lang.annotation.Target;
  * <ol>
  *   <li>Method-level {@code @Retry} (highest)</li>
  *   <li>Class-level {@code @Retry}</li>
+ *   <li>{@code autoFrameX.test.retry.api.max.limit} for tests in an API group (default {@code 0},
+ *       so API tests are not retried unless they opt in with this annotation)</li>
  *   <li>Global {@code autoFrameX.test.retry.max.limit} in
  *       {@code frameworkConfig.properties} (lowest)</li>
  * </ol>

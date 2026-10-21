@@ -12,6 +12,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.openxml4j.exceptions.InvalidOperationException;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.openxml4j.opc.PackageAccess;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -232,7 +236,19 @@ public class DataLibrary {
         String path = baseDataDir() + "/" + excelFileName + ".xlsx";
         logger.info("Loading Excel data from: " + path);
 
-        try (XSSFWorkbook wbook = new XSSFWorkbook(path)) {
+        // Opened read-only on purpose: POI's path constructor opens the package read-write and
+        // saves it back to the same file on close, which rewrote every data file that was only
+        // being read (it showed up as a modified file in git after each run).
+        File file = new File(path);
+        if (!file.isFile()) {
+            // The path constructor used to fail with an IOException here; the read-only open throws an
+            // unchecked one instead, so check first to keep the same "log it, return no rows" behavior.
+            logger.error("Failed to read Excel file '" + path + "': file not found");
+            return new Object[0][0];
+        }
+
+        try (OPCPackage pkg = OPCPackage.open(file, PackageAccess.READ);
+             XSSFWorkbook wbook = new XSSFWorkbook(pkg)) {
             XSSFSheet sheet = wbook.getSheetAt(0);
             int rowCount = sheet.getLastRowNum();       // excludes header row
             int colCount = sheet.getRow(0).getLastCellNum();
@@ -252,7 +268,7 @@ public class DataLibrary {
             logger.info("Loaded " + rowCount + " data row(s) from: " + path);
             return data;
 
-        } catch (IOException e) {
+        } catch (IOException | InvalidFormatException | InvalidOperationException e) {
             logger.error("Failed to read Excel file '" + path + "': " + e.getMessage());
             return new Object[0][0];
         }

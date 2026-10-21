@@ -1,12 +1,17 @@
 package com.framework.cucumber.api.base;
 
+import java.net.URI;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Consumer;
+
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.framework.config.data.ConfigManager;
+import com.framework.config.data.ProjectConfig;
 import com.framework.selenium.api.base.SeleniumBase;
 
 import design.patterns.object.pool.DriverPoolManager;
@@ -81,7 +86,26 @@ public abstract class CucumberProjectBase extends SeleniumBase {
         params.put("scenarioName", scenario.getName());
         params.put("scenarioId",   scenario.getId());
 
-        getDriverManager().setupDriver(null, params);
+        // API capture (when enabled for this project or suite) starts through the pool's
+        // before-navigation hook, so the first page load is recorded too. The report folder is
+        // reports/<run>/apicapture/<feature>/<scenario>_line<N>_<NN>/ - the scenario's line number
+        // tells the rows of a Scenario Outline apart, and NN counts repeated runs.
+        ProjectConfig config = ConfigManager.getInstance().getConfig();
+        Consumer<RemoteWebDriver> captureStarter = null;
+        if (config.isApiCaptureEnabled()) {
+            String feature = featureNameOf(scenario.getUri());
+            String dataKey = "line" + scenario.getLine();
+            boolean mask = config.isApiCaptureMaskSecrets();
+            captureStarter = browser -> {
+                try {
+                    startApiCapture(feature, scenario.getName(), dataKey, mask, browser);
+                } catch (Exception e) {
+                    logger.warn("API capture could not start for scenario {}: {}", scenario.getName(), e.getMessage());
+                }
+            };
+        }
+
+        getDriverManager().setupDriver(null, params, captureStarter);
 
         try {
             String url = ConfigManager.getInstance().getConfig().getAppUrl();
@@ -119,6 +143,13 @@ public abstract class CucumberProjectBase extends SeleniumBase {
                     scenario.getName(), e.getMessage());
         }
 
+        // Write the API capture while the browser is still reachable; teardown may quit it.
+        try {
+            stopApiCapture();
+        } catch (Exception e) {
+            logger.warn("API capture stop failed for scenario {}: {}", scenario.getName(), e.getMessage());
+        }
+
         try {
             getDriverManager().teardownDriver(null, !scenario.isFailed());
         } catch (Exception e) {
@@ -148,5 +179,27 @@ public abstract class CucumberProjectBase extends SeleniumBase {
     @Override
     protected DriverPoolManager getDriverManager() {
         return DriverPoolManager.getInstance();
+    }
+
+    /**
+     * Name of a feature file without its extension, taken from the scenario's URI:
+     * {@code file:///C:/proj/features/login.feature} and {@code classpath:features/login.feature}
+     * both give {@code login}. Used as the capture folder name; {@code UnnamedFeature} if absent.
+     */
+    static String featureNameOf(URI uri) {
+        if (uri == null) {
+            return "UnnamedFeature";
+        }
+        String text = uri.toString();
+        int query = text.indexOf('?');
+        if (query >= 0) {
+            text = text.substring(0, query);
+        }
+        String name = text.substring(Math.max(text.lastIndexOf('/'), text.lastIndexOf(':')) + 1);
+        int extension = name.lastIndexOf(".feature");
+        if (extension > 0) {
+            name = name.substring(0, extension);
+        }
+        return name.isBlank() ? "UnnamedFeature" : name;
     }
 }

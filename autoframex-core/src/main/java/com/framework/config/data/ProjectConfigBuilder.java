@@ -33,6 +33,10 @@ public class ProjectConfigBuilder {
 	private String gridHubUrl = "http://localhost:4444/wd/hub";
 	private ExecutionMode executionMode = ExecutionMode.TARGETED;
 	private String excelDataFile = "";
+	private boolean apiCaptureEnabled = false;
+	private boolean apiCaptureMaskSecrets = false;
+	private short retryApiLimit = 0;
+	private String retryApiGroups = "api,performance";
 
 	public ProjectConfigBuilder setBrowserName(String browserName) {
 		this.browserName = browserName;
@@ -173,6 +177,26 @@ public class ProjectConfigBuilder {
 		return this;
 	}
 
+	public ProjectConfigBuilder setApiCaptureEnabled(boolean apiCaptureEnabled) {
+		this.apiCaptureEnabled = apiCaptureEnabled;
+		return this;
+	}
+
+	public ProjectConfigBuilder setApiCaptureMaskSecrets(boolean apiCaptureMaskSecrets) {
+		this.apiCaptureMaskSecrets = apiCaptureMaskSecrets;
+		return this;
+	}
+
+	public ProjectConfigBuilder setRetryApiLimit(short retryApiLimit) {
+		this.retryApiLimit = retryApiLimit;
+		return this;
+	}
+
+	public ProjectConfigBuilder setRetryApiGroups(String retryApiGroups) {
+		this.retryApiGroups = retryApiGroups;
+		return this;
+	}
+
 	public ProjectConfig build() {
 		return new ProjectConfig(
 			browserName, remote, implicit, explicit, shortWait, pollingIntervalMs,
@@ -180,7 +204,9 @@ public class ProjectConfigBuilder {
 			poolMaxIdleMinutes, serverUrl, devUrl, qaUrl, appUrl, userName,
 			password, dbUrl, dbUserName, dbPassword, dbQuery, scriptTimeout,
 			pageLoadTimeout, closeAfterEach, poolMinSize, poolBorrowTimeoutSeconds,
-			poolMaxReuseCount, gridEnabled, gridHubUrl, executionMode, excelDataFile
+			poolMaxReuseCount, gridEnabled, gridHubUrl, executionMode, excelDataFile,
+			apiCaptureEnabled, apiCaptureMaskSecrets,
+			retryApiLimit, retryApiGroups
 		);
 	}
 }

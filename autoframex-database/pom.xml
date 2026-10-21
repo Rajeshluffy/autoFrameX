@@ -12,11 +12,10 @@
 	<artifactId>autoframex-database</artifactId>
 
 	<properties>
-		<!-- No unit tests exist in this module yet. Skip Surefire here
-		     explicitly rather than falling back to the parent's testng.xml
-		     default, which doesn't exist in this module and would crash the
-		     build. Remove this once real tests are added. -->
-		<skipTests>true</skipTests>
+		<!-- This module's own suite (DBManagerTest uses fake connections - no database
+		     needed). Without this the parent's testng.xml default is used, which
+		     doesn't exist in this module and would crash Surefire. -->
+		<testng.suite.file>testng.xml</testng.suite.file>
 	</properties>
 
 	<!--
@@ -34,6 +33,11 @@
 		<dependency>
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
