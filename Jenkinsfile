@@ -85,8 +85,8 @@ pipeline {
         )
         string(
             name: 'SUITE_FILE',
-            defaultValue: 'testng.xml',
-            description: 'TestNG suite XML file to execute (relative to the MODULE directory below, not the repo root)'
+            defaultValue: 'testng-build.xml',
+            description: 'TestNG suite XML file to execute (relative to the MODULE directory below, not the repo root). Default testng-build.xml needs no target app; testng.xml also runs the Cucumber UI scenarios, which need a real app at the configured URL (localhost:8080 by default, nothing listens there in the K8s pod).'
         )
         string(
             name: 'MODULE',
