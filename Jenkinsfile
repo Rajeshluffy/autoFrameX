@@ -314,6 +314,9 @@ pipeline {
                         sh """
                             cat k8s/namespace.yaml | ${env.KUBECTL} apply -f -
                             ${env.KUBECTL} delete job autoframex-testng-suite -n autoframex --ignore-not-found=true
+                            # The hostPath dir on the minikube node outlives the Job, so reports from an
+                            # earlier run would be extracted along with this run's. Start from empty.
+                            docker exec minikube rm -rf /tmp/autoframex-autoframex-testng-suite-surefire-reports
 
                             sed \
                                 -e "s#__JOB_NAME__#autoframex-testng-suite#g" \
@@ -369,6 +372,9 @@ pipeline {
                             sh """
                                 cat k8s/namespace.yaml | ${env.KUBECTL} apply -f -
                                 ${env.KUBECTL} delete job autoframex-alfadock-suite -n autoframex --ignore-not-found=true
+                                # The hostPath dir on the minikube node outlives the Job, so reports from an
+                                # earlier run would be extracted along with this run's. Start from empty.
+                                docker exec minikube rm -rf /tmp/autoframex-autoframex-alfadock-suite-surefire-reports
 
                                 sed \
                                     -e "s#__JOB_NAME__#autoframex-alfadock-suite#g" \
@@ -431,6 +437,9 @@ pipeline {
                     sh """
                         cat k8s/namespace.yaml | ${env.KUBECTL} apply -f -
                         ${env.KUBECTL} delete job autoframex-gpn-suite -n autoframex --ignore-not-found=true
+                        # The hostPath dir on the minikube node outlives the Job, so reports from an
+                        # earlier run would be extracted along with this run's. Start from empty.
+                        docker exec minikube rm -rf /tmp/autoframex-autoframex-gpn-suite-surefire-reports
 
                         sed \
                             -e "s#__JOB_NAME__#autoframex-gpn-suite#g" \
