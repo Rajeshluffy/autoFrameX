@@ -78,7 +78,7 @@ public class RemoteGridBrowser implements Browser {
         try {
             MutableCapabilities options = buildOptions();
             if (capabilities != null) {
-                options.merge(capabilities);
+                options = options.merge(capabilities);
             }
             logger.info("Connecting to Selenium Grid: " + hubUrl + " [browser=" + browserName + "]");
             return new RemoteWebDriver(new URL(hubUrl), options);

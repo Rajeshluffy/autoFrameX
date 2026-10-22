@@ -1,5 +1,6 @@
 package com.framework.selenium.api.actions;
 
+import com.framework.utils.StepReporter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -21,12 +22,12 @@ import design.patterns.object.pool.DriverPoolManager;
 public class WindowFrameActions {
 
 	private final Supplier<RemoteWebDriver> driverSupplier;
-	private final Reporter reporter;
-	private final WaitActions waitActions;
-	private final LocatorActions locatorActions;
+	private final StepReporter reporter;
+	private final ElementWaiter waitActions;
+	private final ElementLocator locatorActions;
 
-	public WindowFrameActions(Supplier<RemoteWebDriver> driverSupplier, Reporter reporter,
-			WaitActions waitActions, LocatorActions locatorActions) {
+	public WindowFrameActions(Supplier<RemoteWebDriver> driverSupplier, StepReporter reporter,
+			ElementWaiter waitActions, ElementLocator locatorActions) {
 		this.driverSupplier = driverSupplier;
 		this.reporter = reporter;
 		this.waitActions = waitActions;

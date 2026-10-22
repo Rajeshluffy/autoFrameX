@@ -145,8 +145,8 @@ public final class TestEvent {
         public Builder executionId(String v)     { this.executionId = v;     return this; }
         public Builder sessionId(String v)       { this.sessionId = v;       return this; }
         public Builder threadId(String v)        { this.threadId = v;        return this; }
-        public Builder artifacts(Map<String, String> v)     { this.artifacts = v;     return this; }
-        public Builder resourceUsage(Map<String, Object> v) { this.resourceUsage = v; return this; }
+        public Builder artifacts(Map<String, String> v)     { this.artifacts = v == null ? null : new HashMap<>(v); return this; }
+        public Builder resourceUsage(Map<String, Object> v) { this.resourceUsage = v == null ? null : new HashMap<>(v); return this; }
 
         public TestEvent build() {
             if (testId == null || testId.isEmpty()) {

@@ -90,7 +90,7 @@ public abstract class SecurityTestBase extends ProjectSpecificMethods {
         logger.info("=== SecurityTestBase: Generating ZAP report ===");
         try {
             java.io.File dir = new java.io.File("reports/zap");
-            if (!dir.exists()) dir.mkdirs();
+            com.framework.utils.DirectoryUtils.ensureExists(dir);
             ZapSecurityUtils.generateHtmlReport(zapBaseUrl(), ZAP_REPORT_PATH);
             logger.info("✓ ZAP report saved to: {}", ZAP_REPORT_PATH);
         } catch (Exception e) {

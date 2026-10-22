@@ -1,5 +1,6 @@
 package com.framework.selenium.api.actions;
 
+import com.framework.utils.StepReporter;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -156,7 +157,7 @@ public class ApiCaptureActions {
 	private static final ConcurrentMap<String, AtomicInteger> INVOCATIONS = new ConcurrentHashMap<>();
 
 	private final Supplier<RemoteWebDriver> driverSupplier;
-	private final Reporter reporter;
+	private final StepReporter reporter;
 
 	// ---- per-capture state (one instance = one test invocation) ----
 	private CdpSocket cdp;
@@ -175,7 +176,7 @@ public class ApiCaptureActions {
 	private final ConcurrentMap<String, Boolean> followedSessions = new ConcurrentHashMap<>();
 	private final Set<String> followedTargets = ConcurrentHashMap.newKeySet();
 
-	public ApiCaptureActions(Supplier<RemoteWebDriver> driverSupplier, Reporter reporter) {
+	public ApiCaptureActions(Supplier<RemoteWebDriver> driverSupplier, StepReporter reporter) {
 		this.driverSupplier = driverSupplier;
 		this.reporter = reporter;
 	}
@@ -506,8 +507,8 @@ public class ApiCaptureActions {
 				return;
 			case "Target.detachedFromTarget":
 				String detached = str(params.get("sessionId"));
-				followedSessions.remove(detached);
 				if (detached != null) {
+					followedSessions.remove(detached);
 					activity.forgetSession(detached, System.nanoTime());
 				}
 				return;
@@ -991,8 +992,8 @@ public class ApiCaptureActions {
 
 	/** {@code ./reports/<run>/apicapture} - same report-folder resolution as screenshots and videos. */
 	static Path captureRoot() {
-		String base = (ExtentReportManager.folderName != null && !ExtentReportManager.folderName.isEmpty())
-				? ExtentReportManager.folderName
+		String base = (ExtentReportManager.getFolderName() != null && !ExtentReportManager.getFolderName().isEmpty())
+				? ExtentReportManager.getFolderName()
 				: "reports/default";
 		return Paths.get(".", base, CAPTURE_DIR);
 	}
@@ -1244,7 +1245,7 @@ public class ApiCaptureActions {
 		public String getMethod() { return method; }
 		public String getUrl() { return url; }
 		public String getResourceType() { return resourceType; }
-		public Map<String, String> getHeaders() { return headers; }
+		public Map<String, String> getHeaders() { return Collections.unmodifiableMap(new LinkedHashMap<>(headers)); }
 		public Optional<String> getPostData() { return Optional.ofNullable(postData); }
 		public boolean isBodyOmitted() { return bodyOmitted; }
 		public Integer getStatus() { return status; }
@@ -1255,7 +1256,9 @@ public class ApiCaptureActions {
 		public void setStatusText(String statusText) { this.statusText = statusText; }
 		public String getMimeType() { return mimeType; }
 		public void setMimeType(String mimeType) { this.mimeType = mimeType; }
-		public Map<String, String> getResponseHeaders() { return responseHeaders; }
+		public Map<String, String> getResponseHeaders() {
+			return Collections.unmodifiableMap(new LinkedHashMap<>(responseHeaders));
+		}
 		public void setResponseHeaders(Map<String, String> headers) {
 			this.responseHeaders = headers == null ? Collections.emptyMap()
 					: Collections.unmodifiableMap(new LinkedHashMap<>(headers));

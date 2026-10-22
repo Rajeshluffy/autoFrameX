@@ -38,6 +38,9 @@ final class BrowserSecurityPolicy {
 
     private static final Logger logger = LoggerFactory.getLogger(BrowserSecurityPolicy.class);
 
+    /** Docker creates this file in every container's root filesystem. */
+    private static final String DOCKER_ENV_MARKER = "/.dockerenv";
+
     private BrowserSecurityPolicy() {}
 
     /** Whether to pass {@code --no-sandbox}. */
@@ -97,7 +100,7 @@ final class BrowserSecurityPolicy {
     }
 
     private static boolean inCiOrContainer() {
-        return inCiOrContainer(System::getenv, () -> new File("/.dockerenv").exists());
+        return inCiOrContainer(System::getenv, () -> java.nio.file.Files.exists(java.nio.file.Path.of(DOCKER_ENV_MARKER)));
     }
 
     private static boolean isSet(String value) {

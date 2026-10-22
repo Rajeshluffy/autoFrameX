@@ -1,5 +1,6 @@
 package com.framework.selenium.api.actions;
 
+import com.framework.utils.StepReporter;
 import java.time.Duration;
 import java.util.function.Supplier;
 
@@ -22,15 +23,15 @@ import com.framework.utils.WaitUtils;
  * <p>{@link Actions} is built fresh in every method rather than held as a
  * field — it carries no state across calls in the original implementation.
  */
-public class ClickActions {
+public class ClickActions implements ElementClicker {
 
 	private final Supplier<RemoteWebDriver> driverSupplier;
-	private final Reporter reporter;
-	private final WaitActions waitActions;
-	private final LocatorActions locatorActions;
+	private final StepReporter reporter;
+	private final ElementWaiter waitActions;
+	private final ElementLocator locatorActions;
 
-	public ClickActions(Supplier<RemoteWebDriver> driverSupplier, Reporter reporter,
-			WaitActions waitActions, LocatorActions locatorActions) {
+	public ClickActions(Supplier<RemoteWebDriver> driverSupplier, StepReporter reporter,
+			ElementWaiter waitActions, ElementLocator locatorActions) {
 		this.driverSupplier = driverSupplier;
 		this.reporter = reporter;
 		this.waitActions = waitActions;

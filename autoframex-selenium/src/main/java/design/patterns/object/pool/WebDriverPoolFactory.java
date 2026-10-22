@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * @author Framework Team
  * @version 3.0
  */
-public class WebDriverPoolFactory implements AutoCloseable {
+public final class WebDriverPoolFactory implements AutoCloseable {
 
     private static final Logger logger = LoggerFactory.getLogger(WebDriverPoolFactory.class);
 
@@ -520,14 +520,13 @@ public class WebDriverPoolFactory implements AutoCloseable {
         try { driver.manage().deleteAllCookies(); }
         catch (Exception e) { logger.debug("Cookie clear failed: " + e.getMessage()); }
 
-        if (driver instanceof JavascriptExecutor) {
-            JavascriptExecutor js = (JavascriptExecutor) driver;
-            try { js.executeScript("window.localStorage.clear();"); }
-            catch (Exception e) { logger.debug("localStorage clear failed: " + e.getMessage()); }
+        // RemoteWebDriver is always a JavascriptExecutor, so no instanceof guard is needed.
+        JavascriptExecutor js = driver;
+        try { js.executeScript("window.localStorage.clear();"); }
+        catch (Exception e) { logger.debug("localStorage clear failed: " + e.getMessage()); }
 
-            try { js.executeScript("window.sessionStorage.clear();"); }
-            catch (Exception e) { logger.debug("sessionStorage clear failed: " + e.getMessage()); }
-        }
+        try { js.executeScript("window.sessionStorage.clear();"); }
+        catch (Exception e) { logger.debug("sessionStorage clear failed: " + e.getMessage()); }
         logger.trace("State reset complete");
     }
 
@@ -547,7 +546,13 @@ public class WebDriverPoolFactory implements AutoCloseable {
     }
 
     private void dismissAlerts(RemoteWebDriver driver) {
-        try { driver.switchTo().alert().dismiss(); } catch (Exception e) { /* no alert */ }
+        try {
+            driver.switchTo().alert().dismiss();
+        } catch (org.openqa.selenium.NoAlertPresentException e) {
+            // no alert open: nothing to dismiss
+        } catch (Exception e) {
+            logger.debug("Alert dismissal failed: " + e.getMessage());
+        }
     }
 
     /** Closes every window except the primary one before returning driver to pool. */

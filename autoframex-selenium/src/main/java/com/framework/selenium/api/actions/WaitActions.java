@@ -1,5 +1,6 @@
 package com.framework.selenium.api.actions;
 
+import com.framework.utils.StepReporter;
 import java.time.Duration;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -21,12 +22,12 @@ import com.framework.utils.WaitUtils;
  * for logging, so it can be composed standalone or reused by other action
  * classes that need to wait for an element first (e.g. {@code ClickActions}).
  */
-public class WaitActions {
+public class WaitActions implements ElementWaiter {
 
 	private final Supplier<RemoteWebDriver> driverSupplier;
-	private final Reporter reporter;
+	private final StepReporter reporter;
 
-	public WaitActions(Supplier<RemoteWebDriver> driverSupplier, Reporter reporter) {
+	public WaitActions(Supplier<RemoteWebDriver> driverSupplier, StepReporter reporter) {
 		this.driverSupplier = driverSupplier;
 		this.reporter = reporter;
 	}

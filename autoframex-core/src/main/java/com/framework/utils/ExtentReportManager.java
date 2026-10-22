@@ -33,10 +33,15 @@ public final class ExtentReportManager {
 	private static final String DATE_PATTERN = "dd-MMM-yyyy HH-mm-ss";
 
 	private static volatile ExtentReports extent;
-	public static volatile String folderName = "";
+	private static volatile String folderName = "";
 	private static volatile String reportFileName = DEFAULT_FILE_NAME;
 
 	private ExtentReportManager() {
+	}
+
+	/** The current run's report folder, relative to the working directory (e.g. {@code reports/22-Oct-2026 10-00-00}); empty before init. */
+	public static String getFolderName() {
+		return folderName;
 	}
 
 	/**
@@ -59,21 +64,15 @@ public final class ExtentReportManager {
 		folderName = "reports/" + date;
 
 		File folder = new File("./" + folderName);
-		if (!folder.exists()) {
-			folder.mkdirs();
-		}
+		DirectoryUtils.ensureExists(folder);
 
 		File images = new File("./" + folderName + "/images");
-		if (!images.exists()) {
-			images.mkdirs();
-		}
+		DirectoryUtils.ensureExists(images);
 
 		// VideoRecorder also lazily creates per-test subfolders here, but the
 		// parent should exist from run start.
 		File videos = new File("./" + folderName + "/videos");
-		if (!videos.exists()) {
-			videos.mkdirs();
-		}
+		DirectoryUtils.ensureExists(videos);
 
 		reportFileName = (suiteName != null && !suiteName.isBlank())
 				? sanitizeFileName(suiteName) + ".html"

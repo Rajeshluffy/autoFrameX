@@ -1,5 +1,7 @@
 package com.framework.observability;
 
+import java.nio.charset.StandardCharsets;
+import com.framework.utils.DirectoryUtils;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -44,7 +46,14 @@ public final class TestEventCollector {
         mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
     }
 
-    public static TestEventCollector getInstance() { return INSTANCE; }
+    /** Starts the collector; see {@link #start}. Safe to call repeatedly. */
+    public static void init(String outputDir) { INSTANCE.start(outputDir); }
+
+    /** Queues an event for the background writer; see {@link #enqueue}. */
+    public static void publish(TestEvent event) { INSTANCE.enqueue(event); }
+
+    /** Drains the queue and stops the writer; see {@link #drainAndStop}. */
+    public static void flush() { INSTANCE.drainAndStop(); }
 
     /**
      * Creates the output directory, opens the NDJSON file, and starts the
@@ -52,14 +61,14 @@ public final class TestEventCollector {
      *
      * @param outputDir directory for the output file (created if absent)
      */
-    public synchronized void init(String outputDir) {
+    private synchronized void start(String outputDir) {
         if (initialized) return;
         try {
             File dir = new File(outputDir);
-            if (!dir.exists()) dir.mkdirs();
+            DirectoryUtils.ensureExists(dir);
 
             File outFile = new File(dir, "test-events.json");
-            writer = new BufferedWriter(new FileWriter(outFile, true));
+            writer = new BufferedWriter(new FileWriter(outFile, StandardCharsets.UTF_8, true));
 
             writerThread = new Thread(this::drainLoop, "TestEventCollector-Writer");
             writerThread.setDaemon(true);
@@ -78,7 +87,7 @@ public final class TestEventCollector {
      *
      * @param event the event to publish
      */
-    public void publish(TestEvent event) {
+    private void enqueue(TestEvent event) {
         if (!initialized || event == null) return;
         if (!queue.offer(event)) {
             logger.warn("TestEventCollector queue full — dropping event for: {}", event.getTestId());
@@ -90,7 +99,7 @@ public final class TestEventCollector {
      * Blocks until the writer thread finishes or 10 seconds elapse.
      * Call from @AfterSuite.
      */
-    public void flush() {
+    private void drainAndStop() {
         if (!initialized) return;
         try {
             queue.put(POISON_PILL);

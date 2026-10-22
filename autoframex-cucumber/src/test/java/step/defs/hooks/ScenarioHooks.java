@@ -88,7 +88,7 @@ public class ScenarioHooks {
         }
 
         if (scenario.isFailed() && uiCtx.driver != null) {
-            ScreenshotUtils.captureFailureEvidence(uiCtx.driver, "./" + ExtentReportManager.folderName + "/images");
+            ScreenshotUtils.captureFailureEvidence(uiCtx.driver, "./" + ExtentReportManager.getFolderName() + "/images");
         }
         try {
             DriverPoolManager.getInstance().teardownDriver(SCENARIO_METHOD, !scenario.isFailed());

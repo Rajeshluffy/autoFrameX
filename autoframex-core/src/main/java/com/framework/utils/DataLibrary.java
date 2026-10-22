@@ -1,5 +1,6 @@
 package com.framework.utils;
 
+import java.nio.charset.StandardCharsets;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -210,7 +211,7 @@ public class DataLibrary {
         logger.info("Loading delimited data from: " + path + " (delimiter: [" + delimiter + "])");
 
         List<Object[]> rows = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(path, StandardCharsets.UTF_8))) {
             String line;
             boolean firstLine = true;
             while ((line = reader.readLine()) != null) {

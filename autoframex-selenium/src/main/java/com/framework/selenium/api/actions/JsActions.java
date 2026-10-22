@@ -1,5 +1,6 @@
 package com.framework.selenium.api.actions;
 
+import com.framework.utils.StepReporter;
 import java.util.function.Supplier;
 
 import org.openqa.selenium.WebElement;
@@ -11,9 +12,9 @@ import com.framework.utils.Reporter;
 public class JsActions {
 
 	private final Supplier<RemoteWebDriver> driverSupplier;
-	private final Reporter reporter;
+	private final StepReporter reporter;
 
-	public JsActions(Supplier<RemoteWebDriver> driverSupplier, Reporter reporter) {
+	public JsActions(Supplier<RemoteWebDriver> driverSupplier, StepReporter reporter) {
 		this.driverSupplier = driverSupplier;
 		this.reporter = reporter;
 	}

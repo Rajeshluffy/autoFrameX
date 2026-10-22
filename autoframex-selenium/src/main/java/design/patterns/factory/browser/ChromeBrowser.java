@@ -62,7 +62,7 @@ public class ChromeBrowser implements Browser {
 		// without needing a per-test unique id at options-build time.
 		String downloadPath = System.getProperty("user.dir") + File.separator + "downloads"
 				+ File.separator + Thread.currentThread().getId();
-		new File(downloadPath).mkdirs();
+		com.framework.utils.DirectoryUtils.ensureExists(new File(downloadPath));
 		prefs.put("download.default_directory", downloadPath);
 		prefs.put("download.prompt_for_download", false); // Automatically download without prompting
 		prefs.put("download.directory_upgrade", true);

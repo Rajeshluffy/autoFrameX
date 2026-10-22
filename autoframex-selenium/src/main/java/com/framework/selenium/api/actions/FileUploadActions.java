@@ -1,5 +1,6 @@
 package com.framework.selenium.api.actions;
 
+import com.framework.utils.StepReporter;
 import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
@@ -19,10 +20,10 @@ public class FileUploadActions {
 	/** Serializes the OS-dialog file-upload fallback — see {@link #fileUploadViaOsDialog}. */
 	private static final Object FILE_UPLOAD_OS_DIALOG_LOCK = new Object();
 
-	private final Reporter reporter;
-	private final ClickActions clickActions;
+	private final StepReporter reporter;
+	private final ElementClicker clickActions;
 
-	public FileUploadActions(Reporter reporter, ClickActions clickActions) {
+	public FileUploadActions(StepReporter reporter, ElementClicker clickActions) {
 		this.reporter = reporter;
 		this.clickActions = clickActions;
 	}

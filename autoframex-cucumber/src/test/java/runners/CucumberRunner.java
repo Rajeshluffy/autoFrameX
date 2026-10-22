@@ -39,7 +39,7 @@ public class CucumberRunner extends AbstractTestNGCucumberTests {
                 ? context.getSuite().getName() : null;
         ExtentReportManager.initReportInfrastructure(suiteName);
 
-        String base = ExtentReportManager.folderName + "/"
+        String base = ExtentReportManager.getFolderName() + "/"
                 + ExtentReportManager.getReportFileName().replaceFirst("\\.html$", "");
         System.setProperty("cucumber.plugin", "html:" + base + ".html,json:" + base + ".json");
     }

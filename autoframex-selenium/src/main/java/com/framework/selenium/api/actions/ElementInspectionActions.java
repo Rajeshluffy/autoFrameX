@@ -1,5 +1,6 @@
 package com.framework.selenium.api.actions;
 
+import com.framework.utils.StepReporter;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -17,10 +18,10 @@ import com.framework.utils.WaitUtils;
  */
 public class ElementInspectionActions {
 
-	private final Reporter reporter;
-	private final WaitActions waitActions;
+	private final StepReporter reporter;
+	private final ElementWaiter waitActions;
 
-	public ElementInspectionActions(Reporter reporter, WaitActions waitActions) {
+	public ElementInspectionActions(StepReporter reporter, ElementWaiter waitActions) {
 		this.reporter = reporter;
 		this.waitActions = waitActions;
 	}

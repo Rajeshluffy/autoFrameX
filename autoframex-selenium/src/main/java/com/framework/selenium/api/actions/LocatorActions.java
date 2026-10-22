@@ -1,5 +1,6 @@
 package com.framework.selenium.api.actions;
 
+import com.framework.utils.StepReporter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -14,12 +15,12 @@ import com.framework.selenium.exception.ElementNotFoundException;
 import com.framework.utils.Reporter;
 
 /** Element-location strategies — extracted from {@code SeleniumBase} as part of the TD-07 composition refactor. */
-public class LocatorActions {
+public class LocatorActions implements ElementLocator {
 
 	private final Supplier<RemoteWebDriver> driverSupplier;
-	private final Reporter reporter;
+	private final StepReporter reporter;
 
-	public LocatorActions(Supplier<RemoteWebDriver> driverSupplier, Reporter reporter) {
+	public LocatorActions(Supplier<RemoteWebDriver> driverSupplier, StepReporter reporter) {
 		this.driverSupplier = driverSupplier;
 		this.reporter = reporter;
 	}

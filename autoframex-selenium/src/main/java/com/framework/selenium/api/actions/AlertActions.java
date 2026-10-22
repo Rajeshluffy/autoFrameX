@@ -1,5 +1,6 @@
 package com.framework.selenium.api.actions;
 
+import com.framework.utils.StepReporter;
 import java.util.function.Supplier;
 
 import org.openqa.selenium.Alert;
@@ -14,10 +15,10 @@ import com.framework.utils.WaitUtils;
 public class AlertActions {
 
 	private final Supplier<RemoteWebDriver> driverSupplier;
-	private final Reporter reporter;
-	private final WaitActions waitActions;
+	private final StepReporter reporter;
+	private final ElementWaiter waitActions;
 
-	public AlertActions(Supplier<RemoteWebDriver> driverSupplier, Reporter reporter, WaitActions waitActions) {
+	public AlertActions(Supplier<RemoteWebDriver> driverSupplier, StepReporter reporter, ElementWaiter waitActions) {
 		this.driverSupplier = driverSupplier;
 		this.reporter = reporter;
 		this.waitActions = waitActions;

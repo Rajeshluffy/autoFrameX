@@ -1,5 +1,6 @@
 package com.framework.selenium.api.actions;
 
+import com.framework.utils.StepReporter;
 import java.io.File;
 import java.io.IOException;
 import java.util.function.Supplier;
@@ -16,16 +17,16 @@ import com.framework.utils.Reporter;
 
 /**
  * Screenshot capture — extracted from {@code SeleniumBase} as part of the
- * TD-07 composition refactor. Reads {@link ExtentReportManager#folderName}
+ * TD-07 composition refactor. Reads {@link ExtentReportManager#getFolderName()}
  * (public static, resolved at call time) rather than caching it, since the
  * report folder is only known once {@code ExtentReportManager.initReportInfrastructure} runs.
  */
 public class ScreenshotActions {
 
 	private final Supplier<RemoteWebDriver> driverSupplier;
-	private final Reporter reporter;
+	private final StepReporter reporter;
 
-	public ScreenshotActions(Supplier<RemoteWebDriver> driverSupplier, Reporter reporter) {
+	public ScreenshotActions(Supplier<RemoteWebDriver> driverSupplier, StepReporter reporter) {
 		this.driverSupplier = driverSupplier;
 		this.reporter = reporter;
 	}
@@ -38,7 +39,7 @@ public class ScreenshotActions {
 		long number = (long) Math.floor(Math.random() * 900000000L) + 10000000L;
 		try {
 			File screenshot = driver().getScreenshotAs(OutputType.FILE);
-			File destination = new File("./" + ExtentReportManager.folderName + "/images/" + number + ".jpg");
+			File destination = new File("./" + ExtentReportManager.getFolderName() + "/images/" + number + ".jpg");
 			FileUtils.copyFile(screenshot, destination);
 		} catch (WebDriverException e) {
 			reporter.reportStep("Screenshot failed - browser closed: " + e.getMessage(), "warning", false);
@@ -52,7 +53,7 @@ public class ScreenshotActions {
 		long number = (long) Math.floor(Math.random() * 900000000L) + 10000000L;
 		try {
 			File screenshot = driver().getScreenshotAs(OutputType.FILE);
-			File destination = new File("./" + ExtentReportManager.folderName + "/images/" + name + "_" + number + ".jpg");
+			File destination = new File("./" + ExtentReportManager.getFolderName() + "/images/" + name + "_" + number + ".jpg");
 			FileUtils.copyFile(screenshot, destination);
 		} catch (WebDriverException e) {
 			reporter.reportStep("Screenshot failed: " + e.getMessage(), "warning", false);

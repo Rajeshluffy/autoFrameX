@@ -58,7 +58,7 @@ import com.framework.observability.TestEventCollector;
  * @AfterMethod -> tearDownTest()
  * @AfterSuite -> endReport()
  */
-public abstract class Reporter {
+public abstract class Reporter implements StepReporter {
 
     private static final Logger logger = LoggerFactory.getLogger(Reporter.class);
 
@@ -69,11 +69,11 @@ public abstract class Reporter {
     private static final ThreadLocal<String> testName = new ThreadLocal<>();
 
     // Test metadata (set by child class in @BeforeClass)
-    public String testcaseName;
-    public String testDescription;
-    public String authors;
-    public String category;
-    public String excelFileName;
+    protected String testcaseName;
+    protected String testDescription;
+    protected String authors;
+    protected String category;
+    protected String excelFileName;
 
     // Observability — per-test start time (ThreadLocal, matches pattern of other TLs)
     private static final ThreadLocal<Long> testStartTimeMs = new ThreadLocal<>();
@@ -100,7 +100,7 @@ public abstract class Reporter {
         SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
 
-        TestEventCollector.getInstance().init("logs");
+        TestEventCollector.init("logs");
 
         logger.info("========================================");
         logger.info("=== @BeforeSuite: Initializing Report ===");
@@ -379,7 +379,7 @@ public abstract class Reporter {
                 && !status.equalsIgnoreCase("SKIPPED")) {
             long snapNumber = takeSnap();
             try {
-                String imagePathStr = "./" + ExtentReportManager.folderName + "/images/" + snapNumber + ".jpg";
+                String imagePathStr = "./" + ExtentReportManager.getFolderName() + "/images/" + snapNumber + ".jpg";
                 File imageFile = new File(imagePathStr);
 
                 if (imageFile.exists() && imageFile.length() > 0) {
@@ -471,7 +471,7 @@ public abstract class Reporter {
                 .resourceUsage(ResourceUsageAccumulator.drain())
                 .build();
 
-            TestEventCollector.getInstance().publish(event);
+            TestEventCollector.publish(event);
         } catch (Exception e) {
             logger.warn("Failed to publish test event for {}: {}", method.getName(), e.getMessage());
         } finally {
@@ -491,7 +491,7 @@ public abstract class Reporter {
     public synchronized void endReport() {
         logger.info("=== @AfterSuite: Finalizing ===");
 
-        TestEventCollector.getInstance().flush();
+        TestEventCollector.flush();
         logger.info("Flaky test summary: {}", FlakyTestTracker.getInstance().getSummary());
 
         ExtentReports extent = ExtentReportManager.getExtent();

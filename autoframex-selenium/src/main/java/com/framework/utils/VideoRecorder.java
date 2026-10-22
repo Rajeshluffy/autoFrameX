@@ -89,7 +89,7 @@ public class VideoRecorder {
     // ---- Per-instance state (one VideoRecorder = one test thread) -----------
     private ScheduledExecutorService scheduler;
     private ScheduledFuture<?>        captureFuture;
-    private RemoteWebDriver           driver;
+    private TakesScreenshot           driver;
     private File                      framesDir;
     private String                    testName;
     private long                      threadId;
@@ -203,7 +203,7 @@ public class VideoRecorder {
 
     private void captureFrame() {
         try {
-            File tmp = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            File tmp = driver.getScreenshotAs(OutputType.FILE);
 
             // Sequence number (and frameCounter itself) is only assigned/incremented
             // after a frame genuinely lands on disk. Incrementing before the attempt
@@ -278,7 +278,7 @@ public class VideoRecorder {
             StringBuilder ffmpegOutput = new StringBuilder();
             Thread drainer = new Thread(() -> {
                 try (java.io.BufferedReader br = new java.io.BufferedReader(
-                        new java.io.InputStreamReader(proc.getInputStream()))) {
+                        new java.io.InputStreamReader(proc.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
                     String line;
                     while ((line = br.readLine()) != null) {
                         ffmpegOutput.append(line).append('\n');
@@ -335,15 +335,15 @@ public class VideoRecorder {
     // =========================================================================
 
     private File createFramesDir(String testName) {
-        String base = (ExtentReportManager.folderName != null && !ExtentReportManager.folderName.isEmpty())
-                ? ExtentReportManager.folderName
+        String base = (ExtentReportManager.getFolderName() != null && !ExtentReportManager.getFolderName().isEmpty())
+                ? ExtentReportManager.getFolderName()
                 : "reports/default";
 
         long   epoch    = System.currentTimeMillis();
         String safeName = testName.replaceAll("[^a-zA-Z0-9_-]", "_");
 
         File dir = new File("./" + base + "/videos/frames_t" + threadId + "_" + epoch + "_" + safeName);
-        dir.mkdirs();
+        DirectoryUtils.ensureExists(dir);
         return dir;
     }
 

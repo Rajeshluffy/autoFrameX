@@ -53,15 +53,6 @@ import design.patterns.object.pool.DriverPoolManager;
  */
 public class SeleniumBase extends Reporter implements Browser, Element {
 
-	/**
-	 * Retained for backward compatibility with any external subclass that
-	 * reads this field directly after calling a pointer-interaction method
-	 * ({@link #moveToElement}, {@link #dragAndDrop}, {@link #contextClick},
-	 * {@link #doubleClick}, {@link #hoverAndClick}) — it carries no state
-	 * across calls internally; each of those methods reassigns it fresh.
-	 */
-	protected Actions act;
-
 	private final WaitActions waitActions = new WaitActions(this::getDriver, this);
 	private final LocatorActions locatorActions = new LocatorActions(this::getDriver, this);
 	private final ClickActions clickActions = new ClickActions(this::getDriver, this, waitActions, locatorActions);
@@ -363,31 +354,26 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 
 	@Override
 	public void contextClick(WebElement ele) {
-		act = new Actions(getDriver());
 		clickActions.contextClick(ele);
 	}
 
 	@Override
 	public void doubleClick(WebElement ele) {
-		act = new Actions(getDriver());
 		clickActions.doubleClick(ele);
 	}
 
 	@Override
 	public void hoverAndClick(WebElement ele) {
-		act = new Actions(getDriver());
 		clickActions.hoverAndClick(ele);
 	}
 
 	@Override
 	public void moveToElement(WebElement ele) {
-		act = new Actions(getDriver());
 		clickActions.moveToElement(ele);
 	}
 
 	@Override
 	public void dragAndDrop(WebElement eleSource, WebElement eleTarget) {
-		act = new Actions(getDriver());
 		clickActions.dragAndDrop(eleSource, eleTarget);
 	}
 

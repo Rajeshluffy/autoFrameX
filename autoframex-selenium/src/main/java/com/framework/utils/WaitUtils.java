@@ -95,7 +95,7 @@ public final class WaitUtils {
 	 * @param errorMessage message to log on timeout
 	 * @return result of the condition, or {@code null} on timeout/error
 	 */
-	public static <T> T waitFor(RemoteWebDriver driver, Reporter reporter,
+	public static <T> T waitFor(RemoteWebDriver driver, StepReporter reporter,
 			ExpectedCondition<T> condition, String errorMessage) {
 		return waitFor(driver, reporter, condition, getDefaultWaitTime(), errorMessage);
 	}
@@ -119,7 +119,7 @@ public final class WaitUtils {
 	 * @param errorMessage     message to log on timeout
 	 * @return result of the condition, or {@code null} on timeout/error
 	 */
-	public static <T> T waitFor(RemoteWebDriver driver, Reporter reporter,
+	public static <T> T waitFor(RemoteWebDriver driver, StepReporter reporter,
 			ExpectedCondition<T> condition, int timeoutInSeconds, String errorMessage) {
 		try {
 			return getWait(driver, timeoutInSeconds)
@@ -196,7 +196,7 @@ public final class WaitUtils {
 	 * @param reporter the Reporter instance for logging (may be null)
 	 * @param seconds  timeout in seconds
 	 */
-	public static void setImplicitWait(RemoteWebDriver driver, Reporter reporter, int seconds) {
+	public static void setImplicitWait(RemoteWebDriver driver, StepReporter reporter, int seconds) {
 		try {
 			driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(seconds));
 			if (reporter != null) {
@@ -216,7 +216,7 @@ public final class WaitUtils {
 	 * @param driver   the WebDriver instance for the current thread
 	 * @param reporter the Reporter instance for logging (may be null)
 	 */
-	public static void resetImplicitWait(RemoteWebDriver driver, Reporter reporter) {
+	public static void resetImplicitWait(RemoteWebDriver driver, StepReporter reporter) {
 		try {
 			
 			int defaultWait = ConfigManager.getInstance().getConfig().getImplicit();

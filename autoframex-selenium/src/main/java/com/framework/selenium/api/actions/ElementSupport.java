@@ -1,5 +1,6 @@
 package com.framework.selenium.api.actions;
 
+import com.framework.utils.StepReporter;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
@@ -71,7 +72,7 @@ final class ElementSupport {
 	}
 
 	/** Sleeps, reporting (not throwing) if interrupted. */
-	static void pause(Reporter reporter, int timeoutMs) {
+	static void pause(StepReporter reporter, int timeoutMs) {
 		try {
 			Thread.sleep(timeoutMs);
 		} catch (InterruptedException e) {

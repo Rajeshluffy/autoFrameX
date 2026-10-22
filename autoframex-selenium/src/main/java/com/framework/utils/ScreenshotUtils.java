@@ -193,7 +193,9 @@ public final class ScreenshotUtils {
         } finally {
             try {
                 ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, " + originalScrollY + ")");
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                logger.debug("Could not restore the scroll position: {}", e.toString());
+            }
         }
     }
 
@@ -276,7 +278,7 @@ public final class ScreenshotUtils {
 
     private static void ensureDir(String dir) {
         File d = new File(dir);
-        if (!d.exists()) d.mkdirs();
+        DirectoryUtils.ensureExists(d);
     }
 
     private static void sleepMs(long ms) {

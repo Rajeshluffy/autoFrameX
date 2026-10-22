@@ -95,7 +95,7 @@ public class RequestSpecBuilder {
 	 * @return
 	 */
 	public RequestSpecBuilder setQueryParams(Map<String, String> queryParams) {
-		this.queryParams = queryParams;
+		this.queryParams = queryParams == null ? null : new java.util.HashMap<>(queryParams);
 		return this;
 	}
 
@@ -174,7 +174,7 @@ public class RequestSpecBuilder {
 	 * @return
 	 */
 	public RequestSpecBuilder setHeaders(Map<String, String> headers) {
-		this.headers = headers;
+		this.headers = headers == null ? null : new java.util.HashMap<>(headers);
 		return this;
 	}
 

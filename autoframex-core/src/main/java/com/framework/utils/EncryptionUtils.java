@@ -217,15 +217,18 @@ public final class EncryptionUtils {
         return new SecretKeySpec(keyBytes, "AES");
     }
 
+    /** SecureRandom is thread-safe; one shared instance beats seeding a new one per call. */
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     private static byte[] generateSalt() {
         byte[] salt = new byte[PBKDF2_SALT_LENGTH];
-        new SecureRandom().nextBytes(salt);
+        RANDOM.nextBytes(salt);
         return salt;
     }
 
     private static byte[] generateIv() {
         byte[] iv = new byte[GCM_IV_LENGTH];
-        new SecureRandom().nextBytes(iv);
+        RANDOM.nextBytes(iv);
         return iv;
     }
 }

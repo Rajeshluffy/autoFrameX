@@ -1,5 +1,6 @@
 package com.framework.selenium.api.actions;
 
+import com.framework.utils.StepReporter;
 import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
@@ -12,10 +13,10 @@ import com.framework.utils.WaitUtils;
 /** Text-entry operations — extracted from {@code SeleniumBase} as part of the TD-07 composition refactor. */
 public class TypeActions {
 
-	private final Reporter reporter;
-	private final WaitActions waitActions;
+	private final StepReporter reporter;
+	private final ElementWaiter waitActions;
 
-	public TypeActions(Reporter reporter, WaitActions waitActions) {
+	public TypeActions(StepReporter reporter, ElementWaiter waitActions) {
 		this.reporter = reporter;
 		this.waitActions = waitActions;
 	}
