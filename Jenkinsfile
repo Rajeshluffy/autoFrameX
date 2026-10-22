@@ -152,6 +152,13 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+                // The suite stages extract each Job's reports into k8s-results/
+                // without clearing it, and the workspace persists between builds,
+                // so reports from an earlier run (e.g. a testng-failed.xml or
+                // junitreports/ from a suite that no longer runs) sat next to the
+                // fresh ones and were archived and picked up as if they were this
+                // run's. Module target/ dirs are already cleaned by `mvn clean`.
+                sh 'rm -rf k8s-results'
             }
         }
 
