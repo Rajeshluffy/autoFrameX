@@ -324,11 +324,14 @@ pipeline {
                             # Wait for the Job to reach Complete OR Failed, whichever comes first.
                             # `kubectl wait --for=condition=complete` alone sits out its whole timeout
                             # when the Job fails (backoffLimit: 0), so a broken suite used to cost
-                            # 10 minutes before anything noticed. 120 x 5s = same 10 minute ceiling.
+                            # 10 minutes before anything noticed. The 10 minute ceiling is a wall-clock
+                            # deadline and each kubectl call is capped at 20s, so a hung API server
+                            # can't stretch it (a counted loop did: run #6 sat 53 minutes).
                             JOB_RESULT=timeout
-                            for i in \$(seq 1 120); do
-                                SUCCEEDED=\$(${env.KUBECTL} get job autoframex-testng-suite -n autoframex -o jsonpath='{.status.succeeded}') || true
-                                FAILED=\$(${env.KUBECTL} get job autoframex-testng-suite -n autoframex -o jsonpath='{.status.failed}') || true
+                            DEADLINE=\$(( \$(date +%s) + 600 ))
+                            while [ \$(date +%s) -lt \$DEADLINE ]; do
+                                SUCCEEDED=\$(timeout 20 ${env.KUBECTL} get job autoframex-testng-suite -n autoframex -o jsonpath='{.status.succeeded}') || true
+                                FAILED=\$(timeout 20 ${env.KUBECTL} get job autoframex-testng-suite -n autoframex -o jsonpath='{.status.failed}') || true
                                 if [ "\${SUCCEEDED:-0}" -ge 1 ]; then JOB_RESULT=complete; break; fi
                                 if [ "\${FAILED:-0}" -ge 1 ]; then JOB_RESULT=failed; break; fi
                                 sleep 5
@@ -376,11 +379,14 @@ pipeline {
                                 # Wait for the Job to reach Complete OR Failed, whichever comes first.
                                 # `kubectl wait --for=condition=complete` alone sits out its whole timeout
                                 # when the Job fails (backoffLimit: 0), so a broken suite used to cost
-                                # 10 minutes before anything noticed. 120 x 5s = same 10 minute ceiling.
+                                # 10 minutes before anything noticed. The 10 minute ceiling is a wall-clock
+                                # deadline and each kubectl call is capped at 20s, so a hung API server
+                                # can't stretch it (a counted loop did: run #6 sat 53 minutes).
                                 JOB_RESULT=timeout
-                                for i in \$(seq 1 120); do
-                                    SUCCEEDED=\$(${env.KUBECTL} get job autoframex-alfadock-suite -n autoframex -o jsonpath='{.status.succeeded}') || true
-                                    FAILED=\$(${env.KUBECTL} get job autoframex-alfadock-suite -n autoframex -o jsonpath='{.status.failed}') || true
+                                DEADLINE=\$(( \$(date +%s) + 600 ))
+                                while [ \$(date +%s) -lt \$DEADLINE ]; do
+                                    SUCCEEDED=\$(timeout 20 ${env.KUBECTL} get job autoframex-alfadock-suite -n autoframex -o jsonpath='{.status.succeeded}') || true
+                                    FAILED=\$(timeout 20 ${env.KUBECTL} get job autoframex-alfadock-suite -n autoframex -o jsonpath='{.status.failed}') || true
                                     if [ "\${SUCCEEDED:-0}" -ge 1 ]; then JOB_RESULT=complete; break; fi
                                     if [ "\${FAILED:-0}" -ge 1 ]; then JOB_RESULT=failed; break; fi
                                     sleep 5
@@ -435,11 +441,14 @@ pipeline {
                         # Wait for the Job to reach Complete OR Failed, whichever comes first.
                         # `kubectl wait --for=condition=complete` alone sits out its whole timeout
                         # when the Job fails (backoffLimit: 0), so a broken suite used to cost
-                        # 10 minutes before anything noticed. 120 x 5s = same 10 minute ceiling.
+                        # 10 minutes before anything noticed. The 10 minute ceiling is a wall-clock
+                        # deadline and each kubectl call is capped at 20s, so a hung API server
+                        # can't stretch it (a counted loop did: run #6 sat 53 minutes).
                         JOB_RESULT=timeout
-                        for i in \$(seq 1 120); do
-                            SUCCEEDED=\$(${env.KUBECTL} get job autoframex-gpn-suite -n autoframex -o jsonpath='{.status.succeeded}') || true
-                            FAILED=\$(${env.KUBECTL} get job autoframex-gpn-suite -n autoframex -o jsonpath='{.status.failed}') || true
+                        DEADLINE=\$(( \$(date +%s) + 600 ))
+                        while [ \$(date +%s) -lt \$DEADLINE ]; do
+                            SUCCEEDED=\$(timeout 20 ${env.KUBECTL} get job autoframex-gpn-suite -n autoframex -o jsonpath='{.status.succeeded}') || true
+                            FAILED=\$(timeout 20 ${env.KUBECTL} get job autoframex-gpn-suite -n autoframex -o jsonpath='{.status.failed}') || true
                             if [ "\${SUCCEEDED:-0}" -ge 1 ]; then JOB_RESULT=complete; break; fi
                             if [ "\${FAILED:-0}" -ge 1 ]; then JOB_RESULT=failed; break; fi
                             sleep 5
