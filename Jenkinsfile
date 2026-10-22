@@ -262,11 +262,17 @@ pipeline {
         }
 
         stage('Load Image into Minikube') {
+            // minikube's container runtime depends on how the cluster was created:
+            // with the docker runtime `docker load` works inside the node, but with
+            // containerd (minikube v1.37.0 here) there is no docker daemon in the
+            // node ("failed to connect to the docker API ... docker.sock") and the
+            // image has to go into containerd's k8s.io namespace -- the one the
+            // kubelet reads -- with ctr. Pick whichever the node actually has.
             steps {
                 sh '''
                     docker save -o autoframex-test.tar autoframex-test:${BUILD_ID}
                     docker cp autoframex-test.tar minikube:/autoframex-test.tar
-                    docker exec minikube docker load -i /autoframex-test.tar
+                    docker exec minikube sh -c 'if docker info >/dev/null 2>&1; then docker load -i /autoframex-test.tar; else ctr --namespace=k8s.io images import /autoframex-test.tar; fi'
                     rm autoframex-test.tar
                     docker exec minikube rm /autoframex-test.tar
                 '''
