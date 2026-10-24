@@ -1,5 +1,9 @@
 package com.api.rest.assured.base;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Collections;
+import io.restassured.common.mapper.TypeRef;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
@@ -16,10 +20,19 @@ import io.restassured.response.Response;
 
 public class RestAssuredResponseBase implements ResponseAPI {
 
+    private static final ObjectMapper LENIENT = new ObjectMapper().findAndRegisterModules()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
     private final Response response;
+    private final String requestLine;
 
     public RestAssuredResponseBase(Response response) {
+        this(response, null);
+    }
+
+    public RestAssuredResponseBase(Response response, String requestLine) {
         this.response = response;
+        this.requestLine = requestLine == null ? "(request not recorded)" : requestLine;
     }
 
     @Override
@@ -70,36 +83,99 @@ public class RestAssuredResponseBase implements ResponseAPI {
 
     @Override
     public <T> T getBodyAs(Class<T> clazz) {
-        // RestAssured uses Jackson internally when jackson-databind is on the classpath
-        return response.as(clazz);
+        return read(clazz.getName(), () -> LENIENT.readValue(getBody(), clazz));
     }
 
     @Override
     public String getJsonPath(String path) {
-        // Guard: attempting to parse HTML (or any non-JSON body) as JSON produces a
-        // cryptic Groovy JsonException.  Catch the bad state early and surface:
-        //  - the actual HTTP status code
-        //  - the Content-Type header
-        //  - the first 400 characters of the body
-        // so the developer can distinguish auth failures, hibernated instances,
-        // wrong URLs, etc. without decoding a Groovy stack trace.
-        String ct = getContentType();
-        if (!ct.toLowerCase().contains("json")) {
-            String body = getBody();
-            String preview = body.length() > 400 ? body.substring(0, 400) + "…" : body;
-            throw new IllegalStateException(
-                    "Cannot read JSON path '" + path + "' — response is not JSON.\n"
-                    + "  Status      : " + getStatusCode() + " " + getStatusMessage() + "\n"
-                    + "  Content-Type: " + (ct.isEmpty() ? "(none)" : ct) + "\n"
-                    + "  Body preview: " + preview + "\n"
-                    + "Common causes:\n"
-                    + "  1. Authentication failed → check credentials in "
-                    +      "service.now.app.config.properties\n"
-                    + "  2. ServiceNow instance is hibernating → "
-                    +      "wake it at developer.servicenow.com\n"
-                    + "  3. Wrong base URI or base path in the properties file");
-        }
+        requireJson(path);
         return response.jsonPath().getString(path);
+    }
+
+    @Override
+    public <T> T path(String jsonPath, Class<T> type) {
+        requireJson(jsonPath);
+        if (type == Object.class) {
+            return type.cast(response.jsonPath().get(jsonPath));
+        }
+        return response.jsonPath().getObject(jsonPath, type);
+    }
+
+    @Override
+    public <T> List<T> pathList(String jsonPath, Class<T> elementType) {
+        requireJson(jsonPath);
+        List<T> list = response.jsonPath().getList(jsonPath, elementType);
+        return list == null ? Collections.emptyList() : list;
+    }
+
+    @Override
+    public <T> T as(TypeRef<T> type) {
+        return read(type.getType().getTypeName(),
+                () -> LENIENT.readValue(getBody(), LENIENT.getTypeFactory().constructType(type.getType())));
+    }
+
+    /**
+     * Reads the body with Jackson, ignoring fields the target type does not have: a service adding a field
+     * must not break every test that reads the fields it knows. A failure says what was being read and from
+     * which call, with the start of the body (credentials masked), not just Jackson's position in the text.
+     */
+    private <T> T read(String target, BodyReader<T> reader) {
+        try {
+            return reader.read();
+        } catch (Exception e) {
+            String reason = e.getMessage() == null ? e.getClass().getSimpleName()
+                    : e.getMessage().lines().findFirst().orElse("");
+            throw new IllegalStateException("Cannot read the response body as " + target + ": " + reason + "\n"
+                    + "  Request     : " + requestLine + "\n"
+                    + "  Status      : " + getStatusCode() + " " + getStatusMessage() + "\n"
+                    + "  Content-Type: " + (getContentType().isEmpty() ? "(none)" : getContentType()) + "\n"
+                    + "  Body preview: " + ApiRedaction.preview(getBody(), 400), e);
+        }
+    }
+
+    @FunctionalInterface
+    private interface BodyReader<T> {
+        T read() throws Exception;
+    }
+
+    @Override
+    public long getResponseTimeMs() {
+        return response.time();
+    }
+
+    @Override
+    public Map<String, String> getCookies() {
+        return new HashMap<>(response.getCookies());
+    }
+
+    @Override
+    public byte[] getBodyBytes() {
+        return response.asByteArray();
+    }
+
+    @Override
+    public String describeRequest() {
+        return requestLine;
+    }
+
+    /**
+     * Reading a JSON path from an HTML login page or an empty body fails inside Groovy with an unreadable
+     * exception. Stop early and say what actually came back (status, content type, the start of the body with
+     * credentials masked), so a rejected login, a wrong URL or a gateway error page is obvious.
+     */
+    private void requireJson(String path) {
+        String contentType = getContentType();
+        if (!contentType.toLowerCase().contains("json")) {
+            throw new IllegalStateException(
+                    "Cannot read JSON path '" + path + "' - the response is not JSON.\n"
+                    + "  Request     : " + requestLine + "\n"
+                    + "  Status      : " + getStatusCode() + " " + getStatusMessage() + "\n"
+                    + "  Content-Type: " + (contentType.isEmpty() ? "(none)" : contentType) + "\n"
+                    + "  Body preview: " + ApiRedaction.preview(getBody(), 400) + "\n"
+                    + "Common causes: the credentials were rejected, the base URI or path is wrong, the "
+                    + "service is asleep or redirected to a login page, or a gateway answered with its own "
+                    + "error page.");
+        }
     }
 
     @Override

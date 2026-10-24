@@ -42,6 +42,8 @@ public class RequestSpecBuilder {
 	private boolean preemptive;
 	private Integer connectTimeoutMs;
 	private Integer readTimeoutMs;
+	private OAuthSettings oauthSettings;
+	private String oauthScope;
 
 	RequestAuthentication auth=	new RequestAuthentication();
 
@@ -254,13 +256,41 @@ public class RequestSpecBuilder {
 		// used to be stored in the Basic-auth fields too, so build() also configured Basic auth
 		// with them next to the OAuth token.
 
-		auth.setOAuthBaseUrl(baseUri + oAuthBasePath);
-		token = auth.getOAuthToken(grantType, clientId, clientSecret, username, password);
-
-		if (token == null || token.isEmpty()) {
-			throw new RuntimeException("OAuth token retrieval failed.");
-		}
+		// The token comes from the JVM-wide TokenProvider: builders for the same client and user share one
+		// cached token instead of each asking the token endpoint for a new one. The first call still
+		// happens here, so wrong credentials fail at set-up with the server's reason; build() asks again
+		// so a long-lived builder picks up a new token when the old one is about to expire.
+		oauthSettings = new OAuthSettings(baseUri + oAuthBasePath, grantType, clientId, clientSecret,
+				username, password, oauthScope);
+		token = TokenProvider.token(oauthSettings);
 		return this;
+	}
+
+	/** Scope to ask for in the token request; call before {@link #setOAuth}. */
+	public RequestSpecBuilder setOAuthScope(String scope) {
+		this.oauthScope = scope;
+		return this;
+	}
+
+	/** {@code true} when this builder authenticates with an OAuth token from {@link #setOAuth}. */
+	public boolean hasOAuth() {
+		return oauthSettings != null;
+	}
+
+	/**
+	 * Called after a request was rejected with 401: drops the token that was sent (only if it is still the
+	 * cached one, so threads rejected together fetch a single new token) and gets a fresh one.
+	 *
+	 * @return {@code true} if the token changed, i.e. sending the request again can help
+	 */
+	public boolean refreshOAuthToken() {
+		if (oauthSettings == null) {
+			return false;
+		}
+		String rejected = token;
+		TokenProvider.invalidate(oauthSettings, rejected);
+		token = TokenProvider.token(oauthSettings);
+		return token != null && !token.equals(rejected);
 	}
 
 	public RequestSpecBuilder setBearerToken(String grantType, String clientId, String clientSecret, String refreshToken) {
@@ -356,6 +386,9 @@ public class RequestSpecBuilder {
 			requestSpecification.headers(headers);
 		}
 
+		if (oauthSettings != null) {
+			token = TokenProvider.token(oauthSettings);   // cached; a new one only when it is about to expire
+		}
 		applyAuthentication(requestSpecification);
 
 		RestAssuredConfig current = requestSpecification instanceof FilterableRequestSpecification

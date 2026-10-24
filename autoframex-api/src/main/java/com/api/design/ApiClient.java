@@ -50,5 +50,8 @@ public interface ApiClient {
 	
 	ResponseAPI delete(RequestSpecification request, String endPoint);
 
+	/** PATCH with a body (partial update). */
+	ResponseAPI patch(RequestSpecification request, String endPoint, Object body);
+
 
 }

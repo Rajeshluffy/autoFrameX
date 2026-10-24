@@ -58,8 +58,10 @@ public class ApiTimeoutTest {
 		} catch (AssertionError e) {
 			throw e;
 		} catch (Exception expected) {
-			// REST Assured rethrows the checked java.net.SocketTimeoutException as it is, not wrapped
-			Assert.assertTrue(expected instanceof java.net.SocketTimeoutException,
+			// Through the client the timeout arrives as an ApiCallException (naming the call) whose cause is the
+			// socket timeout; the token request is made without the client, so there it is the raw exception.
+			Throwable timeout = expected instanceof ApiCallException ? expected.getCause() : expected;
+			Assert.assertTrue(timeout instanceof java.net.SocketTimeoutException,
 					"expected a socket timeout, got " + expected);
 		}
 		return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);

@@ -63,15 +63,37 @@ public class RequestAuthentication {
     /** Same as above, sending {@code headers} with the token request. */
     public String getOAuthToken(String grantType, String clientId, String clientSecret,
             String username, String password, Map<String, String> headers) {
+        return getOAuthToken(grantType, clientId, clientSecret, username, password, null, headers);
+    }
+
+    /**
+     * Same as above, also sending {@code scope} when it is set. Only the fields that have a value are
+     * sent: a {@code client_credentials} grant has no user, and the form used to carry a bare
+     * {@code username&password} for it, which strict token endpoints reject.
+     */
+    public String getOAuthToken(String grantType, String clientId, String clientSecret,
+            String username, String password, String scope, Map<String, String> headers) {
         if (!isTokenValid()) {
             Map<String, String> form = new LinkedHashMap<>();
-            form.put("grant_type", grantType);
-            form.put("client_id", clientId);
-            form.put("client_secret", clientSecret);
-            form.put("username", username);
-            form.put("password", password);
+            putIfPresent(form, "grant_type", grantType);
+            putIfPresent(form, "client_id", clientId);
+            putIfPresent(form, "client_secret", clientSecret);
+            putIfPresent(form, "username", username);
+            putIfPresent(form, "password", password);
+            putIfPresent(form, "scope", scope);
             requestToken(form, headers);
         }
+        return token;
+    }
+
+    private static void putIfPresent(Map<String, String> form, String name, String value) {
+        if (value != null && !value.isBlank()) {
+            form.put(name, value);
+        }
+    }
+
+    /** The cached token, valid or not; {@code null} when none. For {@link TokenProvider}. */
+    String currentToken() {
         return token;
     }
 

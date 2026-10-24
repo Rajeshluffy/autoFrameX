@@ -33,6 +33,7 @@ public class RequestAuthenticationTest {
 
 	@BeforeMethod
 	public void startFakeTokenEndpoint() throws IOException {
+		TokenProvider.clear();
 		replies.clear();
 		tokenRequests.set(0);
 		server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);

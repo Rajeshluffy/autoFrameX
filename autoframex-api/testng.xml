@@ -11,6 +11,10 @@
             <class name="com.api.rest.assured.base.ApiTimeoutTest"/>
             <class name="com.api.rest.assured.base.RequestSpecBuilderStateTest"/>
             <class name="com.api.rest.assured.base.ResponseHeadersTest"/>
+            <class name="com.api.rest.assured.base.TokenProviderTest"/>
+            <class name="com.api.rest.assured.base.ApiRequestTest"/>
+            <class name="com.api.rest.assured.base.ResponseTypedAccessTest"/>
+            <class name="com.api.assertions.ApiAssertionsTest"/>
         </classes>
     </test>
 </suite>

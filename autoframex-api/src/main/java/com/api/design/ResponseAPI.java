@@ -1,5 +1,6 @@
 package com.api.design;
 
+import io.restassured.common.mapper.TypeRef;
 import java.util.List;
 import java.util.Map;
 
@@ -39,4 +40,27 @@ public interface ResponseAPI {
      * Example: response.verifySchema("schemas/incident_create_response_schema.json")
      */
     void verifySchema(String schemaFilePath);
+
+    /**
+     * The value at a JSON path, with its type kept: a number is read as a number, not its text. Missing path
+     * gives {@code null}. {@code Object.class} returns the natural type (Number, String, List, Map).
+     */
+    <T> T path(String jsonPath, Class<T> type);
+
+    /** The array at a JSON path as a list of {@code elementType}; empty when the path is missing. */
+    <T> List<T> pathList(String jsonPath, Class<T> elementType);
+
+    /** The body as a generic type, e.g. {@code response.as(new TypeRef<List<Incident>>() {})}. */
+    <T> T as(TypeRef<T> type);
+
+    /** How long the call took, in milliseconds. */
+    long getResponseTimeMs();
+
+    Map<String, String> getCookies();
+
+    /** The raw body, for downloads and other non-text content. */
+    byte[] getBodyBytes();
+
+    /** {@code METHOD uri} of the call that produced this response, credentials masked; for diagnostics. */
+    String describeRequest();
 }
