@@ -227,7 +227,7 @@ mvn test -pl autoframex-testkit
 **Override browser / environment / headless at runtime**
 
 ```bash
-mvn test -pl autoframex-testkit -Dbrowser=firefox -Denv=staging -Dheadless=true
+mvn test -pl autoframex-testkit -Dbrowser=firefox -Denv=qa -Dheadless=true
 ```
 
 **Run a specific suite** (`testng-ci.xml` lives in `autoframex-selenium`)

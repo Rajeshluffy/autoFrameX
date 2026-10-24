@@ -10,7 +10,7 @@
         mvn test -Dtestng.suite.file=testng-smoke.xml
 
     Pass parameters that override frameworkConfig.properties:
-        mvn test -Dbrowser=firefox -Denv=staging -Dheadless=true
+        mvn test -Dbrowser=firefox -Denv=qa -Dheadless=true
 -->
 <suite name="autoFrameX Suite" verbose="1" parallel="none">
 

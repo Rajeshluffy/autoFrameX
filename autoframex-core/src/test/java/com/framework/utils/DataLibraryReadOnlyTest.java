@@ -62,13 +62,13 @@ public class DataLibraryReadOnlyTest {
 	}
 
 	@Test
-	public void aMissingFileStillGivesAnEmptyResultInsteadOfAnException() throws IOException {
+	public void aMissingFileThrowsInsteadOfGivingAnEmptyResult() throws IOException {
 		Path dir = Files.createTempDirectory("datalibrary-missing");
 		String previousDataDir = System.getProperty("dataDir");
 		try {
 			System.setProperty("dataDir", dir.toString());
-			Object[][] data = DataLibrary.readExcelData("does_not_exist_" + System.nanoTime());
-			Assert.assertEquals(data.length, 0);
+			String name = "does_not_exist_" + System.nanoTime();
+			Assert.assertThrows(com.framework.exception.FrameworkException.class, () -> DataLibrary.readExcelData(name));
 		} finally {
 			if (previousDataDir == null) {
 				System.clearProperty("dataDir");

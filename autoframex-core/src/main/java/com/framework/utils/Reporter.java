@@ -64,9 +64,11 @@ public abstract class Reporter implements StepReporter {
 
     // ExtentTest node tracking (per-thread) — the ExtentReports instance itself
     // and the report folder/file naming live in ExtentReportManager (TD-07).
-    private static final ThreadLocal<ExtentTest> parentTest = new ThreadLocal<>();
+    // The class's parent node is per test-class INSTANCE, not per thread: it was a ThreadLocal set
+    // on the @BeforeClass thread, so under parallel methods a worker thread either found no parent
+    // (and invented a bare one) or kept the previous class's parent and filed its methods there.
+    private volatile ExtentTest classNode;
     private static final ThreadLocal<ExtentTest> test = new ThreadLocal<>();
-    private static final ThreadLocal<String> testName = new ThreadLocal<>();
 
     // Test metadata (set by child class in @BeforeClass)
     protected String testcaseName;
@@ -206,8 +208,7 @@ public abstract class Reporter implements StepReporter {
                     .assignAuthor(authors)
                     .assignCategory(category);
 
-            parentTest.set(parent);
-            testName.set(testcaseName);
+            classNode = parent;
         }
 
         logger.info("✓ Test case node created: " + testcaseName);
@@ -237,16 +238,19 @@ public abstract class Reporter implements StepReporter {
         String methodName = method.getName();
         logger.info("Creating test method node: " + methodName);
 
-        ExtentTest parent = parentTest.get();
+        ExtentTest parent = classNode;
 
-        // Fallback: if parent node missing, create a default one
+        // Fallback: if parent node missing, create a default one (once per class instance)
         if (parent == null) {
-            logger.warn("Parent node not found for " + methodName + ", creating default.");
             synchronized (extent) {
-                String name = (testcaseName != null) ? testcaseName
-                        : this.getClass().getSimpleName();
-                parent = extent.createTest(name);
-                parentTest.set(parent);
+                parent = classNode;
+                if (parent == null) {
+                    logger.warn("Parent node not found for " + methodName + ", creating default.");
+                    String name = (testcaseName != null) ? testcaseName
+                            : this.getClass().getSimpleName();
+                    parent = extent.createTest(name);
+                    classNode = parent;
+                }
             }
         }
 
@@ -571,11 +575,11 @@ public abstract class Reporter implements StepReporter {
     public abstract long takeSnap();
 
     public String getTestName() {
-        return testName.get();
+        return testcaseName;
     }
 
     public Status getTestStatus() {
-        ExtentTest parent = parentTest.get();
+        ExtentTest parent = classNode;
         return parent != null ? parent.getModel().getStatus() : Status.SKIP;
     }
 
@@ -593,9 +597,7 @@ public abstract class Reporter implements StepReporter {
     }
 
     protected void cleanupThreadLocals() {
-        parentTest.remove();
         test.remove();
-        testName.remove();
         testStartTimeMs.remove();
         ResourceUsageAccumulator.clear();
     }

@@ -75,7 +75,7 @@ pipeline {
         )
         choice(
             name: 'ENVIRONMENT',
-            choices: ['qa', 'staging', 'prod'],
+            choices: ['qa', 'prod'],  // the framework knows dev, qa and prod; an unknown name now fails the run
             description: 'Target environment'
         )
         booleanParam(

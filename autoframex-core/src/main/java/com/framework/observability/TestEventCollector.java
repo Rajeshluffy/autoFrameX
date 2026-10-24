@@ -99,16 +99,27 @@ public final class TestEventCollector {
      * Blocks until the writer thread finishes or 10 seconds elapse.
      * Call from @AfterSuite.
      */
-    private void drainAndStop() {
+    private synchronized void drainAndStop() {
         if (!initialized) return;
         try {
-            queue.put(POISON_PILL);
+            // offer, not put: put() blocks forever when the queue is full and the writer has died
+            if (!queue.offer(POISON_PILL, 5, TimeUnit.SECONDS)) {
+                logger.warn("TestEventCollector queue still full at flush; interrupting the writer");
+                if (writerThread != null) {
+                    writerThread.interrupt();
+                }
+            }
             if (writerThread != null) {
                 writerThread.join(10_000);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             logger.warn("TestEventCollector flush interrupted");
+        } finally {
+            // The writer is closed now. Without this reset a second suite in the same JVM called
+            // init() again, found initialized == true, started no writer, and its events went nowhere.
+            writerThread = null;
+            initialized = false;
         }
     }
 

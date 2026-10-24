@@ -1,5 +1,6 @@
 package com.framework.testng.api.base;
 
+import com.framework.exception.FrameworkException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Duration;
@@ -115,9 +116,9 @@ public class ProjectSpecificMethods extends SeleniumBase {
 				dataFile = excelFileName;
 			}
 			if (dataFile == null || dataFile.isEmpty()) {
-				logger.warn("DATA_PROVIDER mode active but no Excel file configured."
+				// An empty provider makes TestNG run nothing and the build stays green.
+				throw new FrameworkException("DATA_PROVIDER mode is active but no Excel file is configured."
 						+ " Set 'excel.data.file' in your testng.xml.");
-				return new AccountData[0][0];
 			}
 			logger.info("DATA_PROVIDER mode — loading accounts from: " + dataFile);
 			return DataLibrary.readExcelAsAccounts(dataFile);

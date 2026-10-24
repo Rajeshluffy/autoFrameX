@@ -223,10 +223,13 @@ public final class WebDriverPoolFactory implements AutoCloseable {
                         throw e;
                     }
                 } else {
-                    // ── Step 3: pool full — blocking poll with timeout ────────
-                    driver = borrowWithTimeout(browserType);
-                    reused = true;
-                    statistics.incrementReused();
+                    // ── Step 3: pool full — wait for an idle driver OR a freed slot ──
+                    Borrowed borrowed = borrowOrCreate(browserType);
+                    driver = borrowed.driver;
+                    reused = borrowed.reused;
+                    if (reused) {
+                        statistics.incrementReused();
+                    }
                 }
             }
 
@@ -259,7 +262,7 @@ public final class WebDriverPoolFactory implements AutoCloseable {
         } catch (DriverAcquisitionException e) {
             // The driver, if any, is already counted in poolSizeCounters here —
             // either freshly reserved+created above, or borrowed while still
-            // live from tryReuseFromPool()/borrowWithTimeout(). Destroying it
+            // live from tryReuseFromPool()/borrowOrCreate(). Destroying it
             // without decrementing would leak a phantom slot (F1) exactly the
             // way a genuine navigation failure after a successful create did.
             if (driver != null) {
@@ -277,31 +280,75 @@ public final class WebDriverPoolFactory implements AutoCloseable {
         }
     }
 
+    /** How often a thread waiting at capacity looks again for a freed slot. */
+    private static final long CAPACITY_POLL_MILLIS = 250;
+
+    /** A driver handed to a waiting thread, and whether it came from the idle queue or was newly created. */
+    private static final class Borrowed {
+        final RemoteWebDriver driver;
+        final boolean reused;
+
+        Borrowed(RemoteWebDriver driver, boolean reused) {
+            this.driver = driver;
+            this.reused = reused;
+        }
+    }
+
     /**
-     * Blocks up to {@code borrowTimeoutSeconds} waiting for an IDLE driver.
-     * Used when the pool is at max capacity.
+     * Waits up to {@code borrowTimeoutSeconds} for either an IDLE driver or a free capacity slot.
+     *
+     * <p>Waiting on the idle queue alone is not enough. A driver that is quit rather than re-pooled
+     * (every test with {@code closeAfterEach=true}, and every failed test) frees a slot without ever
+     * offering anything to that queue, so the threads waiting here were never woken and failed with
+     * "pool exhausted" while slots were free. Each pass therefore also tries to reserve a slot and
+     * create a driver, using the same compare-and-set reservation as {@link #acquire}.
      */
-    private RemoteWebDriver borrowWithTimeout(String browserType) {
+    private Borrowed borrowOrCreate(String browserType) {
         LinkedBlockingQueue<PooledDriver> queue = availableDrivers.get(browserType);
+        AtomicInteger counter = poolSizeCounters.get(browserType);
+        long deadlineNanos = System.nanoTime() + TimeUnit.SECONDS.toNanos(config.getBorrowTimeoutSeconds());
+
         try {
-            PooledDriver pd = queue.poll(config.getBorrowTimeoutSeconds(), TimeUnit.SECONDS);
-            if (pd == null) {
-                throw new DriverAcquisitionException(
-                        "Borrow timeout after " + config.getBorrowTimeoutSeconds() + "s — "
-                        + browserType + " pool exhausted (max=" + config.getMaxPoolSize() + "). "
-                        + "Increase maxPoolSize or reduce parallel thread count.",
-                        new IllegalStateException("Pool exhausted"));
+            while (true) {
+                long remainingMillis = TimeUnit.NANOSECONDS.toMillis(deadlineNanos - System.nanoTime());
+                PooledDriver pd = queue.poll(Math.max(1, Math.min(CAPACITY_POLL_MILLIS, remainingMillis)),
+                        TimeUnit.MILLISECONDS);
+
+                if (pd != null) {
+                    // Health-check the driver we just borrowed under timeout
+                    if (!performHealthCheck(pd.getDriver())) {
+                        logger.warn("Timeout-borrowed driver failed health check, destroying");
+                        safelyDestroyAsync(pd.getDriver(), browserType);
+                        decrementPoolSize(browserType);
+                        continue; // the slot is free now: loop to reserve it or find another idle driver
+                    }
+                    pd.transitionTo(DriverState.IDLE, DriverState.IN_USE);
+                    pd.markAcquired();
+                    return new Borrowed(pd.getDriver(), true);
+                }
+
+                // Nothing idle: has a slot been freed since the reservation in acquire() failed?
+                int before = counter.getAndUpdate(n -> n < config.getMaxPoolSize() ? n + 1 : n);
+                if (before < config.getMaxPoolSize()) {
+                    try {
+                        RemoteWebDriver created = createNewDriver(browserType);
+                        logger.debug("Created new driver after waiting for a free slot: " + browserType
+                                + " [ID: " + System.identityHashCode(created) + "]");
+                        return new Borrowed(created, false);
+                    } catch (RuntimeException e) {
+                        counter.decrementAndGet(); // no phantom slot behind a failed creation
+                        throw e;
+                    }
+                }
+
+                if (System.nanoTime() - deadlineNanos >= 0) {
+                    throw new DriverAcquisitionException(
+                            "Borrow timeout after " + config.getBorrowTimeoutSeconds() + "s — "
+                            + browserType + " pool exhausted (max=" + config.getMaxPoolSize() + "). "
+                            + "Increase maxPoolSize or reduce parallel thread count.",
+                            new IllegalStateException("Pool exhausted"));
+                }
             }
-            // Health-check the driver we just borrowed under timeout
-            if (!performHealthCheck(pd.getDriver())) {
-                logger.warn("Timeout-borrowed driver failed health check, destroying");
-                safelyDestroyAsync(pd.getDriver(), browserType);
-                decrementPoolSize(browserType);
-                return borrowWithTimeout(browserType); // try again (recursive — guarded by timeout)
-            }
-            pd.transitionTo(DriverState.IDLE, DriverState.IN_USE);
-            pd.markAcquired();
-            return pd.getDriver();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new DriverAcquisitionException("Borrow interrupted for " + browserType, e);

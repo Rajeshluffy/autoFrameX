@@ -1,5 +1,7 @@
 package com.framework.config.data;
 
+import java.util.Locale;
+import com.framework.exception.FrameworkException;
 import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -240,9 +242,16 @@ public class ProjectDirector {
         if (baseUrl != null && !baseUrl.isEmpty()) return baseUrl;
 
         // Environment-based routing
-        String env = resolve("environment", testngParams, "ENVIRONMENT", "env", "dev");
+        return routeUrl(resolveEnvironmentName(testngParams), cfg);
+    }
 
-        switch (env.toLowerCase()) {
+    /**
+     * Maps an environment name to that environment's URL. An unknown name or a {@code prod}
+     * run without a {@code prodUrl} used to log a warning and fall back to dev / QA, so a
+     * pipeline asking for prod quietly tested the wrong system.
+     */
+    static String routeUrl(String env, ProjectAppConfiguration cfg) {
+        switch (env.toLowerCase(Locale.ROOT)) {
             case "dev":
             case "development":
                 return cfg.devUrl();
@@ -255,15 +264,51 @@ public class ProjectDirector {
             case "production":
                 String prodUrl = cfg.prodUrl();
                 if (prodUrl == null || prodUrl.isEmpty()) {
-                    logger.warn("prodUrl not configured — falling back to qaUrl.");
-                    return cfg.qaUrl();
+                    throw new FrameworkException("The environment is '" + env + "' but prodUrl is not configured. "
+                            + "Set the prod URL in the project's properties file; refusing to fall back to qaUrl "
+                            + "and test the wrong system.");
                 }
                 return prodUrl;
 
             default:
-                logger.warn("Unknown environment '" + env + "' — defaulting to dev.");
-                return cfg.devUrl();
+                throw new FrameworkException("Unknown environment '" + env + "'. Supported: dev (development), "
+                        + "qa (test), prod (production). Set it as the 'environment' (or 'env') suite parameter, "
+                        + "the ENVIRONMENT variable, or -Denvironment / -Denv.");
         }
+    }
+
+    /**
+     * The environment name: suite parameter, then the ENVIRONMENT variable, then a system property,
+     * each looked up as {@code environment} and then its short alias {@code env} (every workflow,
+     * suite XML and the Dockerfile use {@code env}); {@code dev} when nothing is set. A value that
+     * still contains {@code ${...}} is an unexpanded suite-XML placeholder (e.g. {@code ${env}}
+     * with no {@code -Denv}) and counts as not set.
+     */
+    static String resolveEnvironmentName(ConcurrentMap<String, String> params) {
+        String[] keys = { "environment", "env" };
+        if (params != null) {
+            for (String key : keys) {
+                String value = params.get(key);
+                if (isUsableEnvironment(value)) {
+                    return value.trim();
+                }
+            }
+        }
+        String fromVariable = System.getenv("ENVIRONMENT");
+        if (isUsableEnvironment(fromVariable)) {
+            return fromVariable.trim();
+        }
+        for (String key : keys) {
+            String value = System.getProperty(key);
+            if (isUsableEnvironment(value)) {
+                return value.trim();
+            }
+        }
+        return "dev";
+    }
+
+    private static boolean isUsableEnvironment(String value) {
+        return value != null && !value.isBlank() && !value.contains("${");
     }
 
     // ── Type-safe resolution helpers ─────────────────────────────────────────

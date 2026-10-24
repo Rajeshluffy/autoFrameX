@@ -1,5 +1,8 @@
 package com.framework.utils;
 
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import java.util.regex.Pattern;
+import com.framework.exception.FrameworkException;
 import java.nio.charset.StandardCharsets;
 import java.io.BufferedReader;
 import java.io.File;
@@ -68,7 +71,7 @@ public class DataLibrary {
      *
      * @param excelFileName base name of the file, without the {@code .xlsx} extension
      * @return two-dimensional array suitable for a TestNG {@code @DataProvider},
-     *         or an empty array if the file cannot be read
+     *         or throws {@link FrameworkException} if the file is missing, unreadable or has no data rows
      */
     public static Object[][] readExcelData(String excelFileName) {
         return cache.computeIfAbsent("xlsx:" + excelFileName, k -> loadFromDisk(excelFileName));
@@ -83,7 +86,7 @@ public class DataLibrary {
      * delimiter. The first row (headers) is skipped.
      *
      * @param fileName base name without the {@code .csv} extension
-     * @return two-dimensional array, or an empty array if the file cannot be read
+     * @return two-dimensional array, or throws {@link FrameworkException} if the file is missing, unreadable or has no data rows
      */
     public static Object[][] readCsvData(String fileName) {
         return cache.computeIfAbsent("csv:" + fileName, k -> loadDelimited(fileName + ".csv", ","));
@@ -94,7 +97,7 @@ public class DataLibrary {
      * delimiter. The first row (headers) is skipped.
      *
      * @param fileName base name without the {@code .tsv} extension
-     * @return two-dimensional array, or an empty array if the file cannot be read
+     * @return two-dimensional array, or throws {@link FrameworkException} if the file is missing, unreadable or has no data rows
      */
     public static Object[][] readTsvData(String fileName) {
         return cache.computeIfAbsent("tsv:" + fileName, k -> loadDelimited(fileName + ".tsv", "\t"));
@@ -106,7 +109,7 @@ public class DataLibrary {
      *
      * @param fileName  file name relative to {@code ./data/} (including extension)
      * @param delimiter column separator (e.g. {@code ","}, {@code ";"}, {@code "\t"})
-     * @return two-dimensional array, or an empty array if the file cannot be read
+     * @return two-dimensional array, or throws {@link FrameworkException} if the file is missing, unreadable or has no data rows
      */
     public static Object[][] readDelimitedData(String fileName, String delimiter) {
         return cache.computeIfAbsent("delimited:" + delimiter + ":" + fileName,
@@ -130,8 +133,7 @@ public class DataLibrary {
     public static AccountData[][] readExcelAsAccounts(String excelFileName) {
         Object[][] raw = readExcelData(excelFileName);
         if (raw.length == 0) {
-            logger.warn("No account rows found in: " + excelFileName + ".xlsx");
-            return new AccountData[0][0];
+            throw new FrameworkException("No account rows found in: " + excelFileName + ".xlsx");
         }
         AccountData[][] accounts = new AccountData[raw.length][1];
         for (int i = 0; i < raw.length; i++) {
@@ -210,6 +212,9 @@ public class DataLibrary {
         String path = baseDataDir() + "/" + fileName;
         logger.info("Loading delimited data from: " + path + " (delimiter: [" + delimiter + "])");
 
+        // The delimiter is a literal separator ("|" and "." must not be read as regex), and a failure
+        // throws: returning an empty array let a typo in the file name run zero tests and stay green.
+        Pattern separator = Pattern.compile(Pattern.quote(delimiter));
         List<Object[]> rows = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(path, StandardCharsets.UTF_8))) {
             String line;
@@ -217,16 +222,16 @@ public class DataLibrary {
             while ((line = reader.readLine()) != null) {
                 if (firstLine) { firstLine = false; continue; } // skip header
                 if (line.trim().isEmpty()) continue;
-                rows.add(line.split(delimiter, -1));
+                rows.add(separator.split(line, -1));
             }
         } catch (IOException e) {
-            logger.error("Failed to read delimited file '" + path + "': " + e.getMessage());
-            return new Object[0][0];
+            throw new FrameworkException("Cannot read data file '" + new File(path).getAbsolutePath() + "': "
+                    + e.getMessage() + " (set -DdataDir to change the data folder)", e);
         }
 
         if (rows.isEmpty()) {
-            logger.warn("Delimited file has no data rows: " + path);
-            return new Object[0][0];
+            throw new FrameworkException("Data file has no data rows below the header: "
+                    + new File(path).getAbsolutePath());
         }
 
         logger.info("Loaded " + rows.size() + " data row(s) from: " + path);
@@ -237,41 +242,63 @@ public class DataLibrary {
         String path = baseDataDir() + "/" + excelFileName + ".xlsx";
         logger.info("Loading Excel data from: " + path);
 
+        File file = new File(path);
+        if (!file.isFile()) {
+            throw new FrameworkException("Excel data file not found: " + file.getAbsolutePath()
+                    + " (set -DdataDir to change the data folder)");
+        }
+
         // Opened read-only on purpose: POI's path constructor opens the package read-write and
         // saves it back to the same file on close, which rewrote every data file that was only
         // being read (it showed up as a modified file in git after each run).
-        File file = new File(path);
-        if (!file.isFile()) {
-            // The path constructor used to fail with an IOException here; the read-only open throws an
-            // unchecked one instead, so check first to keep the same "log it, return no rows" behavior.
-            logger.error("Failed to read Excel file '" + path + "': file not found");
-            return new Object[0][0];
-        }
-
         try (OPCPackage pkg = OPCPackage.open(file, PackageAccess.READ);
              XSSFWorkbook wbook = new XSSFWorkbook(pkg)) {
             XSSFSheet sheet = wbook.getSheetAt(0);
-            int rowCount = sheet.getLastRowNum();       // excludes header row
-            int colCount = sheet.getRow(0).getLastCellNum();
-
-            if (rowCount < 1) {
-                logger.warn("Excel file has no data rows: " + path);
-                return new Object[0][0];
+            XSSFRow header = sheet.getRow(0);
+            if (header == null) {
+                throw new FrameworkException("Excel data file has no header row: " + file.getAbsolutePath());
             }
 
-            Object[][] data = new Object[rowCount][colCount];
-            for (int i = 1; i <= rowCount; i++) {
-                for (int j = 0; j < colCount; j++) {
-                    data[i - 1][j] = sheet.getRow(i).getCell(j).getStringCellValue();
+            // DataFormatter reads any cell type as text (a numeric password, a date, a formula result);
+            // getStringCellValue() threw on those, and on blank cells and blank rows (NPE).
+            DataFormatter formatter = new DataFormatter();
+            FormulaEvaluator evaluator = wbook.getCreationHelper().createFormulaEvaluator();
+
+            int colCount = Math.max(header.getLastCellNum(), 0);
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                XSSFRow row = sheet.getRow(i);
+                if (row != null) {
+                    colCount = Math.max(colCount, row.getLastCellNum());
                 }
             }
 
-            logger.info("Loaded " + rowCount + " data row(s) from: " + path);
-            return data;
+            List<Object[]> rows = new ArrayList<>();
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                XSSFRow row = sheet.getRow(i);
+                if (row == null) continue;                      // blank row between data rows
+                Object[] values = new Object[colCount];
+                boolean anyValue = false;
+                for (int j = 0; j < colCount; j++) {
+                    String text = formatter.formatCellValue(row.getCell(j), evaluator);   // "" for a blank cell
+                    values[j] = text;
+                    anyValue |= !text.trim().isEmpty();
+                }
+                if (anyValue) {
+                    rows.add(values);
+                }
+            }
+
+            if (rows.isEmpty()) {
+                throw new FrameworkException("Excel data file has no data rows below the header: "
+                        + file.getAbsolutePath());
+            }
+
+            logger.info("Loaded " + rows.size() + " data row(s) from: " + path);
+            return rows.toArray(new Object[0][]);
 
         } catch (IOException | InvalidFormatException | InvalidOperationException e) {
-            logger.error("Failed to read Excel file '" + path + "': " + e.getMessage());
-            return new Object[0][0];
+            throw new FrameworkException("Cannot read Excel data file '" + file.getAbsolutePath() + "': "
+                    + e.getMessage(), e);
         }
     }
 }
