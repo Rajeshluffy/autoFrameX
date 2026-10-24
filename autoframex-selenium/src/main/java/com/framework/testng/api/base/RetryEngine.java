@@ -1,5 +1,7 @@
 package com.framework.testng.api.base;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,8 +27,11 @@ import com.framework.config.data.ProjectConfig;
  *
  * <h3>Safety guards</h3>
  * <ul>
- *   <li>If the same source line fails twice in a row, retrying stops immediately
- *       (deterministic failure — no point retrying).</li>
+ *   <li>If a test fails the same way twice in a row (same exception type, same message once
+ *       numbers are ignored, same line), retrying stops immediately: the failure is
+ *       deterministic and another run will not change it.</li>
+ *   <li>Every retry, and every decision not to retry, is logged with the failure that caused it,
+ *       so a test that passes on its second run is not a silent pass.</li>
  *   <li>Retry count and previous failing line are keyed by
  *       {@code qualifiedMethodName + paramHash} so parallel and data-driven
  *       tests are tracked independently.</li>
@@ -36,9 +41,11 @@ import com.framework.config.data.ProjectConfig;
  */
 public class RetryEngine implements IRetryAnalyzer {
 
+    private static final Logger logger = LoggerFactory.getLogger(RetryEngine.class);
+
     // Thread-safe maps — one entry per unique test invocation key
     private final Map<String, Integer> countMap        = new ConcurrentHashMap<>();
-    private final Map<String, Integer> previousLineMap = new ConcurrentHashMap<>();
+    private final Map<String, String>  previousFailureMap = new ConcurrentHashMap<>();
 
     @Override
     public boolean retry(ITestResult result) {
@@ -50,22 +57,28 @@ public class RetryEngine implements IRetryAnalyzer {
         int maxTry   = resolveLimit(result);
         String key   = buildKey(result);
         int count    = countMap.getOrDefault(key, 0);
-        int prevLine = previousLineMap.getOrDefault(key, -1);
-        int currLine = extractFailingLine(result);
+        String failure = failureSignature(result.getThrowable(), extractFailingLine(result));
+        String previousFailure = previousFailureMap.get(key);
+        String name = result.getMethod().getQualifiedName();
 
-        // Same line failed again → deterministic failure, stop retrying
-        if (currLine != -1 && currLine == prevLine) {
+        // The same failure again → deterministic, stop retrying
+        if (failure.equals(previousFailure)) {
+            logger.warn("Not retrying {}: it failed the same way twice - {}", name, failure);
             result.setStatus(ITestResult.FAILURE);
             return false;
         }
 
         if (count < maxTry) {
             countMap.put(key, count + 1);
-            previousLineMap.put(key, currLine);
+            previousFailureMap.put(key, failure);
+            logger.warn("Retrying {} (retry {} of {}) after: {}", name, count + 1, maxTry, failure);
             result.setStatus(ITestResult.FAILURE);
             return true;
         }
 
+        if (maxTry > 0) {
+            logger.warn("Not retrying {}: all {} retries used - {}", name, maxTry, failure);
+        }
         result.setStatus(ITestResult.FAILURE);
         return false;
     }
@@ -148,6 +161,22 @@ public class RetryEngine implements IRetryAnalyzer {
             key.append('_').append(java.util.Arrays.deepHashCode(params));
         }
         return key.toString();
+    }
+
+    /**
+     * What identifies a failure for the "same failure twice" check: the exception type, its message with
+     * the numbers blanked out (timings and ids differ between runs of one failure) and the failing
+     * line. The line alone was not enough: every step failure is thrown from the same line in
+     * {@code Reporter.reportStep}, so any two different step failures looked identical and a test got
+     * one retry however high the limit was.
+     */
+    static String failureSignature(Throwable throwable, int line) {
+        if (throwable == null) {
+            return "unknown failure@" + line;
+        }
+        String message = throwable.getMessage() == null ? ""
+                : throwable.getMessage().lines().findFirst().orElse("").replaceAll("\\d+", "#");
+        return throwable.getClass().getSimpleName() + ": " + message + "@" + line;
     }
 
     private int extractFailingLine(ITestResult result) {

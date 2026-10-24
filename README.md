@@ -159,7 +159,7 @@ autoFrameX.explicit.wait.time=20
 autoFrameX.page.load.timeout=30
 
 # Retry
-autoFrameX.test.retry.max.limit=4
+autoFrameX.test.retry.max.limit=1
 autoFrameX.element.max.retry.attempts=3
 # API-style tests (TestNG groups below) are not retried unless they ask: @Retry(limit = n) always wins
 autoFrameX.test.retry.api.max.limit=0

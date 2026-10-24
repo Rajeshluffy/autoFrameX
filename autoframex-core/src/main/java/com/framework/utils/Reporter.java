@@ -68,6 +68,10 @@ public abstract class Reporter implements StepReporter {
     // on the @BeforeClass thread, so under parallel methods a worker thread either found no parent
     // (and invented a bare one) or kept the previous class's parent and filed its methods there.
     private volatile ExtentTest classNode;
+
+    // File name (inside the report's images/ folder) of the screenshot taken for this thread's failed
+    // test; set by the selenium module in its @AfterMethod, consumed by tearDownTest.
+    private static final ThreadLocal<String> failureEvidenceFile = new ThreadLocal<>();
     private static final ThreadLocal<ExtentTest> test = new ThreadLocal<>();
 
     // Test metadata (set by child class in @BeforeClass)
@@ -444,6 +448,8 @@ public abstract class Reporter implements StepReporter {
      */
     @AfterMethod(alwaysRun = true)
     public void tearDownTest(Method method, ITestResult result) {
+        recordUnexpectedFailure(result);
+
         // --- Observability: build and publish test event ---
         try {
             long startMs = testStartTimeMs.get() != null ? testStartTimeMs.get() : System.currentTimeMillis();
@@ -491,6 +497,51 @@ public abstract class Reporter implements StepReporter {
 
         test.remove();
         logger.debug("Method completed: " + method.getName());
+    }
+
+    /**
+     * Tells {@link #tearDownTest} which screenshot (a file in the report's {@code images/} folder)
+     * belongs to the failure of the test that just ended on this thread.
+     */
+    protected static void noteFailureEvidence(String screenshotFileName) {
+        failureEvidenceFile.set(screenshotFileName);
+    }
+
+    /**
+     * Writes a failure that never went through {@link #reportStep} into the report. A test that ended
+     * with a plain {@code Assert} failure, a {@code TimeoutException} or a {@code NullPointerException}
+     * left its Extent node green (only the earlier PASS / INFO steps) while TestNG marked it failed, with
+     * no stack trace and no screenshot. A {@code TestStepFailedException} is skipped: {@code reportStep}
+     * already wrote its FAIL entry, with its own screenshot.
+     */
+    private void recordUnexpectedFailure(ITestResult result) {
+        String evidenceFile = failureEvidenceFile.get();
+        failureEvidenceFile.remove();
+        try {
+            Throwable thrown = result.getThrowable();
+            ExtentTest node = test.get();
+            if (result.getStatus() != ITestResult.FAILURE || thrown == null || node == null
+                    || thrown instanceof com.framework.exception.TestStepFailedException) {
+                return;
+            }
+            Media media = null;
+            if (evidenceFile != null) {
+                try {
+                    media = MediaEntityBuilder.createScreenCaptureFromPath("./images/" + evidenceFile).build();
+                } catch (Exception e) {
+                    logger.warn("Failure screenshot could not be attached: {}", e.getMessage());
+                }
+            }
+            synchronized (node) {
+                if (media != null) {
+                    node.fail(thrown, media);
+                } else {
+                    node.fail(thrown);
+                }
+            }
+        } catch (RuntimeException e) {
+            logger.warn("Could not record the failure in the report: {}", e.getMessage());
+        }
     }
 
     /**
@@ -598,6 +649,7 @@ public abstract class Reporter implements StepReporter {
 
     protected void cleanupThreadLocals() {
         test.remove();
+        failureEvidenceFile.remove();
         testStartTimeMs.remove();
         ResourceUsageAccumulator.clear();
     }

@@ -1,5 +1,9 @@
 package com.framework.config.data;
 
+import java.util.TreeSet;
+import java.util.Set;
+import java.util.Objects;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
@@ -54,7 +58,9 @@ public class ConfigManager {
     private volatile boolean initialized = false;
 
     // Runtime overrides storage
-    private final ConcurrentMap<String, String> runtimeOverrides = new ConcurrentHashMap<>();
+    // Replaced as a whole (never edited in place) when a later <test> brings different settings, so a
+    // reader never sees a half-updated map.
+    private volatile ConcurrentMap<String, String> runtimeOverrides = new ConcurrentHashMap<>();
 
     /**
      * Private constructor — instances are only created via the {@link #REGISTRY}.
@@ -189,16 +195,44 @@ public class ConfigManager {
      * 
      * @param overrides map of property overrides
      */
-    private void applyOverrides(ConcurrentMap<String, String> overrides) {
-        if (overrides == null || overrides.isEmpty()) {
+    private void applyOverrides(ConcurrentMap<String, String> incoming) {
+        if (incoming == null || incoming.isEmpty()) {
             return;
         }
-        
-        runtimeOverrides.putAll(overrides);
-        
-        // Rebuild config with new overrides
-        config = ProjectDirector.construct(runtimeOverrides);
-        logger.info("Applied runtime overrides: " + overrides.keySet());
+
+        // Every <test> brings its full parameter set (suite parameters included), so these are the
+        // complete settings for that test. They used to be merged into the previous test's: a key the
+        // new test did not set (say environment=qa from the first test) stayed in force, and the
+        // shared config was rebuilt for every <test> even when nothing had changed.
+        Set<String> changed = changedKeys(runtimeOverrides, incoming);
+        if (changed.isEmpty()) {
+            logger.debug("Same settings as before - keeping the existing configuration");
+            return;
+        }
+
+        ConcurrentMap<String, String> next = new ConcurrentHashMap<>(incoming);
+        config = ProjectDirector.construct(next);
+        runtimeOverrides = next;
+        logger.warn("Configuration rebuilt for test '{}'; changed settings: {}. Tests that run in "
+                + "parallel in the same context share this one configuration - give each <test> its own "
+                + "'contextId' parameter to keep them apart.", incoming.get("testName"), changed);
+    }
+
+    /** Parameters TestNG adds to every <test>; they differ per test without being settings. */
+    private static final Set<String> BOOKKEEPING_KEYS = Set.of("suiteName", "testName");
+
+    /** The setting names whose values differ between two parameter sets (bookkeeping keys ignored). */
+    static Set<String> changedKeys(Map<String, String> current, Map<String, String> incoming) {
+        Set<String> all = new TreeSet<>(current.keySet());
+        all.addAll(incoming.keySet());
+        Set<String> changed = new TreeSet<>();
+        for (String key : all) {
+            if (!BOOKKEEPING_KEYS.contains(key)
+                    && !Objects.equals(current.get(key), incoming.get(key))) {
+                changed.add(key);
+            }
+        }
+        return changed;
     }
     
     /**

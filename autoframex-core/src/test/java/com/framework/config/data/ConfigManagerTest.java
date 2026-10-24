@@ -128,4 +128,54 @@ public class ConfigManagerTest {
 		Assert.assertEquals(ConfigManager.resolveContextId(params), "com.example.MyConfig",
 				"A blank contextId param should fall through to configClass, not win as an empty string.");
 	}
+
+	// -------------------------------------------------- overrides across <test>s
+
+	private static ConcurrentMap<String, String> params(String... keyValues) {
+		ConcurrentMap<String, String> map = new ConcurrentHashMap<>();
+		for (int i = 0; i < keyValues.length; i += 2) {
+			map.put(keyValues[i], keyValues[i + 1]);
+		}
+		return map;
+	}
+
+	@Test
+	public void aLaterTestWithTheSameSettingsDoesNotRebuildTheSharedConfig() {
+		ConfigManager.bindContext("CM_TEST_SAME");
+		ConfigManager manager = ConfigManager.getInstance();
+		manager.initializeConfig(params("browser", "chrome", "testName", "first"));
+		ProjectConfig first = manager.getConfig();
+
+		// Only the bookkeeping parameter TestNG adds to every <test> differs.
+		manager.initializeConfig(params("browser", "chrome", "testName", "second"));
+
+		Assert.assertSame(manager.getConfig(), first,
+				"nothing changed, so the config other threads are reading must not be swapped under them");
+	}
+
+	@Test
+	public void aLaterTestReplacesTheOverridesInsteadOfAddingToThem() {
+		ConfigManager.bindContext("CM_TEST_REPLACE");
+		ConfigManager manager = ConfigManager.getInstance();
+		manager.initializeConfig(params("browser", "chrome", "environment", "qa", "testName", "first"));
+		ProjectConfig first = manager.getConfig();
+
+		// The second <test> does not set 'environment'. It used to inherit qa from the first.
+		manager.initializeConfig(params("browser", "firefox", "testName", "second"));
+
+		Assert.assertEquals(manager.getRuntimeOverride("browser"), "firefox");
+		Assert.assertNull(manager.getRuntimeOverride("environment"),
+				"a setting the second test did not define must not be carried over from the first");
+		Assert.assertNotSame(manager.getConfig(), first, "the settings changed, so the config is rebuilt");
+	}
+
+	@Test
+	public void changedKeysIgnoresTheBookkeepingParameters() {
+		Assert.assertTrue(ConfigManager.changedKeys(
+				params("a", "1", "testName", "x", "suiteName", "s"),
+				params("a", "1", "testName", "y", "suiteName", "t")).isEmpty());
+		Assert.assertEquals(ConfigManager.changedKeys(
+				params("a", "1", "b", "2"),
+				params("a", "9", "c", "3")).toString(), "[a, b, c]");
+	}
 }

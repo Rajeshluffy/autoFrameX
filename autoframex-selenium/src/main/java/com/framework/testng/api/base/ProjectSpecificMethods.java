@@ -1,5 +1,7 @@
 package com.framework.testng.api.base;
 
+import com.framework.utils.ExtentReportManager;
+import com.framework.utils.ScreenshotUtils;
 import com.framework.exception.FrameworkException;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -270,6 +272,10 @@ public class ProjectSpecificMethods extends SeleniumBase {
 			}
 		}
 
+		// A failure that did not come through reportStep (an Assert, a timeout, an NPE) has no
+		// screenshot and no entry in the report yet: take them now, while the browser is still there.
+		captureFailureEvidenceFor(result);
+
 		// Flush the API capture while the browser is still reachable --
 		// teardownDriver() below may quit it (a failed test poisons the driver).
 		try {
@@ -291,6 +297,30 @@ public class ProjectSpecificMethods extends SeleniumBase {
 		// Reporter.tearDownTest (the Extent node flush and the TestEvent) is an inherited
 		// @AfterMethod and TestNG runs it right after this method. Do not call it here too:
 		// that published every test twice, the second time with a zero duration.
+	}
+
+	/**
+	 * Screenshot and DOM snapshot of the page a test failed on. Skipped when the failure came through
+	 * {@code reportStep}, which already took its own screenshot.
+	 */
+	private void captureFailureEvidenceFor(ITestResult result) {
+		if (result.getStatus() != ITestResult.FAILURE
+				|| result.getThrowable() instanceof com.framework.exception.TestStepFailedException) {
+			return;
+		}
+		try {
+			ScreenshotUtils.FailureEvidence evidence = ScreenshotUtils.captureFailureEvidence(getDriver(),
+					"./" + ExtentReportManager.getFolderName() + "/images");
+			if (evidence.screenshotPath != null) {
+				noteFailureEvidence(new java.io.File(evidence.screenshotPath).getName());
+			}
+			if (evidence.domSnapshotPath != null) {
+				reportStep("DOM snapshot at the failure: " + evidence.domSnapshotPath, "info", false);
+			}
+		} catch (Exception e) {
+			// No driver, or the session is gone: the failure itself is still recorded without a picture.
+			logger.warn("Could not capture failure evidence: {}", e.getMessage());
+		}
 	}
 
 	// =========================================================================

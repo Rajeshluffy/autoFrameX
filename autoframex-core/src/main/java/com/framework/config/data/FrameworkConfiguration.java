@@ -86,7 +86,7 @@ public interface FrameworkConfiguration extends Config {
 
     /** Maximum TestNG-level retries per failing test (used by {@code RetryEngine}). */
     @Key("autoFrameX.test.retry.max.limit")
-    @DefaultValue("4")
+    @DefaultValue("1")
     short retry();
 
     /** Maximum element-level interaction retries inside {@code SeleniumBase}. */
