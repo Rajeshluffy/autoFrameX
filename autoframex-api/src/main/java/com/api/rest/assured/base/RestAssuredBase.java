@@ -1,5 +1,7 @@
 package com.api.rest.assured.base;
 
+import io.restassured.specification.FilterableRequestSpecification;
+import io.restassured.config.RestAssuredConfig;
 import com.api.design.ApiClient;
 import com.api.design.ResponseAPI;
 
@@ -16,8 +18,13 @@ import io.restassured.specification.RequestSpecification;
 public class RestAssuredBase implements ApiClient {
 
 	private RequestSpecification given(RequestSpecification requestSpecification) {
+		// A spec that came from RequestSpecBuilder already carries timeouts; one built another way
+		// (plain RestAssured.given()) gets the framework defaults here, so no call here can wait forever.
+		RestAssuredConfig current = requestSpecification instanceof FilterableRequestSpecification
+				? ((FilterableRequestSpecification) requestSpecification).getConfig() : null;
 		return RestAssured.given()
 				          .spec(requestSpecification)
+				          .config(ApiTimeouts.applyDefaults(current))
 				          .filter(new RestAssuredListener());
 	}
 

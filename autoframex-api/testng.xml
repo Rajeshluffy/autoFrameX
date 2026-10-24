@@ -8,6 +8,9 @@
     <test name="Authentication">
         <classes>
             <class name="com.api.rest.assured.base.RequestAuthenticationTest"/>
+            <class name="com.api.rest.assured.base.ApiTimeoutTest"/>
+            <class name="com.api.rest.assured.base.RequestSpecBuilderStateTest"/>
+            <class name="com.api.rest.assured.base.ResponseHeadersTest"/>
         </classes>
     </test>
 </suite>

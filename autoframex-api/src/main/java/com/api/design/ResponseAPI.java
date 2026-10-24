@@ -1,5 +1,6 @@
 package com.api.design;
 
+import java.util.List;
 import java.util.Map;
 
 public interface ResponseAPI {
@@ -7,7 +8,18 @@ public interface ResponseAPI {
     int getStatusCode();
     String getStatusMessage();
     String getBody();
+    /**
+     * All response headers, looked up without regard to case (HTTP header names are case-insensitive).
+     * A header sent more than once has its values joined with {@code ", "}; use
+     * {@link #getHeaderValues(String)} to get them separately (e.g. several {@code Set-Cookie}).
+     */
     Map<String, String> getHeaders();
+
+    /** The named header (case-insensitive), or {@code null} when the response has none. */
+    String getHeader(String name);
+
+    /** Every value of the named header (case-insensitive), in the order received; empty when absent. */
+    List<String> getHeaderValues(String name);
     String getContentType();
 
     /**

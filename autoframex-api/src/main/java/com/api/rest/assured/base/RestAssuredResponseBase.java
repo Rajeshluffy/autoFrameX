@@ -1,5 +1,8 @@
 package com.api.rest.assured.base;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeMap;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 
 import java.util.HashMap;
@@ -37,12 +40,25 @@ public class RestAssuredResponseBase implements ResponseAPI {
 
     @Override
     public Map<String, String> getHeaders() {
-        Map<String, String> map = new HashMap<>();
+        // Case-insensitive, and a repeated header keeps every value: a plain HashMap<name, value> made
+        // get("content-type") miss "Content-Type" and silently kept only the last Set-Cookie.
+        Map<String, String> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         Headers headers = response.getHeaders();
         for (Header header : headers) {
-            map.put(header.getName(), header.getValue());
+            map.merge(header.getName(), header.getValue(), (first, next) -> first + ", " + next);
         }
         return map;
+    }
+
+    @Override
+    public String getHeader(String name) {
+        List<String> values = getHeaderValues(name);
+        return values.isEmpty() ? null : String.join(", ", values);
+    }
+
+    @Override
+    public List<String> getHeaderValues(String name) {
+        return new ArrayList<>(response.getHeaders().getValues(name));
     }
 
     @Override

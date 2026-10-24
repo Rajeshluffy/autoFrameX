@@ -1,5 +1,7 @@
 package com.api.rest.assured.base;
 
+import io.restassured.specification.FilterableRequestSpecification;
+import io.restassured.config.RestAssuredConfig;
 import java.util.HashMap;
 import java.util.Map;
 import static io.restassured.RestAssured.*;
@@ -38,6 +40,8 @@ public class RequestSpecBuilder {
 	private String password;
 	private RequestSpecification specification;
 	private boolean preemptive;
+	private Integer connectTimeoutMs;
+	private Integer readTimeoutMs;
 
 	RequestAuthentication auth=	new RequestAuthentication();
 
@@ -95,7 +99,7 @@ public class RequestSpecBuilder {
 	 * @return
 	 */
 	public RequestSpecBuilder setQueryParams(Map<String, String> queryParams) {
-		this.queryParams = queryParams == null ? null : new java.util.HashMap<>(queryParams);
+		this.queryParams = queryParams == null ? new HashMap<>() : new HashMap<>(queryParams);
 		return this;
 	}
 
@@ -174,7 +178,7 @@ public class RequestSpecBuilder {
 	 * @return
 	 */
 	public RequestSpecBuilder setHeaders(Map<String, String> headers) {
-		this.headers = headers == null ? null : new java.util.HashMap<>(headers);
+		this.headers = headers == null ? new HashMap<>() : new HashMap<>(headers);
 		return this;
 	}
 
@@ -214,6 +218,16 @@ public class RequestSpecBuilder {
 	 * @param password
 	 * @return
 	 */
+	/**
+	 * Connect and read timeouts for requests built from this builder, in milliseconds. Without this the
+	 * framework defaults apply (see {@link ApiTimeouts}); a value of 0 or less is ignored.
+	 */
+	public RequestSpecBuilder setTimeouts(int connectTimeoutMs, int readTimeoutMs) {
+		this.connectTimeoutMs = connectTimeoutMs;
+		this.readTimeoutMs = readTimeoutMs;
+		return this;
+	}
+
 	public RequestSpecBuilder setBasicAuth(String username, String password) {
 		this.username = username;
 		this.password = password; 
@@ -343,6 +357,20 @@ public class RequestSpecBuilder {
 		}
 
 		applyAuthentication(requestSpecification);
+
+		RestAssuredConfig current = requestSpecification instanceof FilterableRequestSpecification
+				? ((FilterableRequestSpecification) requestSpecification).getConfig() : null;
+		requestSpecification.config(ApiTimeouts.with(current, connectTimeoutMs, readTimeoutMs));
+
+		// The single-slot key/value setters describe ONE request. They used to stay set, so after
+		// setQueryParamKey("sysparm_query") for one lookup every later request built from the same
+		// builder (a create, an update, a delete) carried that query parameter too.
+		queryParamKey = null;
+		queryParamValue = null;
+		pathParamKey = null;
+		pathParamValue = null;
+		headerKey = null;
+		headerValue = null;
 
 		return requestSpecification;
 	}

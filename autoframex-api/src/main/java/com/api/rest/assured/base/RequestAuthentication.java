@@ -113,6 +113,7 @@ public class RequestAuthentication {
         resetToken(); // whatever happens next, a stale token must not survive a failed refresh
 
         Response response = given()
+                .config(ApiTimeouts.applyDefaults(null))
                 .contentType(ContentType.URLENC)
                 .headers(headers == null ? Collections.emptyMap() : headers)
                 .formParams(form)
