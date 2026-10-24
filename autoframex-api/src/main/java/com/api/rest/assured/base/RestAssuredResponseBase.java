@@ -25,14 +25,20 @@ public class RestAssuredResponseBase implements ResponseAPI {
 
     private final Response response;
     private final String requestLine;
+    private final String curl;
 
     public RestAssuredResponseBase(Response response) {
         this(response, null);
     }
 
     public RestAssuredResponseBase(Response response, String requestLine) {
+        this(response, requestLine, null);
+    }
+
+    public RestAssuredResponseBase(Response response, String requestLine, String curl) {
         this.response = response;
         this.requestLine = requestLine == null ? "(request not recorded)" : requestLine;
+        this.curl = curl;
     }
 
     @Override
@@ -156,6 +162,11 @@ public class RestAssuredResponseBase implements ResponseAPI {
     @Override
     public String describeRequest() {
         return requestLine;
+    }
+
+    @Override
+    public String reproCommand() {
+        return curl;
     }
 
     /**

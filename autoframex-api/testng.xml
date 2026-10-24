@@ -15,6 +15,10 @@
             <class name="com.api.rest.assured.base.ApiRequestTest"/>
             <class name="com.api.rest.assured.base.ResponseTypedAccessTest"/>
             <class name="com.api.assertions.ApiAssertionsTest"/>
+            <class name="com.api.rest.assured.base.RetryPolicyTest"/>
+            <class name="com.api.rest.assured.base.CurlCommandTest"/>
+            <class name="com.api.rest.assured.base.ApiAwaitTest"/>
+            <class name="com.api.testdata.TestDataHelpersTest"/>
         </classes>
     </test>
 </suite>

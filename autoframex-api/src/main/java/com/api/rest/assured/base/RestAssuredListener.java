@@ -29,11 +29,20 @@ public class RestAssuredListener implements Filter {
     /** The call this thread made last, so the client can attach it to the response for diagnostics. */
     private static final ThreadLocal<String> LAST_REQUEST = new ThreadLocal<>();
 
+    private static final ThreadLocal<String> LAST_CURL = new ThreadLocal<>();
+
     /** The masked {@code METHOD uri} of the call this thread just made, then forgets it. */
     static String consumeLastRequestLine() {
         String line = LAST_REQUEST.get();
         LAST_REQUEST.remove();
         return line;
+    }
+
+    /** The credential-free curl command for the call this thread just made, then forgets it. */
+    static String consumeLastCurl() {
+        String curl = LAST_CURL.get();
+        LAST_CURL.remove();
+        return curl;
     }
 
     @Override
@@ -45,6 +54,7 @@ public class RestAssuredListener implements Filter {
         // URI can carry ?access_token=...; mask it once here.
         String requestLine = ApiRedaction.mask(requestSpec.getMethod() + " " + requestSpec.getURI());
         LAST_REQUEST.set(requestLine);
+        LAST_CURL.set(CurlCommand.from(requestSpec));
         Response response;
         try {
             response = ctx.next(requestSpec, responseSpec);

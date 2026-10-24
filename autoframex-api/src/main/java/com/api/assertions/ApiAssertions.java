@@ -169,7 +169,16 @@ public final class ApiAssertions {
             message.append("\n  Request id  : ").append(ApiRedaction.mask(requestId));
         }
         message.append("\n  Body        : ").append(bodyPreview());
+        String repro = response.reproCommand();
+        if (repro != null) {
+            message.append("\n  Repro       : ").append(repro);
+        }
         return new AssertionError(message.toString());
+    }
+
+    /** The failure an assertion on {@code response} would raise, with {@code headline} as its first line. */
+    static AssertionError failureFor(ResponseAPI response, String headline) {
+        return new ApiAssertions(response).failure(headline);
     }
 
     private String bodyPreview() {

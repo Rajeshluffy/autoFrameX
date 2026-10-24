@@ -63,4 +63,12 @@ public interface ResponseAPI {
 
     /** {@code METHOD uri} of the call that produced this response, credentials masked; for diagnostics. */
     String describeRequest();
+
+    /**
+     * A {@code curl} command that repeats the call, credentials replaced; {@code null} when the client did not
+     * record it. Shown in assertion failures so a red test can be reproduced from a terminal.
+     */
+    default String reproCommand() {
+        return null;
+    }
 }

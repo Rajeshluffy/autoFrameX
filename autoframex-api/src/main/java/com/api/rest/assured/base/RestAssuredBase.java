@@ -45,7 +45,8 @@ public class RestAssuredBase implements ApiClient {
 
 	/** Wraps the response together with a description of the call that produced it, for failure diagnostics. */
 	private ResponseAPI wrap(Response response) {
-		return new RestAssuredResponseBase(response, RestAssuredListener.consumeLastRequestLine());
+		return new RestAssuredResponseBase(response, RestAssuredListener.consumeLastRequestLine(),
+				RestAssuredListener.consumeLastCurl());
 	}
 
 	@Override
@@ -95,6 +96,41 @@ public class RestAssuredBase implements ApiClient {
 	 * @throws ApiCallException when there is no response at all (refused, reset, timed out)
 	 */
 	public ResponseAPI send(RequestSpecBuilder base, ApiRequest request) {
+		return send(base, request, RetryPolicy.fromConfig());
+	}
+
+	/**
+	 * Like {@link #send(RequestSpecBuilder, ApiRequest)}, and also repeats a GET, HEAD or OPTIONS that hit a
+	 * transient problem (502, 503, 504, 429, or no response) as {@code policy} allows. Any other method is
+	 * never repeated by the policy. When the retries run out, the last response is returned, or the last
+	 * {@link ApiCallException} is thrown.
+	 */
+	public ResponseAPI send(RequestSpecBuilder base, ApiRequest request, RetryPolicy policy) {
+		int attempt = 0;
+		while (true) {
+			ResponseAPI response = null;
+			ApiCallException failure = null;
+			try {
+				response = sendOnce(base, request);
+			} catch (ApiCallException e) {
+				failure = e;
+			}
+			if (!policy.shouldRetry(request.method(), attempt, response, failure)) {
+				if (failure != null) {
+					throw failure;
+				}
+				return response;
+			}
+			long delayMs = policy.delayMs(attempt, response);
+			logger.warn("{} {} (attempt {} of {}); trying again in {} ms", request,
+					failure != null ? "got no response" : "answered " + response.getStatusCode(),
+					attempt + 1, policy.maxRetries() + 1, delayMs);
+			RetryPolicy.pause(delayMs);
+			attempt++;
+		}
+	}
+
+	private ResponseAPI sendOnce(RequestSpecBuilder base, ApiRequest request) {
 		ResponseAPI first = execute(base.build(), request);
 		if (first.getStatusCode() == 401 && base.hasOAuth() && base.refreshOAuthToken()) {
 			logger.info("{} was rejected with 401; retrying once with a new OAuth token", request);
