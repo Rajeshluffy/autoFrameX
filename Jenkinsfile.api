@@ -1,0 +1,123 @@
+// API-only pipeline: runs a module's TestNG suite with Maven and publishes the JUnit results.
+//
+// Unlike the main Jenkinsfile there is no Docker image, no minikube and no Kubernetes Job here. API tests need
+// no browser, so the whole run is one Maven command on the agent. Create a Pipeline job with
+// "Script Path" = Jenkinsfile.api.
+//
+// Where the API is (and how to sign in) reaches the tests through the framework's normal configuration chain
+// (see com.api.rest.assured.base.ApiConfig): the build parameters below become environment variables named
+// API_BASE_URI, API_BASE_PATH, ... and ApiConfig reads them. Secrets are never parameters. Name a Jenkins
+// credential in one of the *_CREDENTIALS_ID parameters and its value is bound to the environment variable for
+// the test step only; Jenkins masks it in the console log.
+//
+//   OAUTH_CLIENT_CREDENTIALS_ID   "Username with password"  -> API_CLIENT_ID / API_CLIENT_SECRET
+//   API_USER_CREDENTIALS_ID       "Username with password"  -> API_USERNAME / API_PASSWORD
+//   BEARER_TOKEN_CREDENTIALS_ID   "Secret text"             -> API_BEARER_TOKEN
+//
+// A credential id that is named but does not exist fails the build at once. That is deliberate: a missing
+// secret is a configuration error, and silently running unauthenticated would only fail later with a 401.
+// Leave all three empty for a suite that needs no sign-in (the autoframex-api unit suite runs against a local
+// fake server and needs none).
+
+// Module and suite names go into a shell command line, so only plain names are accepted.
+def requireSafe(String label, String value, String pattern) {
+    if (!(value ==~ pattern)) {
+        error "${label} '${value}' has characters that are not allowed (pattern ${pattern})"
+    }
+}
+
+def mvn(String arguments) {
+    if (isUnix()) {
+        sh "mvn -B -ntp ${arguments}"
+    } else {
+        bat "mvn -B -ntp ${arguments}"
+    }
+}
+
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        timeout(time: 30, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '30'))
+    }
+
+    tools {
+        // Same Maven installation name the main Jenkinsfile uses (Manage Jenkins -> Tools).
+        maven 'Maven3'
+    }
+
+    parameters {
+        string(name: 'MODULE', defaultValue: 'autoframex-api',
+               description: 'Maven module whose suite to run (one module name)')
+        string(name: 'SUITE_FILE', defaultValue: 'testng.xml',
+               description: 'TestNG suite file inside that module (-Dtestng.suite.file)')
+
+        string(name: 'API_BASE_URI', defaultValue: '', description: 'API host, e.g. https://dev12345.service-now.com (empty: the suite supplies its own)')
+        string(name: 'API_BASE_PATH', defaultValue: '', description: 'Prefix of every call, e.g. /api/now/table')
+        string(name: 'API_OAUTH_BASE_PATH', defaultValue: '', description: 'OAuth token endpoint, e.g. /oauth_token.do')
+        string(name: 'API_GRANT_TYPE', defaultValue: '', description: 'OAuth grant type (empty: client_credentials)')
+        string(name: 'API_RETRY_MAX', defaultValue: '0', description: 'Repeat GET/HEAD/OPTIONS this many times on 429/502/503/504 or no response (0 = off)')
+
+        string(name: 'OAUTH_CLIENT_CREDENTIALS_ID', defaultValue: '', description: 'Jenkins "Username with password" credential id: OAuth client id and secret')
+        string(name: 'API_USER_CREDENTIALS_ID', defaultValue: '', description: 'Jenkins "Username with password" credential id: API user (password grant or Basic auth)')
+        string(name: 'BEARER_TOKEN_CREDENTIALS_ID', defaultValue: '', description: 'Jenkins "Secret text" credential id: a ready-made bearer token')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+                script {
+                    requireSafe('MODULE', params.MODULE, /[A-Za-z0-9_.-]+/)
+                    requireSafe('SUITE_FILE', params.SUITE_FILE, /[A-Za-z0-9_.\/-]+/)
+                }
+            }
+        }
+
+        stage('Install framework modules') {
+            steps {
+                // The module's upstream modules (core, ...) come from the local repository, so build them
+                // once without their tests; the module under test is built and tested in the next stage.
+                script {
+                    mvn("-q -DskipTests -Djacoco.skip=true -pl ${params.MODULE} -am install")
+                }
+            }
+        }
+
+        stage('API tests') {
+            steps {
+                script {
+                    def bindings = []
+                    if (params.OAUTH_CLIENT_CREDENTIALS_ID?.trim()) {
+                        bindings << usernamePassword(credentialsId: params.OAUTH_CLIENT_CREDENTIALS_ID.trim(),
+                                usernameVariable: 'API_CLIENT_ID', passwordVariable: 'API_CLIENT_SECRET')
+                    }
+                    if (params.API_USER_CREDENTIALS_ID?.trim()) {
+                        bindings << usernamePassword(credentialsId: params.API_USER_CREDENTIALS_ID.trim(),
+                                usernameVariable: 'API_USERNAME', passwordVariable: 'API_PASSWORD')
+                    }
+                    if (params.BEARER_TOKEN_CREDENTIALS_ID?.trim()) {
+                        bindings << string(credentialsId: params.BEARER_TOKEN_CREDENTIALS_ID.trim(),
+                                variable: 'API_BEARER_TOKEN')
+                    }
+                    // "clean" so that a report left by an earlier build cannot be published as this one's.
+                    withCredentials(bindings) {
+                        mvn("-pl ${params.MODULE} clean verify -Dtestng.suite.file=${params.SUITE_FILE}")
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // One row per test method in Jenkins' test trend; a failing assertion shows the request, status,
+            // masked body preview and a curl command to repeat the call.
+            junit testResults: '**/target/surefire-reports/TEST-*.xml', allowEmptyResults: false
+            archiveArtifacts artifacts: '**/target/surefire-reports/**, **/reports/**',
+                    allowEmptyArchive: true, fingerprint: false
+        }
+    }
+}
