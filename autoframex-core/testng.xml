@@ -21,6 +21,7 @@
             <class name="com.framework.utils.DataLibraryReadOnlyTest"/>
             <class name="com.framework.config.data.RetryApiConfigTest"/>
             <class name="com.framework.utils.ReporterNodePropagationTest"/>
+            <class name="com.framework.utils.ReporterFailStepTest"/>
         </classes>
     </test>
 

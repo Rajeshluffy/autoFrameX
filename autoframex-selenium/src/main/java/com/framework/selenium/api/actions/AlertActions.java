@@ -1,5 +1,6 @@
 package com.framework.selenium.api.actions;
 
+import com.framework.exception.TestStepFailedException;
 import com.framework.utils.StepReporter;
 import java.util.function.Supplier;
 
@@ -28,73 +29,46 @@ public class AlertActions {
 		return driverSupplier.get();
 	}
 
-	public void acceptAlert() {
+	/** Waits for an alert; fails the step (with a screenshot) if none appears in the short wait time. */
+	private Alert requireAlert(String purpose) {
 		try {
 			Alert alert = waitActions.waitFor(ExpectedConditions.alertIsPresent(),
 					WaitUtils.getShortWaitTime(), "Alert not present");
-			if (alert != null) {
-				String text = alert.getText();
-				alert.accept();
-				reporter.reportStep("Accepted alert: '" + text + "'", "pass", false);
-			} else {
-				reporter.reportStep("No alert present to accept", "warning", false);
-			}
+			return ElementSupport.orFail(reporter, alert, "No alert present to " + purpose, true);
 		} catch (NoAlertPresentException e) {
-			reporter.reportStep("No alert present", "warning", false);
+			reporter.reportStep("No alert present to " + purpose, "fail", true);
+			throw new TestStepFailedException("Test failed: No alert present to " + purpose);
 		}
+	}
+
+	public void acceptAlert() {
+		Alert alert = requireAlert("accept");
+		String text = alert.getText();
+		alert.accept();
+		reporter.reportStep("Accepted alert: '" + text + "'", "pass", false);
 	}
 
 	public void dismissAlert() {
-		try {
-			Alert alert = waitActions.waitFor(ExpectedConditions.alertIsPresent(),
-					WaitUtils.getShortWaitTime(), "Alert not present");
-			if (alert != null) {
-				String text = alert.getText();
-				alert.dismiss();
-				reporter.reportStep("Dismissed alert: '" + text + "'", "pass", false);
-			} else {
-				reporter.reportStep("No alert present to dismiss", "warning", false);
-			}
-		} catch (NoAlertPresentException e) {
-			reporter.reportStep("No alert present", "warning", false);
-		}
+		Alert alert = requireAlert("dismiss");
+		String text = alert.getText();
+		alert.dismiss();
+		reporter.reportStep("Dismissed alert: '" + text + "'", "pass", false);
 	}
 
 	public void switchToAlert() {
-		try {
-			waitActions.waitFor(ExpectedConditions.alertIsPresent(), WaitUtils.getShortWaitTime(), "Alert not present");
-			driver().switchTo().alert();
-			reporter.reportStep("Switched to alert", "info", false);
-		} catch (NoAlertPresentException e) {
-			reporter.reportStep("No alert present to switch", "warning", false);
-		}
+		requireAlert("switch to");
+		driver().switchTo().alert();
+		reporter.reportStep("Switched to alert", "info", false);
 	}
 
 	public String getAlertText() {
-		try {
-			Alert alert = waitActions.waitFor(ExpectedConditions.alertIsPresent(), WaitUtils.getShortWaitTime(),
-					"Alert not present");
-			if (alert != null) {
-				String text = alert.getText();
-				reporter.reportStep("Alert text: " + text, "pass", false);
-				return text;
-			}
-		} catch (NoAlertPresentException e) {
-			reporter.reportStep("No alert present", "warning", false);
-		}
-		return "";
+		String text = requireAlert("read").getText();
+		reporter.reportStep("Alert text: " + text, "pass", false);
+		return text;
 	}
 
 	public void typeAlert(String data) {
-		try {
-			Alert alert = waitActions.waitFor(ExpectedConditions.alertIsPresent(), WaitUtils.getShortWaitTime(),
-					"Alert not present");
-			if (alert != null) {
-				alert.sendKeys(data);
-				reporter.reportStep("Typed in alert: " + data, "info", false);
-			}
-		} catch (NoAlertPresentException e) {
-			reporter.reportStep("No alert present to type", "warning", false);
-		}
+		requireAlert("type into").sendKeys(data);
+		reporter.reportStep("Typed in alert: " + data, "info", false);
 	}
 }

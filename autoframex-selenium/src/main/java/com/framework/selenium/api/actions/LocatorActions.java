@@ -1,9 +1,9 @@
 package com.framework.selenium.api.actions;
 
+import org.openqa.selenium.NoSuchElementException;
 import com.framework.utils.StepReporter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
 import org.openqa.selenium.By;
@@ -41,7 +41,9 @@ public class LocatorActions implements ElementLocator {
 			return driver().findElement(by);
 		} catch (NoSuchElementException e) {
 			String errorMsg = "Element not found - " + locatorType + ": " + value;
-			reporter.reportStep(errorMsg, "fail", true);
+			// ElementNotFoundException is the documented signal: a caller may treat absence as a valid
+			// answer (see its Javadoc). Only a warning here; if nobody catches it the test fails anyway.
+			reporter.reportStep(errorMsg, "warning", false);
 			throw new ElementNotFoundException(errorMsg, e);
 		}
 	}
@@ -51,7 +53,7 @@ public class LocatorActions implements ElementLocator {
 			return driver().findElement(By.id(value));
 		} catch (NoSuchElementException e) {
 			String errorMsg = "Element not found with ID: " + value;
-			reporter.reportStep(errorMsg, "fail", true);
+			reporter.reportStep(errorMsg, "warning", false);
 			throw new ElementNotFoundException(errorMsg, e);
 		}
 	}
@@ -83,7 +85,7 @@ public class LocatorActions implements ElementLocator {
 
 			String errorMsg = "Element not found with either locator - " + locatorType1 + ": " + value1 +
 					" OR " + locatorType2 + ": " + value2;
-			reporter.reportStep(errorMsg, "fail", true);
+			reporter.reportStep(errorMsg, "warning", false);
 			throw new ElementNotFoundException(errorMsg);
 
 		} catch (Exception e) {

@@ -1,5 +1,6 @@
 package com.framework.selenium.api.actions;
 
+import com.framework.exception.TestStepFailedException;
 import com.framework.utils.StepReporter;
 import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.Keys;
@@ -43,6 +44,9 @@ public class TypeActions {
 			reporter.reportStep(String.format("Typed text: %s (wait: %dms, type: %dms, total: %dms)",
 					data, waitMs, typeMs, waitMs + typeMs), "info", false);
 
+		} catch (TestStepFailedException e) {
+			// The step already failed (e.g. "Element not visible for typing"): do not retype into it.
+			throw e;
 		} catch (ElementNotInteractableException e) {
 			reporter.reportStep("Element not interactable: " + ElementSupport.describe(ele), "fail", true);
 		} catch (Exception e) {
@@ -51,35 +55,20 @@ public class TypeActions {
 				ele.clear();
 				ele.sendKeys(data);
 			} catch (Exception e1) {
-				reporter.reportStep("Type failed: " + e1.getMessage(), "fail", true);
+				reporter.reportStep("Type failed: " + e1.getMessage() + " (first attempt: " + e + ")", "fail", true);
 			}
 		}
 	}
 
 	public void typeAndTab(WebElement ele, String data) {
-		if (ele == null || data == null) {
-			reporter.reportStep("Cannot type - element or data is null", "fail", false);
-			return;
-		}
-
-		try {
-			long waitStartNanos = PerfClock.start();
-			WebElement visibleElement = waitActions.waitForVisibility(ele);
-			long waitMs = PerfClock.elapsedMs(waitStartNanos);
-			if (visibleElement != null) {
-				long typeStartNanos = PerfClock.start();
-				visibleElement.clear();
-				visibleElement.sendKeys(data, Keys.TAB);
-				long typeMs = PerfClock.elapsedMs(typeStartNanos);
-				reporter.reportStep(String.format("Typed and tabbed: %s (wait: %dms, type: %dms, total: %dms)",
-						data, waitMs, typeMs, waitMs + typeMs), "info", false);
-			}
-		} catch (Exception e) {
-			reporter.reportStep("Type and tab failed: " + e.getMessage(), "fail", true);
-		}
+		typeThenKey(ele, data, Keys.TAB, "Typed and tabbed", "Type and tab failed");
 	}
 
 	public void typeAndEnter(WebElement ele, String data) {
+		typeThenKey(ele, data, Keys.ENTER, "Typed and entered", "Type and enter failed");
+	}
+
+	private void typeThenKey(WebElement ele, String data, Keys key, String doneMessage, String failMessage) {
 		if (ele == null || data == null) {
 			reporter.reportStep("Cannot type - element or data is null", "fail", false);
 			return;
@@ -87,18 +76,20 @@ public class TypeActions {
 
 		try {
 			long waitStartNanos = PerfClock.start();
-			WebElement visibleElement = waitActions.waitForVisibility(ele);
+			WebElement visibleElement = ElementSupport.orFail(reporter, waitActions.waitForVisibility(ele),
+					"Element not visible for typing: " + ElementSupport.describe(ele), true);
 			long waitMs = PerfClock.elapsedMs(waitStartNanos);
-			if (visibleElement != null) {
-				long typeStartNanos = PerfClock.start();
-				visibleElement.clear();
-				visibleElement.sendKeys(data, Keys.ENTER);
-				long typeMs = PerfClock.elapsedMs(typeStartNanos);
-				reporter.reportStep(String.format("Typed and entered: %s (wait: %dms, type: %dms, total: %dms)",
-						data, waitMs, typeMs, waitMs + typeMs), "info", false);
-			}
+
+			long typeStartNanos = PerfClock.start();
+			visibleElement.clear();
+			visibleElement.sendKeys(data, key);
+			long typeMs = PerfClock.elapsedMs(typeStartNanos);
+			reporter.reportStep(String.format("%s: %s (wait: %dms, type: %dms, total: %dms)",
+					doneMessage, data, waitMs, typeMs, waitMs + typeMs), "info", false);
+		} catch (TestStepFailedException e) {
+			throw e;
 		} catch (Exception e) {
-			reporter.reportStep("Type and enter failed: " + e.getMessage(), "fail", true);
+			reporter.reportStep(failMessage + ": " + e.getMessage(), "fail", true);
 		}
 	}
 
@@ -112,7 +103,10 @@ public class TypeActions {
 
 	public void clear(WebElement ele) {
 		try {
-			waitActions.waitForVisibility(ele).clear();
+			ElementSupport.orFail(reporter, waitActions.waitForVisibility(ele),
+					"Element not visible for clear: " + ElementSupport.describe(ele), true).clear();
+		} catch (TestStepFailedException e) {
+			throw e;
 		} catch (ElementNotInteractableException e) {
 			reporter.reportStep("Clear failed - element not interactable", "fail", true);
 		} catch (Exception e) {
@@ -122,7 +116,10 @@ public class TypeActions {
 
 	public void type(WebElement ele, String data) {
 		try {
-			waitActions.waitForVisibility(ele).sendKeys(data);
+			ElementSupport.orFail(reporter, waitActions.waitForVisibility(ele),
+					"Element not visible for typing: " + ElementSupport.describe(ele), true).sendKeys(data);
+		} catch (TestStepFailedException e) {
+			throw e;
 		} catch (ElementNotInteractableException e) {
 			reporter.reportStep("Element not interactable", "fail", true);
 		} catch (Exception e) {

@@ -95,6 +95,8 @@
             <class name="com.framework.config.data.ConfigManagerTest"/>
             <class name="com.framework.utils.PerfClockTest"/>
             <class name="com.framework.utils.ReporterNodePropagationTest"/>
+            <class name="com.framework.utils.ReporterFailStepTest"/>
+            <class name="com.framework.selenium.api.actions.ActionsFailLoudlyTest"/>
             <class name="design.patterns.object.pool.MultiCustomBrowserRegistryTest"/>
             <class name="design.patterns.factory.browser.RemoteGridBrowserDecouplingTest"/>
             <class name="design.patterns.factory.browser.BrowserOptionsIsolationTest"/>

@@ -112,7 +112,8 @@ public abstract class SecurityTestBase extends ProjectSpecificMethods {
     @AfterMethod(alwaysRun = true)
     public void postCondition(Method method, ITestResult result) {
         FakerDataFactory.cleanup();
-        tearDownTest(method, result);
+        // Reporter.tearDownTest runs next as an inherited @AfterMethod; calling it here as well
+        // published every test twice.
     }
 
     // =========================================================================

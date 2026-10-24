@@ -1,7 +1,7 @@
 package com.framework.utils;
 
+import org.openqa.selenium.NoSuchElementException;
 import java.time.Duration;
-import java.util.NoSuchElementException;
 import java.util.function.Function;
 
 import org.openqa.selenium.ElementNotInteractableException;

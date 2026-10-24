@@ -112,8 +112,8 @@ public class WindowFrameActions {
 
 	public void switchToFrame(int index) {
 		try {
-			waitActions.waitFor(ExpectedConditions.frameToBeAvailableAndSwitchToIt(index),
-					WaitUtils.getShortWaitTime(), "Frame not available at index: " + index);
+			ElementSupport.orFail(reporter, waitActions.waitFor(ExpectedConditions.frameToBeAvailableAndSwitchToIt(index),
+					WaitUtils.getShortWaitTime(), "Frame not available at index: " + index), "Frame not available at index: " + index, false);
 			reporter.reportStep("Switched to frame index: " + index, "info", false);
 		} catch (NoSuchFrameException e) {
 			reporter.reportStep("Frame not found at index: " + index, "fail", false);
@@ -122,8 +122,8 @@ public class WindowFrameActions {
 
 	public void switchToFrame(WebElement ele) {
 		try {
-			waitActions.waitFor(ExpectedConditions.frameToBeAvailableAndSwitchToIt(ele),
-					WaitUtils.getShortWaitTime(), "Frame not available");
+			ElementSupport.orFail(reporter, waitActions.waitFor(ExpectedConditions.frameToBeAvailableAndSwitchToIt(ele),
+					WaitUtils.getShortWaitTime(), "Frame not available"), "Frame not available", false);
 			reporter.reportStep("Switched to frame element", "info", false);
 		} catch (NoSuchFrameException e) {
 			reporter.reportStep("Frame not found", "fail", false);
@@ -132,8 +132,8 @@ public class WindowFrameActions {
 
 	public void switchToFrame(String idOrName) {
 		try {
-			waitActions.waitFor(ExpectedConditions.frameToBeAvailableAndSwitchToIt(idOrName),
-					WaitUtils.getShortWaitTime(), "Frame not available: " + idOrName);
+			ElementSupport.orFail(reporter, waitActions.waitFor(ExpectedConditions.frameToBeAvailableAndSwitchToIt(idOrName),
+					WaitUtils.getShortWaitTime(), "Frame not available: " + idOrName), "Frame not available: " + idOrName, false);
 			reporter.reportStep("Switched to frame: " + idOrName, "info", false);
 		} catch (NoSuchFrameException e) {
 			reporter.reportStep("Frame not found: " + idOrName, "fail", false);

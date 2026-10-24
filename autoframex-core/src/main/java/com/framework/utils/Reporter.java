@@ -367,6 +367,12 @@ public abstract class Reporter implements StepReporter {
 
         if (currentTest == null) {
             logger.warn("No test node - cannot report: " + desc);
+            // A failed step must still fail the test. Without a node (a worker thread that never
+            // bound one, or a step after teardown) there is nowhere to write it, but returning
+            // here used to turn the failure into a log line and let the test pass.
+            if ("FAIL".equalsIgnoreCase(status)) {
+                throw new com.framework.exception.TestStepFailedException("Test failed: " + desc);
+            }
             return;
         }
 

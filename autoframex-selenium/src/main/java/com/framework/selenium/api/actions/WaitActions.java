@@ -171,10 +171,16 @@ public class WaitActions implements ElementWaiter {
 			"return domReady && noXhrFetch && noJQuery;";
 
 		try {
-			fluentWaitFor(driver -> {
+			Boolean ready = fluentWaitFor(driver -> {
 				Object result = driver().executeScript(checkScript);
 				return result instanceof Boolean && (Boolean) result;
 			}, timeoutSeconds, 300);
+			if (ready == null) {
+				// fluentWaitFor returns null on timeout; do not report "fully loaded" for that.
+				reporter.reportStep("Timed out after " + timeoutSeconds
+						+ " seconds waiting for the page and its API calls to be ready", "warning", false);
+				return;
+			}
 			// Automatic page-load timing: every page object already calls this
 			// method after every navigating action, so this is the one place
 			// that gives every page transition a load-time measurement for free
@@ -190,11 +196,15 @@ public class WaitActions implements ElementWaiter {
 
 	public void waitApiToLoad() {
 		try {
-			fluentWaitFor(driver -> {
+			Boolean loaded = fluentWaitFor(driver -> {
 				Long activeRequests = (Long) driver().executeScript(
 						"return window.performance.getEntriesByType('resource').length;");
 				return activeRequests != null && activeRequests > 0;
 			}, 30, 500);
+			if (loaded == null) {
+				reporter.reportStep("Timed out after 30 seconds waiting for API resources to load", "warning", false);
+				return;
+			}
 			reporter.reportStep("API resources loaded successfully", "info", false);
 		} catch (Exception e) {
 			reporter.reportStep("Wait for API to load failed: " + e.getMessage(), "warning", false);

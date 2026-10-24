@@ -1,5 +1,6 @@
 package com.framework.selenium.api.actions;
 
+import com.framework.exception.TestStepFailedException;
 import com.framework.utils.StepReporter;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -69,6 +70,20 @@ final class ElementSupport {
 		} catch (Exception e) {
 			return "";
 		}
+	}
+
+	/**
+	 * Returns {@code found}, or fails the step when a wait came back empty. The wait helpers return
+	 * {@code null} on timeout (with only a warning), so an action that needs the element has to stop
+	 * here; carrying on reports success for something that never happened.
+	 */
+	static <T> T orFail(StepReporter reporter, T found, String message, boolean snap) {
+		if (found == null) {
+			reporter.reportStep(message, "fail", snap);
+			// reportStep("fail") throws; this covers a StepReporter that only records.
+			throw new TestStepFailedException("Test failed: " + message);
+		}
+		return found;
 	}
 
 	/** Sleeps, reporting (not throwing) if interrupted. */

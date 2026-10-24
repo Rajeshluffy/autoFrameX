@@ -1,5 +1,6 @@
 package com.framework.selenium.api.actions;
 
+import com.framework.exception.TestStepFailedException;
 import com.framework.utils.StepReporter;
 import java.time.Duration;
 import java.util.function.Supplier;
@@ -76,15 +77,19 @@ public class ClickActions implements ElementClicker {
 		} catch (StaleElementReferenceException e) {
 			boolean success = WaitUtils.retryAction(reporter, () -> {
 				WebElement retryElement = waitActions.waitForClickable(ele);
-				if (retryElement != null) {
-					retryElement.click();
+				if (retryElement == null) {
+					// Without this the attempt "succeeded" with nothing clicked.
+					throw new IllegalStateException("Element not clickable on retry: " + ElementSupport.describe(ele));
 				}
+				retryElement.click();
 			}, WaitUtils.getMaxRetryAttempts(), WaitUtils.getPollingIntervalMs());
 
 			if (!success) {
 				reporter.reportStep("Failed to click element after retries", "fail", true);
 			}
 
+		} catch (TestStepFailedException e) {
+			throw e;
 		} catch (Exception e) {
 			reporter.reportStep("Click failed: " + e.getMessage(), "fail", true);
 		}
@@ -106,6 +111,8 @@ public class ClickActions implements ElementClicker {
 			} else {
 				reporter.reportStep("JavaScript click failed", "fail", true);
 			}
+		} catch (TestStepFailedException e) {
+			throw e;
 		} catch (Exception e) {
 			reporter.reportStep("JavaScript click failed: " + e.getMessage(), "fail", true);
 		}
@@ -120,10 +127,11 @@ public class ClickActions implements ElementClicker {
 
 	public void clickWithNoSnap(WebElement ele) {
 		try {
-			WebElement clickable = waitActions.waitForClickable(ele);
-			if (clickable != null) {
-				clickable.click();
-			}
+			WebElement clickable = ElementSupport.orFail(reporter, waitActions.waitForClickable(ele),
+					"Element not clickable: " + ElementSupport.describe(ele), false);
+			clickable.click();
+		} catch (TestStepFailedException e) {
+			throw e;
 		} catch (Exception e) {
 			reporter.reportStep("Click failed: " + e.getMessage(), "fail", false);
 		}
@@ -131,9 +139,12 @@ public class ClickActions implements ElementClicker {
 
 	public void contextClick(WebElement ele) {
 		try {
-			Actions act = new Actions(driver());
-			act.contextClick(waitActions.waitForClickable(ele)).perform();
+			WebElement clickable = ElementSupport.orFail(reporter, waitActions.waitForClickable(ele),
+					"Element not clickable for right click: " + ElementSupport.describe(ele), true);
+			new Actions(driver()).contextClick(clickable).perform();
 			reporter.reportStep("Right click performed", "info", false);
+		} catch (TestStepFailedException e) {
+			throw e;
 		} catch (Exception e) {
 			reporter.reportStep("Right click failed: " + e.getMessage(), "fail", true);
 		}
@@ -141,9 +152,12 @@ public class ClickActions implements ElementClicker {
 
 	public void doubleClick(WebElement ele) {
 		try {
-			Actions act = new Actions(driver());
-			act.doubleClick(waitActions.waitForClickable(ele)).perform();
+			WebElement clickable = ElementSupport.orFail(reporter, waitActions.waitForClickable(ele),
+					"Element not clickable for double click: " + ElementSupport.describe(ele), true);
+			new Actions(driver()).doubleClick(clickable).perform();
 			reporter.reportStep("Double click performed", "info", false);
+		} catch (TestStepFailedException e) {
+			throw e;
 		} catch (Exception e) {
 			reporter.reportStep("Double click failed: " + e.getMessage(), "fail", true);
 		}
@@ -151,12 +165,12 @@ public class ClickActions implements ElementClicker {
 
 	public void hoverAndClick(WebElement ele) {
 		try {
-			Actions act = new Actions(driver());
-			WebElement clickableElement = waitActions.waitForClickable(ele);
-			if (clickableElement != null) {
-				act.moveToElement(clickableElement).pause(Duration.ofMillis(500)).click().perform();
-				reporter.reportStep("Hover and click completed", "info", false);
-			}
+			WebElement clickable = ElementSupport.orFail(reporter, waitActions.waitForClickable(ele),
+					"Element not clickable for hover and click: " + ElementSupport.describe(ele), true);
+			new Actions(driver()).moveToElement(clickable).pause(Duration.ofMillis(500)).click().perform();
+			reporter.reportStep("Hover and click completed", "info", false);
+		} catch (TestStepFailedException e) {
+			throw e;
 		} catch (Exception e) {
 			reporter.reportStep("Hover and click failed: " + e.getMessage(), "fail", true);
 		}
@@ -164,11 +178,11 @@ public class ClickActions implements ElementClicker {
 
 	public void moveToElement(WebElement ele) {
 		try {
-			Actions act = new Actions(driver());
-			WebElement visibleElement = waitActions.waitForVisibility(ele);
-			if (visibleElement != null) {
-				act.moveToElement(visibleElement).perform();
-			}
+			WebElement visible = ElementSupport.orFail(reporter, waitActions.waitForVisibility(ele),
+					"Element not visible for hover: " + ElementSupport.describe(ele), true);
+			new Actions(driver()).moveToElement(visible).perform();
+		} catch (TestStepFailedException e) {
+			throw e;
 		} catch (Exception e) {
 			reporter.reportStep("Mouse hover failed: " + e.getMessage(), "fail", true);
 		}
@@ -176,9 +190,14 @@ public class ClickActions implements ElementClicker {
 
 	public void dragAndDrop(WebElement eleSource, WebElement eleTarget) {
 		try {
-			Actions act = new Actions(driver());
-			act.dragAndDrop(waitActions.waitForVisibility(eleSource), waitActions.waitForVisibility(eleTarget)).perform();
+			WebElement source = ElementSupport.orFail(reporter, waitActions.waitForVisibility(eleSource),
+					"Drag source not visible: " + ElementSupport.describe(eleSource), true);
+			WebElement target = ElementSupport.orFail(reporter, waitActions.waitForVisibility(eleTarget),
+					"Drop target not visible: " + ElementSupport.describe(eleTarget), true);
+			new Actions(driver()).dragAndDrop(source, target).perform();
 			reporter.reportStep("Drag and drop completed", "info", false);
+		} catch (TestStepFailedException e) {
+			throw e;
 		} catch (Exception e) {
 			reporter.reportStep("Drag and drop failed: " + e.getMessage(), "fail", true);
 		}

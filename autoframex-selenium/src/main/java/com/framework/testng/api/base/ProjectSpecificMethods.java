@@ -287,8 +287,9 @@ public class ProjectSpecificMethods extends SeleniumBase {
 		FakerDataFactory.cleanup();
 		currentAccount.remove();
 
-		// Flush the Extent report node (defined in Reporter)
-		tearDownTest(method, result);
+		// Reporter.tearDownTest (the Extent node flush and the TestEvent) is an inherited
+		// @AfterMethod and TestNG runs it right after this method. Do not call it here too:
+		// that published every test twice, the second time with a zero duration.
 	}
 
 	// =========================================================================
