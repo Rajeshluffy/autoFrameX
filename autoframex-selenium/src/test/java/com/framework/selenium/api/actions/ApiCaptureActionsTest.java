@@ -137,6 +137,7 @@ public class ApiCaptureActionsTest {
 		Assert.assertEquals(ApiCaptureActions.endpointName("https://x.io/api/orders/3f2a9c1e-0b7d-4e55-9a31-5c2d8e7f4b10"),
 				"orders_3f2a9c1e-0b7d-4e55-9a31-5c2d8e7f4b10");
 		Assert.assertEquals(ApiCaptureActions.endpointName("https://x.io/42"), "42", "nothing to prepend");
+		Assert.assertEquals(ApiCaptureActions.endpointName("https://x.io/orders//7"), "orders_7", "empty segments are skipped when finding the parent");
 	}
 
 	@Test

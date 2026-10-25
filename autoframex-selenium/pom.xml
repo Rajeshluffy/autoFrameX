@@ -17,6 +17,8 @@
 		     install`/`mvn test` (no flags) now runs the fast, browser-free
 		     testng-ci.xml suite automatically instead. -->
 		<testng.suite.file>testng-ci.xml</testng.suite.file>
+		<!-- Coverage floor: line coverage was 38% when this was set; the build fails below it. -->
+		<jacoco.minimum.line>0.33</jacoco.minimum.line>
 	</properties>
 
 	<!--

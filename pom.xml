@@ -39,10 +39,19 @@
 		<java.version>17</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<testng.suite.file>testng.xml</testng.suite.file>
-		<!-- Default: coverage-percentage check WARNs but doesn't fail an
-		     otherwise-green build (see the jacoco-check execution below).
-		     Override with -Djacoco.haltOnFailure=true to make it a hard gate. -->
-		<jacoco.haltOnFailure>false</jacoco.haltOnFailure>
+		<!-- Coverage gate: `mvn verify`/`install` fails when a module's line coverage drops
+		     below its floor (jacoco-check execution below). The floor is the module's own
+		     jacoco.minimum.line, set in that module's pom a few points under what it has today,
+		     so coverage can rise freely but cannot silently fall. Raise a floor when coverage
+		     rises. 0.20 is only the default for a module that does not set its own.
+		     For a deliberately partial run (-Dtest=..., one suite) use -Djacoco.skip=true or
+		     -Djacoco.haltOnFailure=false; a partial run covers less than the floor by design. -->
+		<jacoco.haltOnFailure>true</jacoco.haltOnFailure>
+		<jacoco.minimum.line>0.20</jacoco.minimum.line>
+		<!-- SpotBugs gate: findings at this priority or worse fail the build (High, Medium, Low). -->
+		<spotbugs.gate.threshold>High</spotbugs.gate.threshold>
+		<!-- PMD gate: violations of this priority number or lower fail the build (1 = most serious, 5 = least). -->
+		<pmd.gate.priority>2</pmd.gate.priority>
 		<browser>chrome</browser>
 		<env>qa</env>
 		<headless>false</headless>
@@ -277,15 +286,9 @@
 						<phase>verify</phase>
 						<goals><goal>check</goal></goals>
 						<configuration>
-							<!-- Coverage percentage is observability, not a build gate: it's a
-							     separate, pre-existing concern from "do the unit tests pass"
-							     (the thing a plain `mvn install`/`mvn test` is meant to enforce
-							     — see testng.suite.file overrides throughout this reactor).
-							     Some modules (e.g. autoframex-performance) don't meet this floor
-							     yet; haltOnFailure=false means the check still runs and still
-							     WARNs in the log, it just doesn't fail an otherwise-green build.
-							     Override per-invocation with -Djacoco.haltOnFailure=true if you
-							     want coverage to be a hard gate for a specific run. -->
+							<!-- A real gate: fails the build below the module's floor (see the
+							     properties at the top). Skipped by -Djacoco.skip=true and when a
+							     module ran no tests (no jacoco.exec), e.g. with -DskipTests. -->
 							<haltOnFailure>${jacoco.haltOnFailure}</haltOnFailure>
 							<rules>
 								<rule>
@@ -294,7 +297,7 @@
 										<limit>
 											<counter>LINE</counter>
 											<value>COVEREDRATIO</value>
-											<minimum>0.20</minimum>
+											<minimum>${jacoco.minimum.line}</minimum>
 										</limit>
 									</limits>
 								</rule>
@@ -311,7 +314,11 @@
 				<version>3.11.0.3922</version>
 			</plugin>
 
-			<!-- Checkstyle — report-only (failOnViolation off); see docs/CODING_STANDARDS.md. -->
+			<!-- Checkstyle — report-only, and deliberately NOT a gate: google_checks.xml expects
+			     2-space indentation and Javadoc everywhere, while this code base uses tabs and
+			     4 spaces, so it reports about 15,000 findings that say nothing about quality.
+			     Making it fail would mean failing on all of them. It becomes a gate when a
+			     config that matches the code (or a reformat of the code) replaces it. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
@@ -330,13 +337,17 @@
 				</executions>
 			</plugin>
 
-			<!-- PMD — same report-only posture as Checkstyle above, same reason. -->
+			<!-- PMD — a gate for serious findings: a priority 1 or 2 violation fails the build.
+			     Priority 3 to 5 (unused fields, unnecessary qualified names, ...) are still
+			     reported in the log and in target/pmd.xml but do not fail it; raise
+			     pmd.gate.priority to 3 once those are cleared. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pmd-plugin</artifactId>
 				<version>3.26.0</version>
 				<configuration>
-					<failOnViolation>false</failOnViolation>
+					<failOnViolation>true</failOnViolation>
+					<failurePriority>${pmd.gate.priority}</failurePriority>
 					<printFailingErrors>true</printFailingErrors>
 				</configuration>
 				<executions>
@@ -348,13 +359,19 @@
 				</executions>
 			</plugin>
 
-			<!-- SpotBugs — static bug-pattern detection, same report-only posture. -->
+			<!-- SpotBugs — a gate for high-confidence bugs: a High-priority finding fails the
+			     build. Medium findings are not reported at this threshold; at the default
+			     threshold one remains (EI_EXPOSE_REP in AbstractDatabaseConnection.connect(),
+			     which returns the live JDBC connection by design), and a gate that fails on a
+			     known finding would just be switched off. Run with
+			     -Dspotbugs.gate.threshold=Medium to see (and be gated on) the Medium findings. -->
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
 				<version>4.8.6.6</version>
 				<configuration>
-					<failOnError>false</failOnError>
+					<failOnError>true</failOnError>
+					<threshold>${spotbugs.gate.threshold}</threshold>
 				</configuration>
 				<executions>
 					<execution>

@@ -950,26 +950,31 @@ public class ApiCaptureActions {
 				return sanitise(uri.getHost(), "root");
 			}
 			String[] segments = path.split("/");
-			for (int i = segments.length - 1; i >= 0; i--) {
-				String segment = sanitise(segments[i], "");
-				if (segment.isEmpty()) {
-					continue;
-				}
-				// ".../delay/1" or ".../orders/<uuid>": the last segment alone says nothing, keep its parent too.
-				if (isIdentifierSegment(segment)) {
-					for (int j = i - 1; j >= 0; j--) {
-						String parent = sanitise(segments[j], "");
-						if (!parent.isEmpty()) {
-							return parent + "_" + segment;
-						}
-					}
-				}
-				return segment;
+			int last = lastNonEmptySegment(segments, segments.length - 1);
+			if (last < 0) {
+				return "endpoint";
 			}
-			return "endpoint";
+			String segment = sanitise(segments[last], "");
+			// ".../delay/1" or ".../orders/<uuid>": the last segment alone says nothing, keep its parent too.
+			if (isIdentifierSegment(segment)) {
+				int parent = lastNonEmptySegment(segments, last - 1);
+				if (parent >= 0) {
+					return sanitise(segments[parent], "") + "_" + segment;
+				}
+			}
+			return segment;
 		} catch (RuntimeException e) {
 			return "unknown_endpoint";
 		}
+	}
+
+	/** Index of the nearest segment at or before {@code from} that is not empty once sanitised; -1 if none. */
+	private static int lastNonEmptySegment(String[] segments, int from) {
+		int i = from;
+		while (i >= 0 && sanitise(segments[i], "").isEmpty()) {
+			i--;
+		}
+		return i;
 	}
 
 	/** A bare number or UUID: an id, not a name. */
