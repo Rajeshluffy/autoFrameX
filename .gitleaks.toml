@@ -1,0 +1,11 @@
+title = "autoFrameX secret scanning"
+
+[extend]
+# Start from gitleaks' built-in rules (cloud keys, tokens, private keys, generic API keys, ...).
+useDefault = true
+
+[allowlist]
+description = "Test sources hold deliberately fake secrets to test masking and detection"
+paths = [
+  '''.*/src/test/java/.*''',
+]

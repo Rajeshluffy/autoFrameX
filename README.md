@@ -471,3 +471,49 @@ reports about 15,000 findings that say nothing about quality) and OWASP Dependen
 
 For a deliberately partial run (`-Dtest=...`, one suite) a module covers less than its floor by
 design: add `-Djacoco.skip=true`.
+
+---
+
+## Secrets
+
+Never commit a credential. Pass credentials from the environment or the CI secret store (the JMeter plan,
+for example, has no default password or API key, see `performance/jmeter/README.md`).
+
+What guards this now:
+
+- `.gitignore` blocks the credential files this project has used (`alfaDOCKConfig.properties`,
+  `leafTapConfig.properties`, `.env*`, key and keystore files) and generated JMeter results.
+- `secret-scan.yml` runs gitleaks on the commits of every push and pull request (`.gitleaks.toml`; test
+  sources are allowlisted because they hold deliberately fake secrets).
+- Failure messages written to `logs/test-events.json` are masked before they are written.
+
+**What is already in git history.** Deleting a file from the latest commit does not remove it from history.
+Credentials for AlfaDOCK, Leaftaps and the Leaftaps database were committed in `alfaDOCKConfig.properties` and
+`leafTapConfig.properties` (added in `46f55e5`, removed in `5caa185`) and are still reachable from remote
+branches such as `stableversion0.1` and `frameWork`. The JMeter result files, which record an ERP key in
+their request URLs, were tracked until they were untracked and ignored. To close this:
+
+1. **Rotate** those credentials and the ERP key. This is the step that makes them safe; anything else only
+   hides a value that has already been exposed.
+2. Optionally **rewrite history** so they stop being downloadable (this has not been done; it needs a force
+   push of every branch, and everyone must re-clone):
+
+   ```bash
+   git clone --mirror <repository-url> autoFrameX-mirror.git && cd autoFrameX-mirror.git
+   git filter-repo --invert-paths \
+     --path src/main/resources/alfaDOCKConfig.properties \
+     --path src/main/resources/leafTapConfig.properties \
+     --path src/test/resources/alfaDOCKConfig.properties \
+     --path-glob 'performance/jmeter/results/*'
+   git push --force --mirror
+   ```
+
+## Dependencies
+
+Versions are managed in the root `pom.xml`. Dependabot opens weekly pull requests for Maven dependencies
+(related libraries grouped) and for the GitHub Actions the workflows use (`.github/dependabot.yml`).
+
+Two libraries are deliberately kept off the classpath: `snakeyaml:android:1.23` (pulled in by Faker; the real
+SnakeYAML 2.x jar is used instead) and Lombok (declared at compile scope by ExtentReports, but only needed to
+compile it). OWASP Dependency-Check runs weekly and fails only at CVSS 9 or above; lower
+`failBuildOnCVSS` once a first scan is clean.

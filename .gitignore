@@ -47,3 +47,20 @@ ehthumbs.db
 desktop.ini
 
 
+
+# -----------------------------
+# Generated load-test output (large, and the .jtl files record request URLs with tokens)
+# -----------------------------
+performance/jmeter/results/
+
+# -----------------------------
+# Credentials: never commit these. Supply them from the environment or a CI secret store.
+# -----------------------------
+**/alfaDOCKConfig.properties
+**/leafTapConfig.properties
+.env
+.env.*
+*.pem
+*.p12
+*.jks
+*.keystore

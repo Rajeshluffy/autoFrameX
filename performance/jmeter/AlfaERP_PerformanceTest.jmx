@@ -31,7 +31,7 @@
           </elementProp>
           <elementProp name="COMPANY_PASSWORD" elementType="Argument">
             <stringProp name="Argument.name">COMPANY_PASSWORD</stringProp>
-            <stringProp name="Argument.value">${__P(companyPassword,ts123)}</stringProp>
+            <stringProp name="Argument.value">${__P(companyPassword,)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="COMPANY_CID" elementType="Argument">
@@ -46,7 +46,7 @@
           </elementProp>
           <elementProp name="USER_PASSWORD" elementType="Argument">
             <stringProp name="Argument.name">USER_PASSWORD</stringProp>
-            <stringProp name="Argument.value">${__P(userPassword,admin)}</stringProp>
+            <stringProp name="Argument.value">${__P(userPassword,)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="ERP_APP_NAME" elementType="Argument">
@@ -56,7 +56,7 @@
           </elementProp>
           <elementProp name="ERP_KEY" elementType="Argument">
             <stringProp name="Argument.name">ERP_KEY</stringProp>
-            <stringProp name="Argument.value">${__P(erpKey,sfGa0kl7lO9fXWaE1rENp)}</stringProp>
+            <stringProp name="Argument.value">${__P(erpKey,)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="SEARCH_DATE_FROM" elementType="Argument">
