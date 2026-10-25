@@ -445,8 +445,8 @@ public class SeleniumBase extends Reporter implements Browser, Element {
 	}
 
 	@Override
-	public void verifyPartialAttribute(WebElement ele, String attribute, String value) {
-		elementInspectionActions.verifyPartialAttribute(ele, attribute, value);
+	public boolean verifyPartialAttribute(WebElement ele, String attribute, String value) {
+		return elementInspectionActions.verifyPartialAttribute(ele, attribute, value);
 	}
 
 	@Override

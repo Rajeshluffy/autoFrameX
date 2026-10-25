@@ -120,22 +120,40 @@ public final class ValidationUtils {
 
     /**
      * Asserts that {@code actualMs} is within the SLA limit {@code maxMs}.
-     * Does not throw — logs a WARNING instead, so a slow response never masks
-     * a functional failure.
+     *
+     * <p>A breach <b>fails the test</b> with an {@link AssertionError}. This used to only log a warning, which
+     * made every performance assertion in the framework unable to fail a test: the method was called
+     * "assert" but a run that missed its SLA by a factor of ten stayed green. Set
+     * {@code -Dperformance.sla.enforce=false} (or {@code PERFORMANCE_SLA_ENFORCE=false}) to get the warning-only
+     * behavior back, for a run that should measure and report without gating.
+     *
+     * <p>A negative {@code actualMs} means "nothing was measured" (a load test with no successful calls, a page
+     * whose timing is unavailable). That always fails, whatever the enforcement setting: a measurement that
+     * did not happen is not within any SLA.
      *
      * @param actualMs  measured duration in milliseconds
      * @param maxMs     SLA threshold in milliseconds
-     * @param operation human-readable operation name for the log message
-     * @return {@code true} if within SLA, {@code false} if breached
+     * @param operation human-readable operation name for the message
+     * @return {@code true} if within SLA; {@code false} if breached while enforcement is off
+     * @throws AssertionError on a breach (enforcement on, the default) or when nothing was measured
      */
     public static boolean assertResponseTime(long actualMs, long maxMs, String operation) {
+        if (actualMs < 0) {
+            throw new AssertionError("No measurement for [" + operation + "]: nothing was measured, "
+                    + "so the " + maxMs + " ms SLA cannot be met or breached");
+        }
         boolean withinSla = actualMs <= maxMs;
         if (withinSla) {
             logger.info("SLA OK — [" + operation + "] " + actualMs + " ms (limit: " + maxMs + " ms)");
-        } else {
-            logger.warn("SLA BREACH — [" + operation + "] " + actualMs + " ms exceeded limit of " + maxMs + " ms");
+            return true;
         }
-        return withinSla;
+        String message = "SLA BREACH — [" + operation + "] " + actualMs + " ms exceeded limit of " + maxMs + " ms";
+        if (com.framework.config.data.ConfigResolver.resolveBoolean(
+                "performance.sla.enforce", "PERFORMANCE_SLA_ENFORCE", null, true)) {
+            throw new AssertionError(message);
+        }
+        logger.warn(message + " (performance.sla.enforce=false: reported, not failed)");
+        return false;
     }
 
     // =========================================================================

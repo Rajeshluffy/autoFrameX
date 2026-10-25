@@ -107,17 +107,32 @@ public abstract class CucumberProjectBase extends SeleniumBase {
 
         getDriverManager().setupDriver(null, params, captureStarter);
 
-        try {
-            String url = ConfigManager.getInstance().getConfig().getAppUrl();
-            if (url != null && !url.isBlank()) {
-                getDriverManager().getDriver().get(url);
-                logger.info("Navigated to: {}", url);
-            }
-        } catch (Exception e) {
-            logger.warn("Could not navigate to app URL after driver setup: {}", e.getMessage());
-        }
+        openAppUrl(getDriverManager().getDriver(), ConfigManager.getInstance().getConfig().getAppUrl(), scenario.getName());
 
         logger.info("Driver ready for scenario: {}", scenario.getName());
+    }
+
+    /**
+     * Opens the application URL in the scenario's browser. A blank URL means "nothing to open".
+     *
+     * <p>A failure now fails the scenario. It used to be logged as a warning and the scenario went on against a
+     * blank page, so its first step failed with an unrelated "element not found", or a step that asserted
+     * nothing about the page passed on an app that was down. The {@code @After} hook still runs and returns
+     * the driver.
+     *
+     * @throws com.framework.exception.FrameworkException if the page cannot be opened
+     */
+    static void openAppUrl(RemoteWebDriver driver, String url, String scenarioName) {
+        if (url == null || url.isBlank()) {
+            return;
+        }
+        try {
+            driver.get(url);
+            logger.info("Navigated to: {}", url);
+        } catch (RuntimeException e) {
+            throw new com.framework.exception.FrameworkException("Scenario '" + scenarioName
+                    + "' could not open the application URL " + url + ": " + e.getMessage(), e);
+        }
     }
 
     /**

@@ -20,6 +20,7 @@
     <test name="Framework Unit Tests">
         <classes>
             <class name="com.framework.performance.PagePerformanceUtilsDelegationTest"/>
+            <class name="com.framework.performance.PerformanceAssertionsAreHonestTest"/>
         </classes>
     </test>
 

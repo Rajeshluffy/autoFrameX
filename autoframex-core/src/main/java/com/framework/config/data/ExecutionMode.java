@@ -26,17 +26,25 @@ public enum ExecutionMode {
 
     /**
      * Parses a string value from the TestNG XML or properties file.
-     * Case-insensitive; treats {@code null} / unknown values as {@link #TARGETED}.
+     * Case-insensitive; a hyphen or space is read as an underscore ({@code "data-provider"} is
+     * {@link #DATA_PROVIDER}). A {@code null} or blank value means "not configured" and gives {@link #TARGETED}.
+     *
+     * <p>Any other value is an error. It used to fall back to {@link #TARGETED} too, so a typo such as
+     * {@code "dataprovider"} ran one account instead of every row of the data file, and the build stayed green.
      *
      * @param value raw string (e.g. {@code "data_provider"}, {@code "DATA_PROVIDER"})
-     * @return matching enum constant, defaulting to {@code TARGETED}
+     * @return matching enum constant, {@code TARGETED} when {@code value} is null or blank
+     * @throws com.framework.exception.FrameworkException if {@code value} names no mode
      */
     public static ExecutionMode from(String value) {
         if (value == null || value.trim().isEmpty()) return TARGETED;
+        String normalised = value.trim().toUpperCase(java.util.Locale.ROOT).replace('-', '_').replace(' ', '_');
         try {
-            return valueOf(value.trim().toUpperCase());
+            return valueOf(normalised);
         } catch (IllegalArgumentException e) {
-            return TARGETED;
+            throw new com.framework.exception.FrameworkException("Unknown execution.mode '" + value.trim()
+                    + "'. Use one of: " + java.util.Arrays.toString(values())
+                    + " (case-insensitive). Leave it unset for TARGETED.");
         }
     }
 }

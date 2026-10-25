@@ -102,9 +102,10 @@ public final class EncryptionUtils {
      * Encrypts {@code plainText} using AES-256/GCM.
      *
      * @param plainText the value to encrypt
-     * @return Base64-encoded ciphertext (salt and IV prepended), or {@code null} on error
-     * @throws IllegalStateException if no encryption key is configured (this is a
-     *         setup error, not a data error, so it is never turned into {@code null})
+     * @return Base64-encoded ciphertext (salt and IV prepended); {@code plainText} itself if it is null or empty
+     * @throws IllegalStateException if no encryption key is configured
+     * @throws com.framework.exception.FrameworkException if encryption fails. It used to return {@code null},
+     *         which a caller could store or send as if it were the encrypted value.
      */
     public static String encrypt(String plainText) {
         if (plainText == null || plainText.isEmpty()) return plainText;
@@ -123,8 +124,8 @@ public final class EncryptionUtils {
 
             return Base64.getEncoder().encodeToString(combined);
         } catch (Exception e) {
-            logger.error("Encryption failed: " + e.getMessage());
-            return null;
+            logger.error("Encryption failed: " + e.getClass().getSimpleName());
+            throw new com.framework.exception.FrameworkException("Encryption failed: " + e.getClass().getSimpleName(), e);
         }
     }
 
@@ -132,9 +133,12 @@ public final class EncryptionUtils {
      * Decrypts a value previously produced by {@link #encrypt}.
      *
      * @param encryptedBase64 Base64-encoded ciphertext
-     * @return original plain-text value, or {@code null} if the value is corrupt or
-     *         was encrypted with a different key
+     * @return original plain-text value; {@code encryptedBase64} itself if it is null or empty
      * @throws IllegalStateException if no encryption key is configured
+     * @throws com.framework.exception.FrameworkException if the value is corrupt or was encrypted with a
+     *         different key. It used to return {@code null}, so a wrong key produced a null password and the
+     *         failure surfaced later as a login error that said nothing about the cause. The message names
+     *         neither the key nor the value.
      */
     public static String decrypt(String encryptedBase64) {
         if (encryptedBase64 == null || encryptedBase64.isEmpty()) return encryptedBase64;
@@ -152,8 +156,9 @@ public final class EncryptionUtils {
             cipher.init(Cipher.DECRYPT_MODE, deriveKey(passphrase, salt), new GCMParameterSpec(GCM_TAG_LENGTH, iv));
             return new String(cipher.doFinal(cipherText), StandardCharsets.UTF_8);
         } catch (Exception e) {
-            logger.error("Decryption failed: " + e.getMessage());
-            return null;
+            logger.error("Decryption failed: " + e.getClass().getSimpleName());
+            throw new com.framework.exception.FrameworkException(
+                    "Decryption failed: wrong key, or the value is corrupt (" + e.getClass().getSimpleName() + ")", e);
         }
     }
 

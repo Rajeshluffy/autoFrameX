@@ -159,6 +159,11 @@ public final class TestEventCollector {
             writer.flush();
         } catch (IOException e) {
             logger.warn("Failed to write test event for {}: {}", event.getTestId(), e.getMessage());
+        } catch (RuntimeException e) {
+            // One bad event must not kill the writer thread: it would end, the queue would fill, and every
+            // later event would be dropped with a misleading "queue full" warning.
+            logger.warn("Failed to write test event for {} ({}); continuing with the next event",
+                    event.getTestId(), e.getClass().getSimpleName());
         }
     }
 

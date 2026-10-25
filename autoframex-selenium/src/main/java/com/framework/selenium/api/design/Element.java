@@ -146,7 +146,7 @@ public interface Element {
 	 * @return true if this String represents the same sequence of characters as the specified value, false otherwise
 	 * 
 	 */
-	void verifyPartialAttribute(WebElement ele, String attribute, String value);
+	boolean verifyPartialAttribute(WebElement ele, String attribute, String value);
 
 	/**
 	 * This method will verify if the element is visible in the DOM

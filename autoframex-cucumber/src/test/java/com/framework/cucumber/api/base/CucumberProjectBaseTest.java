@@ -19,6 +19,48 @@ public class CucumberProjectBaseTest {
 		Assert.assertEquals(CucumberProjectBase.featureNameOf(URI.create("file:///x/y/orders.feature?line=12")), "orders");
 	}
 
+	/** Session-less fake that records what it was asked to open, and can refuse. */
+	private static final class RecordingDriver extends org.openqa.selenium.remote.RemoteWebDriver {
+		final java.util.List<String> opened = new java.util.ArrayList<>();
+		final boolean refuse;
+
+		RecordingDriver(boolean refuse) {
+			super();
+			this.refuse = refuse;
+		}
+
+		@Override
+		public void get(String url) {
+			if (refuse) {
+				throw new org.openqa.selenium.WebDriverException("net::ERR_CONNECTION_REFUSED");
+			}
+			opened.add(url);
+		}
+	}
+
+	@Test
+	public void theApplicationUrlIsOpenedWhenThereIsOne() {
+		RecordingDriver driver = new RecordingDriver(false);
+		CucumberProjectBase.openAppUrl(driver, "https://app.example/login", "Login works");
+		Assert.assertEquals(driver.opened, java.util.List.of("https://app.example/login"));
+	}
+
+	@Test
+	public void aBlankUrlMeansThereIsNothingToOpen() {
+		RecordingDriver driver = new RecordingDriver(true);   // would fail if it were touched
+		CucumberProjectBase.openAppUrl(driver, null, "s");
+		CucumberProjectBase.openAppUrl(driver, "  ", "s");
+		Assert.assertTrue(driver.opened.isEmpty());
+	}
+
+	@Test
+	public void anUnreachableApplicationFailsTheScenarioInsteadOfContinuingOnABlankPage() {
+		com.framework.exception.FrameworkException e = Assert.expectThrows(com.framework.exception.FrameworkException.class,
+				() -> CucumberProjectBase.openAppUrl(new RecordingDriver(true), "https://down.example", "Create a lead"));
+		Assert.assertTrue(e.getMessage().contains("Create a lead") && e.getMessage().contains("https://down.example"), e.getMessage());
+		Assert.assertTrue(e.getMessage().contains("ERR_CONNECTION_REFUSED"), "the browser's reason is kept: " + e.getMessage());
+	}
+
 	@Test
 	public void unusualOrMissingUrisFallBackToAUsableName() {
 		Assert.assertEquals(CucumberProjectBase.featureNameOf(null), "UnnamedFeature");

@@ -113,6 +113,7 @@
             <class name="design.patterns.object.pool.PoolReuseCapTest"/>
             <class name="design.patterns.object.pool.PoolSecondBrowserTest"/>
             <class name="com.framework.utils.ScreenshotTempFileTest"/>
+            <class name="com.framework.selenium.api.actions.ElementInspectionHonestyTest"/>
             <class name="design.patterns.factory.browser.BrowserHeadlessConfigTest"/>
             <class name="com.framework.testng.api.base.RetryPolicyTest"/>
             <class name="design.patterns.factory.browser.BrowserSecurityPolicyTest"/>

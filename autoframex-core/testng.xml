@@ -31,6 +31,8 @@
             <class name="com.framework.utils.FakerDataFactoryTest"/>
             <class name="com.framework.utils.logging.MaskingLogConvertersTest"/>
             <class name="com.framework.config.data.ProjectDirectorHeadlessTest"/>
+            <class name="com.framework.utils.DataLibraryAccountFileTest"/>
+            <class name="com.framework.config.data.ExecutionModeTest"/>
         </classes>
     </test>
 

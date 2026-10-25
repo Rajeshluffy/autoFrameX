@@ -51,11 +51,17 @@ public final class PagePerformanceUtils {
     }
 
     /**
-     * Checks page load time against {@code maxMs}. Logs a WARNING if the SLA is breached
-     * but does not throw — consistent with the framework's SLA-as-warning contract.
+     * Checks page load time against {@code maxMs}. A breach throws an {@link AssertionError} (set
+     * {@code -Dperformance.sla.enforce=false} for a logged warning instead). A page that has not finished
+     * loading reports no load time ({@code loadEventEnd == 0}); that counts as "not measured" and always
+     * fails, where it used to count as 0 ms and meet any SLA.
      */
     public static void assertPageLoadTime(RemoteWebDriver driver, long maxMs, String pageName) {
         long actual = getPageLoadTimeMs(driver);
+        if (actual <= 0) {
+            throw new AssertionError("[" + pageName + " page load] was not measured: the browser reports no load "
+                    + "time (loadEventEnd is 0, the page has not finished loading)");
+        }
         ValidationUtils.assertResponseTime(actual, maxMs, pageName + " page load");
     }
 

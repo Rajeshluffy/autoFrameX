@@ -114,16 +114,25 @@ public class ElementInspectionActions {
 		}
 	}
 
-	public void verifyPartialAttribute(WebElement ele, String attribute, String value) {
+	/**
+	 * Checks that the attribute contains {@code value}.
+	 *
+	 * @return {@code true} if it does; {@code false} if it does not. It returned nothing, so a caller could not
+	 *         tell a match from a mismatch, which was only a warning in the report. Like the other
+	 *         {@code verify*} methods it reports the mismatch and leaves the decision to the caller.
+	 */
+	public boolean verifyPartialAttribute(WebElement ele, String attribute, String value) {
 		try {
 			String actualValue = ele.getAttribute(attribute);
 			if (actualValue != null && actualValue.contains(value)) {
 				reporter.reportStep("Attribute '" + attribute + "' contains: " + value, "pass", false);
-			} else {
-				reporter.reportStep("Attribute doesn't contain: " + value, "warning", false);
+				return true;
 			}
+			reporter.reportStep("Attribute '" + attribute + "' doesn't contain: " + value, "warning", false);
+			return false;
 		} catch (Exception e) {
 			reporter.reportStep("Partial attribute verification failed: " + e.getMessage(), "fail", false);
+			return false;
 		}
 	}
 
@@ -184,7 +193,7 @@ public class ElementInspectionActions {
 
 	public String getBackgroundColor(WebElement ele) {
 		try {
-			String cssValue = ele.getCssValue("color");
+			String cssValue = ele.getCssValue("background-color");   // was "color", the text colour
 			reporter.reportStep("Background color: " + cssValue, "info", false);
 			return cssValue;
 		} catch (Exception e) {

@@ -67,11 +67,33 @@ public class EncryptionUtilsTest {
     }
 
     @Test
-    public void decryptWithDifferentKeyReturnsNull() {
+    public void decryptWithDifferentKeyFailsInsteadOfReturningNull() {
         System.setProperty(KEY_PROP, "key-one");
         String encrypted = EncryptionUtils.encrypt("value");
         System.setProperty(KEY_PROP, "key-two");
-        assertNull(EncryptionUtils.decrypt(encrypted));
+        com.framework.exception.FrameworkException e = org.testng.Assert.expectThrows(
+                com.framework.exception.FrameworkException.class, () -> EncryptionUtils.decrypt(encrypted));
+        assertTrue(e.getMessage().contains("wrong key"), e.getMessage());
+        assertFalse(e.getMessage().contains("key-one") || e.getMessage().contains("key-two"), "the key is never in the message");
+        assertFalse(e.getMessage().contains(encrypted), "the ciphertext is never in the message");
+    }
+
+    @Test
+    public void aCorruptOrTruncatedValueFailsToo() {
+        System.setProperty(KEY_PROP, "unit-test-passphrase");
+        org.testng.Assert.assertThrows(com.framework.exception.FrameworkException.class,
+                () -> EncryptionUtils.decrypt("c29tZXRoaW5n"));      // valid Base64, far too short to hold salt, IV and tag
+        org.testng.Assert.assertThrows(com.framework.exception.FrameworkException.class,
+                () -> EncryptionUtils.decrypt("not base64 at all !!"));
+    }
+
+    @Test
+    public void nullAndEmptyAreStillPassedThrough() {
+        System.setProperty(KEY_PROP, "unit-test-passphrase");
+        assertNull(EncryptionUtils.encrypt(null));
+        assertEquals(EncryptionUtils.encrypt(""), "");
+        assertNull(EncryptionUtils.decrypt(null));
+        assertEquals(EncryptionUtils.decrypt(""), "");
     }
 
     // ---- masking -----------------------------------------------------------

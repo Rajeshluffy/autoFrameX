@@ -8,6 +8,7 @@
     <test name="ZAP utilities">
         <classes>
             <class name="com.framework.security.ZapSecurityUtilsTest"/>
+            <class name="com.framework.security.SecretDetectorTest"/>
         </classes>
     </test>
 </suite>

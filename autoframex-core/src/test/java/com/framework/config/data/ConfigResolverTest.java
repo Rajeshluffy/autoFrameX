@@ -83,12 +83,57 @@ public class ConfigResolverTest {
 	}
 
 	@Test
-	public void resolveBooleanUnparsableParamIsFalseNotDefault() {
-		// Boolean.parseBoolean() never throws — an unparsable string just becomes
-		// false, unlike resolveInt()'s fall-through-on-malformed-value behavior.
-		// This test documents that real (if slightly surprising) difference.
+	public void resolveBooleanUnparsableParamFallsThroughLikeAnInt() {
+		// Boolean.parseBoolean() turned every typo into false, silently, and let it override a valid lower
+		// tier. A value that is not true/false is now logged and skipped, exactly as resolveInt() does.
 		Map<String, String> params = paramsOf("flag", "not-a-boolean");
-		Assert.assertFalse(ConfigResolver.resolveBoolean("flag", UNUSED_ENV_KEY, params, true));
+		Assert.assertTrue(ConfigResolver.resolveBoolean("flag", UNUSED_ENV_KEY, params, true),
+				"the typo must not win as false; the default decides");
+		withSystemProperty("flag", "false", () ->
+				Assert.assertFalse(ConfigResolver.resolveBoolean("flag", UNUSED_ENV_KEY, params, true),
+						"the next tier (the system property) decides, not the default"));
+	}
+
+	@Test
+	public void resolveBooleanTreatsCommonTyposAsInvalidNotFalse() {
+		for (String typo : new String[] { "ture", "yes", "1", "on", "tru" }) {
+			Assert.assertTrue(ConfigResolver.resolveBoolean("flag", UNUSED_ENV_KEY, paramsOf("flag", typo), true),
+					"'" + typo + "' is not a boolean, so it must not turn the default (true) into false");
+		}
+	}
+
+	@Test
+	public void resolveBooleanAcceptsAnyCaseAndSurroundingWhitespace() {
+		Assert.assertTrue(ConfigResolver.resolveBoolean("flag", UNUSED_ENV_KEY, paramsOf("flag", "  TRUE "), false));
+		Assert.assertFalse(ConfigResolver.resolveBoolean("flag", UNUSED_ENV_KEY, paramsOf("flag", "False"), true));
+	}
+
+	@Test
+	public void resolveBooleanTreatsABlankValueAsNotSet() {
+		// An empty Jenkins parameter reaches the process as HEADLESS="" (an empty variable). It used to count
+		// as false and override every lower tier.
+		Assert.assertTrue(ConfigResolver.resolveBoolean("flag", UNUSED_ENV_KEY, paramsOf("flag", "   "), true));
+		Assert.assertTrue(ConfigResolver.resolveBoolean("flag", UNUSED_ENV_KEY, paramsOf("flag", ""), true));
+	}
+
+	// =========================================================================
+	// unresolved ${placeholders} count as not set
+	// =========================================================================
+
+	@Test
+	public void anUnresolvedPlaceholderIsNotAValue() {
+		// testng.xml passes browser="${browser}"; with no -Dbrowser the literal text arrives.
+		Map<String, String> params = paramsOf("browser", "${browser}");
+		Assert.assertEquals(ConfigResolver.resolveString("browser", UNUSED_ENV_KEY, params, "chrome"), "chrome");
+		Assert.assertTrue(ConfigResolver.resolveBoolean("headless", UNUSED_ENV_KEY, paramsOf("headless", "${headless}"), true));
+		Assert.assertEquals(ConfigResolver.resolveInt("size", UNUSED_ENV_KEY, paramsOf("size", "${size}"), 5), 5);
+	}
+
+	@Test
+	public void aPlaceholderInTheParameterLetsTheSystemPropertyDecide() {
+		withSystemProperty("configResolverTest.placeholder", "fromSysProp", () ->
+				Assert.assertEquals(ConfigResolver.resolveString("configResolverTest.placeholder", UNUSED_ENV_KEY,
+						paramsOf("configResolverTest.placeholder", "${x}"), "fromDefault"), "fromSysProp"));
 	}
 
 	// =========================================================================

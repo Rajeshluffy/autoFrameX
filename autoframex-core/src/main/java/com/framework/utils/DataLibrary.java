@@ -10,7 +10,6 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -158,8 +157,8 @@ public class DataLibrary {
         File file = new File(path);
         
         if (!file.exists()) {
-            logger.warn("Excel file not found: " + file.getAbsolutePath());
-            return Collections.emptyList();
+            // An empty list makes a data-driven test run nothing, and the build stays green.
+            throw new FrameworkException("Excel account file not found: " + file.getAbsolutePath());
         }
 
         logger.info("Loading Excel account data from: " + path);
@@ -188,9 +187,13 @@ public class DataLibrary {
             logger.info("Loaded " + accounts.size() + " account row(s) from: " + path);
 
         } catch (Exception e) {
-            logger.error("Failed to read Excel file '" + path + "': " + e.getMessage());
+            // Returning whatever was read before the failure would run a partial data set as if it were whole.
+            throw new FrameworkException("Failed to read Excel file '" + path + "': " + e.getMessage(), e);
         }
 
+        if (accounts.isEmpty()) {
+            throw new FrameworkException("No usable account rows (company user and user name are required) in: " + path);
+        }
         return accounts;
     }
     

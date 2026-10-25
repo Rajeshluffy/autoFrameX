@@ -21,17 +21,32 @@ import org.slf4j.LoggerFactory;
  * already passed the same string for both, so this isn't a behavior change,
  * just dropping a parameter that was always redundant.
  *
- * <p>Unlike a naive "resolve the string once, then parse it" approach, the
- * numeric/boolean resolvers here fall through to the next tier if a given
- * tier's value fails to parse, rather than immediately giving up and
- * returning the default — a malformed higher-priority override shouldn't
- * shadow a perfectly valid lower-priority one.
+ * <h3>What counts as "set"</h3>
+ * A tier that holds a blank value, or an unresolved placeholder such as {@code ${browser}} (what a suite file
+ * passes through when no {@code -Dbrowser} was given, and what an empty Jenkins parameter becomes as an
+ * environment variable), is <em>not set</em>: the next tier decides. This is the same for strings, booleans and
+ * numbers. A boolean used to be the exception: an empty {@code HEADLESS=} counted as {@code false} and overrode
+ * every lower tier.
+ *
+ * <p>The numeric and boolean resolvers fall through to the next tier if a given
+ * tier's value fails to parse, rather than immediately giving up and returning
+ * the default, with a warning that names the bad value. A boolean must be exactly {@code true} or
+ * {@code false} (any case): {@code Boolean.parseBoolean} turned every typo ({@code ture}, {@code yes}, {@code 1})
+ * into {@code false}, silently, and let it override a perfectly valid lower-priority value.
  */
 public final class ConfigResolver {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigResolver.class);
 
     private ConfigResolver() {}
+
+    /** Whether a tier's value is a real value: not null, not blank, and not an unresolved {@code ${...}}. */
+    static boolean isSet(String value) {
+        if (value == null) return false;
+        String trimmed = value.trim();
+        if (trimmed.isEmpty()) return false;
+        return !(trimmed.startsWith("${") && trimmed.endsWith("}"));
+    }
 
     /**
      * Resolves a string value through the priority chain.
@@ -40,32 +55,46 @@ public final class ConfigResolver {
      *                     system property name)
      * @param envKey       environment variable name
      * @param params       parameter map; may be {@code null}
-     * @param defaultValue returned if no tier has a non-blank value
+     * @param defaultValue returned if no tier has a set value
      */
     public static String resolveString(String paramKey, String envKey,
             Map<String, String> params, String defaultValue) {
         if (params != null) {
             String v = params.get(paramKey);
-            if (v != null && !v.trim().isEmpty()) return v.trim();
+            if (isSet(v)) return v.trim();
         }
         String envValue = System.getenv(envKey);
-        if (envValue != null && !envValue.trim().isEmpty()) return envValue.trim();
+        if (isSet(envValue)) return envValue.trim();
         String sysValue = System.getProperty(paramKey);
-        if (sysValue != null && !sysValue.trim().isEmpty()) return sysValue.trim();
+        if (isSet(sysValue)) return sysValue.trim();
         return defaultValue;
     }
 
-    /** Resolves a boolean value through the priority chain. */
+    /**
+     * Resolves a boolean value through the priority chain. A tier's value must be {@code true} or
+     * {@code false} (any case, surrounding whitespace ignored); anything else is logged and the next tier decides.
+     */
     public static boolean resolveBoolean(String paramKey, String envKey,
             Map<String, String> params, boolean defaultValue) {
-        if (params != null && params.containsKey(paramKey)) {
-            return Boolean.parseBoolean(params.get(paramKey));
+        if (params != null) {
+            Boolean parsed = parseBoolean(params.get(paramKey), "parameter '" + paramKey + "'");
+            if (parsed != null) return parsed;
         }
-        String envValue = System.getenv(envKey);
-        if (envValue != null) return Boolean.parseBoolean(envValue);
-        String sysValue = System.getProperty(paramKey);
-        if (sysValue != null) return Boolean.parseBoolean(sysValue);
+        Boolean fromEnv = parseBoolean(System.getenv(envKey), "env var '" + envKey + "'");
+        if (fromEnv != null) return fromEnv;
+        Boolean fromProperty = parseBoolean(System.getProperty(paramKey), "system property '" + paramKey + "'");
+        if (fromProperty != null) return fromProperty;
         return defaultValue;
+    }
+
+    /** {@code true}/{@code false}, or {@code null} when the tier is unset or not a boolean (the latter is logged). */
+    private static Boolean parseBoolean(String value, String source) {
+        if (!isSet(value)) return null;
+        String trimmed = value.trim();
+        if (trimmed.equalsIgnoreCase("true")) return Boolean.TRUE;
+        if (trimmed.equalsIgnoreCase("false")) return Boolean.FALSE;
+        logger.warn("Invalid boolean for {}: '{}' (expected true or false) — checking next source", source, trimmed);
+        return null;
     }
 
     /**
@@ -75,16 +104,18 @@ public final class ConfigResolver {
      */
     public static int resolveInt(String paramKey, String envKey,
             Map<String, String> params, int defaultValue) {
-        if (params != null && params.containsKey(paramKey)) {
+        if (params != null) {
             String v = params.get(paramKey);
-            try {
-                return Integer.parseInt(v.trim());
-            } catch (NumberFormatException e) {
-                logger.warn("Invalid int for parameter '{}': {} — checking next source", paramKey, v);
+            if (isSet(v)) {
+                try {
+                    return Integer.parseInt(v.trim());
+                } catch (NumberFormatException e) {
+                    logger.warn("Invalid int for parameter '{}': {} — checking next source", paramKey, v);
+                }
             }
         }
         String envValue = System.getenv(envKey);
-        if (envValue != null) {
+        if (isSet(envValue)) {
             try {
                 return Integer.parseInt(envValue.trim());
             } catch (NumberFormatException e) {
@@ -92,7 +123,7 @@ public final class ConfigResolver {
             }
         }
         String sysValue = System.getProperty(paramKey);
-        if (sysValue != null) {
+        if (isSet(sysValue)) {
             try {
                 return Integer.parseInt(sysValue.trim());
             } catch (NumberFormatException e) {
