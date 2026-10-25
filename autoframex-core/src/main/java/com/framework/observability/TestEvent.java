@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.framework.utils.EncryptionUtils;
+
 /**
  * Immutable value object representing one test execution event.
  * Serialized to NDJSON by {@link TestEventCollector}.
@@ -135,7 +137,16 @@ public final class TestEvent {
         public Builder durationMs(long v)        { this.durationMs = v;      return this; }
         public Builder status(String v)          { this.status = v;          return this; }
         public Builder failureCategory(String v) { this.failureCategory = v; return this; }
-        public Builder failureMessage(String v)  { this.failureMessage = v;  return this; }
+        /**
+         * A failure message is whatever the exception said, which for an API or database test can
+         * carry a URL with a token, a connection string or a request body. The event file is
+         * archived and shipped (CI artifacts, log pipelines), so credentials are masked here, in
+         * the one place every event passes through.
+         */
+        public Builder failureMessage(String v) {
+            this.failureMessage = EncryptionUtils.maskSensitiveValues(v);
+            return this;
+        }
         public Builder retryCount(int v)         { this.retryCount = v;      return this; }
         public Builder flakyScore(double v)      { this.flakyScore = v;      return this; }
         public Builder traceId(String v)         { this.traceId = v;         return this; }

@@ -4,12 +4,14 @@
   <!-- %mask masks credential-shaped substrings (password=, Bearer ...) in every
        log line automatically — see com.framework.utils.logging.MaskingMessageConverter.
        Applies to both appenders below so masking is never opt-in per call site. -->
-  <conversionRule conversionWord="mask" converterClass="com.framework.utils.logging.MaskingMessageConverter"/>
+  <conversionRule conversionWord="mask" class="com.framework.utils.logging.MaskingMessageConverter"/>
+  <!-- %maskEx replaces the default %ex: an exception's own message and stack trace are masked too. -->
+  <conversionRule conversionWord="maskEx" class="com.framework.utils.logging.MaskingThrowableConverter"/>
 
   <!-- Console output with timestamp, thread, level, logger, and message -->
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %mask%n</pattern>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %mask%n%maskEx</pattern>
     </encoder>
   </appender>
 
