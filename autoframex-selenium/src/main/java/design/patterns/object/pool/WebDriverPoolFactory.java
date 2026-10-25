@@ -9,6 +9,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 import design.patterns.factory.browser.BrowserFactory;
+import design.patterns.factory.browser.BrowserRegistry;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -114,8 +115,7 @@ public final class WebDriverPoolFactory implements AutoCloseable {
         this.poolSizeCounters  = new ConcurrentHashMap<>();
 
         for (String bt : config.getSupportedBrowsers()) {
-            availableDrivers.put(bt, new LinkedBlockingQueue<>());
-            poolSizeCounters.put(bt, new AtomicInteger(0));
+            addBrowserType(bt);
         }
 
         this.cleanupExecutor = createCleanupExecutor();
@@ -193,12 +193,16 @@ public final class WebDriverPoolFactory implements AutoCloseable {
         long startTime = System.currentTimeMillis();
         RemoteWebDriver driver = null;
         boolean reused = false;
+        // The pooled entry of a reused driver. Its use counter has to follow the driver from one test to the
+        // next, or the maxReuseCount limit can never be reached (see registerActive).
+        PooledDriver reusedEntry = null;
 
         try {
             // ── Step 1: non-blocking reuse ────────────────────────────────────
-            driver = tryReuseFromPool(browserType);
+            reusedEntry = tryReuseFromPool(browserType);
 
-            if (driver != null) {
+            if (reusedEntry != null) {
+                driver = reusedEntry.getDriver();
                 reused = true;
                 statistics.incrementReused();
             } else {
@@ -227,6 +231,7 @@ public final class WebDriverPoolFactory implements AutoCloseable {
                     Borrowed borrowed = borrowOrCreate(browserType);
                     driver = borrowed.driver;
                     reused = borrowed.reused;
+                    reusedEntry = borrowed.entry;
                     if (reused) {
                         statistics.incrementReused();
                     }
@@ -251,7 +256,7 @@ public final class WebDriverPoolFactory implements AutoCloseable {
             }
 
             // ── Step 5: register as active (IN_USE) ───────────────────────────
-            registerActive(driver, browserType);
+            registerActive(driver, browserType, reusedEntry);
 
             logger.info(String.format("Driver acquired in %dms: %s [Reused=%s, ID=%d]",
                     System.currentTimeMillis() - startTime, browserType,
@@ -283,14 +288,19 @@ public final class WebDriverPoolFactory implements AutoCloseable {
     /** How often a thread waiting at capacity looks again for a freed slot. */
     private static final long CAPACITY_POLL_MILLIS = 250;
 
-    /** A driver handed to a waiting thread, and whether it came from the idle queue or was newly created. */
+    /**
+     * A driver handed to a waiting thread, and whether it came from the idle queue or was newly created.
+     * {@code entry} is the pooled entry of a reused driver (so its use counter continues), {@code null} for a new one.
+     */
     private static final class Borrowed {
         final RemoteWebDriver driver;
         final boolean reused;
+        final PooledDriver entry;
 
-        Borrowed(RemoteWebDriver driver, boolean reused) {
+        Borrowed(RemoteWebDriver driver, boolean reused, PooledDriver entry) {
             this.driver = driver;
             this.reused = reused;
+            this.entry = entry;
         }
     }
 
@@ -322,9 +332,18 @@ public final class WebDriverPoolFactory implements AutoCloseable {
                         decrementPoolSize(browserType);
                         continue; // the slot is free now: loop to reserve it or find another idle driver
                     }
+                    // Reuse cap, same rule as tryReuseFromPool: a browser that has served maxReuseCount tests is
+                    // retired, not handed to the thread that happened to be waiting for it.
+                    if (pd.getUsageCount() >= config.getMaxReuseCount()) {
+                        logger.info("Timeout-borrowed driver reached reuse cap (" + pd.getUsageCount()
+                                + "/" + config.getMaxReuseCount() + ") — retiring: " + browserType);
+                        safelyDestroyAsync(pd.getDriver(), browserType);
+                        decrementPoolSize(browserType);
+                        continue; // the slot is free now: loop to reserve it or find another idle driver
+                    }
                     pd.transitionTo(DriverState.IDLE, DriverState.IN_USE);
                     pd.markAcquired();
-                    return new Borrowed(pd.getDriver(), true);
+                    return new Borrowed(pd.getDriver(), true, pd);
                 }
 
                 // Nothing idle: has a slot been freed since the reservation in acquire() failed?
@@ -334,7 +353,7 @@ public final class WebDriverPoolFactory implements AutoCloseable {
                         RemoteWebDriver created = createNewDriver(browserType);
                         logger.debug("Created new driver after waiting for a free slot: " + browserType
                                 + " [ID: " + System.identityHashCode(created) + "]");
-                        return new Borrowed(created, false);
+                        return new Borrowed(created, false, null);
                     } catch (RuntimeException e) {
                         counter.decrementAndGet(); // no phantom slot behind a failed creation
                         throw e;
@@ -484,7 +503,7 @@ public final class WebDriverPoolFactory implements AutoCloseable {
      * Tries to borrow an IDLE driver from the queue (non-blocking).
      * Enforces health-check and reuse-cap on borrow, not on return.
      */
-    private RemoteWebDriver tryReuseFromPool(String browserType) {
+    private PooledDriver tryReuseFromPool(String browserType) {
         LinkedBlockingQueue<PooledDriver> queue = availableDrivers.get(browserType);
         PooledDriver pd = queue.poll(); // non-blocking
         if (pd == null) return null;
@@ -510,7 +529,7 @@ public final class WebDriverPoolFactory implements AutoCloseable {
 
         pd.transitionTo(DriverState.IDLE, DriverState.IN_USE);
         pd.markAcquired();
-        return pd.getDriver();
+        return pd;
     }
 
     /**
@@ -531,13 +550,21 @@ public final class WebDriverPoolFactory implements AutoCloseable {
         }
     }
 
-    private void registerActive(RemoteWebDriver driver, String browserType) {
-        PooledDriver pd = activeDrivers.computeIfAbsent(driver,
-                k -> new PooledDriver(k, browserType));
-        // Transition: new drivers start IDLE, then must go IN_USE
-        if (pd.getState() == DriverState.IDLE) {
-            pd.transitionTo(DriverState.IDLE, DriverState.IN_USE);
+    /**
+     * Records the driver as in use.
+     *
+     * @param reusedEntry the pooled entry of a driver taken from the idle queue (already IN_USE, and already
+     *                    counted as used by the borrow), or {@code null} for a newly created driver. A reused
+     *                    driver has to keep its own entry: this used to build a fresh one every time, so the use
+     *                    counter restarted at 1 on every acquire and {@code maxReuseCount} was never reached.
+     */
+    private void registerActive(RemoteWebDriver driver, String browserType, PooledDriver reusedEntry) {
+        if (reusedEntry != null) {
+            activeDrivers.put(driver, reusedEntry);
+            return;
         }
+        PooledDriver pd = new PooledDriver(driver, browserType); // new drivers start IDLE, then go IN_USE
+        pd.transitionTo(DriverState.IDLE, DriverState.IN_USE);
         pd.markAcquired();
         activeDrivers.put(driver, pd);
     }
@@ -685,7 +712,7 @@ public final class WebDriverPoolFactory implements AutoCloseable {
     public String getStatistics() {
         StringBuilder sb = new StringBuilder("=== WebDriver Pool Statistics ===\n");
 
-        for (String bt : config.getSupportedBrowsers()) {
+        for (String bt : availableDrivers.keySet()) {
             int idle   = availableDrivers.get(bt).size();
             int total  = poolSizeCounters.get(bt).get();
             int inUse  = total - idle;
@@ -754,9 +781,35 @@ public final class WebDriverPoolFactory implements AutoCloseable {
         if (isShutdown.get()) throw new IllegalStateException("Pool has been shutdown");
     }
 
+    /**
+     * Makes sure the pool can serve {@code bt}. A browser the pool was started with always can. One it was not
+     * started with is added when it is registered with {@link BrowserRegistry} (a method annotated
+     * {@code @BrowserConfig(browser = FIREFOX)}, or a second {@code <test browser="firefox">} in the same run);
+     * before, that failed with "Unsupported browser" although the browser was usable. An id that is not
+     * registered anywhere is still rejected. Each browser has its own queue and its own {@code maxPoolSize};
+     * a browser added this way is not pre-warmed.
+     */
     private void validateBrowserType(String bt) {
-        if (!config.getSupportedBrowsers().contains(bt))
-            throw new IllegalArgumentException("Unsupported browser: " + bt);
+        if (bt == null) {
+            throw new IllegalArgumentException("Unsupported browser: null");
+        }
+        if (availableDrivers.containsKey(bt)) {
+            return;
+        }
+        if (!BrowserRegistry.isRegistered(bt)) {
+            throw new IllegalArgumentException("Unsupported browser: " + bt + " (pool browsers: "
+                    + availableDrivers.keySet() + ", registered: " + BrowserRegistry.registeredIds() + ")");
+        }
+        if (addBrowserType(bt)) {
+            logger.info("Browser " + bt + " was not part of the pool's initial set; added on first use");
+        }
+    }
+
+    /** Creates the queue and counter for a browser; {@code false} if another thread already did. */
+    private boolean addBrowserType(String bt) {
+        boolean added = availableDrivers.putIfAbsent(bt, new LinkedBlockingQueue<>()) == null;
+        poolSizeCounters.putIfAbsent(bt, new AtomicInteger(0));
+        return added;
     }
 
     private void incrementPoolSize(String bt) { poolSizeCounters.get(bt).incrementAndGet(); }
