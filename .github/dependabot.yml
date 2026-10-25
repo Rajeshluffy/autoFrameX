@@ -1,0 +1,31 @@
+version: 2
+
+updates:
+  # Maven: the root pom manages every dependency version through properties, so one entry for the
+  # reactor root covers all modules. Related libraries are grouped so they move together in one PR.
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    groups:
+      selenium:
+        patterns: ["org.seleniumhq.selenium:*"]
+      cucumber:
+        patterns: ["io.cucumber:*"]
+      logging:
+        patterns: ["ch.qos.logback:*", "org.slf4j:*", "net.logstash.logback:*"]
+      apache-poi:
+        patterns: ["org.apache.poi:*", "org.apache.xmlbeans:*"]
+      rest-assured:
+        patterns: ["io.rest-assured:*"]
+      maven-plugins:
+        patterns: ["org.apache.maven.plugins:*", "org.jacoco:*", "com.github.spotbugs:*", "org.owasp:*"]
+
+  # GitHub Actions: the workflows pin actions to version tags; this keeps those tags current.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
