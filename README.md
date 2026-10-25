@@ -111,7 +111,7 @@ autoFrameX/
 │
 ├── Jenkinsfile                             # Declarative pipeline
 ├── Dockerfile / docker-compose.yml         # Containerised execution
-└── .github/workflows/                      # ci / regression / performance / security / sonar / dependency-check
+└── .github/workflows/                      # ci / regression / sonar / dependency-check
 ```
 
 Suite XML files, test fixtures (`data/accounts.xlsx`), and Cucumber
@@ -421,18 +421,21 @@ apicapture/<testcase>/<method>_<row>_<run>/
 
 The `Jenkinsfile` defines a declarative pipeline with parameterised browser, environment, headless flag, module, suite file, and thread count. Stages: Checkout → Inject Configs → Build & Install → Test → Reports → (optional) SonarQube.
 
-GitHub Actions workflows are in `.github/workflows/` — each `mvn` step now
-installs the full reactor first, then targets the one module that owns the
-suite it's running via `-pl` (see each file's own comments for why):
+GitHub Actions workflows are in `.github/workflows/`:
 
-| Workflow | Trigger | Module targeted |
+| Workflow | Trigger | What it runs |
 |---|---|---|
-| `ci.yml` | Push / PR to any branch | `autoframex-selenium` |
+| `ci.yml` | Push / PR to any branch | **Every module**: `mvn clean install` runs each module's own default suite, then the quality gates (below). Then the parallel smoke suite and the retry-engine check on `autoframex-selenium`. This is the merge gate. |
 | `regression.yml` | Manual dispatch | Chosen via the `module` input (default `autoframex-testkit`) |
-| `performance.yml` | Manual dispatch | `autoframex-selenium` |
-| `security.yml` | Manual dispatch | `autoframex-selenium` |
-| `sonar.yml` | Push / PR to main | `autoframex-selenium` (test step); reactor root (Sonar analysis) |
+| `sonar.yml` | Push / PR to main | Every module's tests with coverage, then Sonar analysis at the reactor root; fails if the Sonar quality gate fails |
 | `dependency-check.yml` | Weekly + manual dispatch | Reactor root (scans every module) |
+| `Jenkinsfile.api` (Jenkins) | Per job | One module's suite with Maven, no Docker; see `autoframex-api/README.md` |
+
+There are no ZAP-scan or load-test workflows here: a scan or load test needs a test class that
+targets a real application, and this repo only provides the base classes (`SecurityTestBase`,
+`PerformanceTestBase`). Run those from the project that owns the application under test.
+The two workflows that pretended to (`security.yml`, `performance.yml`) selected a TestNG
+group that no test declared, so they went green without running anything, and were removed.
 
 ---
 
@@ -450,3 +453,21 @@ Coverage reports are generated per-module during `mvn test` via the JaCoCo
 plugin (`<module>/target/site/jacoco/jacoco.xml`) and consumed by SonarQube —
 only modules whose tests actually ran in a given invocation will show
 non-zero coverage; there's no cross-module `jacoco:report-aggregate` step yet.
+
+### Quality gates (`mvn verify` / `mvn install`)
+
+These fail the build; they are not reports:
+
+| Gate | Fails when | Notes |
+|---|---|---|
+| Tests | any test of any module fails | each module runs its own default suite |
+| JaCoCo line coverage | a module drops below its floor, `jacoco.minimum.line` in that module's pom | floors sit a few points under today's coverage (api 85%, core 60%, selenium 33%, security 48%, database 42%, cucumber 13%, performance 5%). Raise a floor when coverage rises. |
+| PMD | a priority 1 or 2 violation | priority 3 to 5 are listed but do not fail; raise `pmd.gate.priority` to 3 once they are cleared (`-Dpmd.gate.priority=3` shows what that would fail on) |
+| SpotBugs | a High-priority finding | `-Dspotbugs.gate.threshold=Medium` also gates Medium findings (one is known: `AbstractDatabaseConnection.connect()`) |
+
+Not gates: Checkstyle (its Google config does not match this code's tabs/4-space style, so it
+reports about 15,000 findings that say nothing about quality) and OWASP Dependency-Check
+(weekly, fails only at CVSS 9 or above).
+
+For a deliberately partial run (`-Dtest=...`, one suite) a module covers less than its floor by
+design: add `-Djacoco.skip=true`.

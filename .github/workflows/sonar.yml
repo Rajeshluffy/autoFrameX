@@ -6,10 +6,14 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   sonar:
     name: SAST — SonarQube analysis
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - name: Checkout source
@@ -24,35 +28,27 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Build and install all modules (multi-module reactor — TD-20)
-        run: mvn clean install -DskipTests -Djacoco.skip=true -q
-
-      - name: Run tests and collect coverage
-        # JaCoCo prepare-agent runs automatically via pom.xml; report goal runs after test phase.
-        # testng-ci.xml (autoframex-selenium) is browser-free so this step works without Chrome.
-        run: |
-          mvn test \
-            -pl autoframex-selenium \
-            -Dtestng.suite.file=testng-ci.xml \
-            -Denv=qa \
-            -Dheadless=true \
-            -Dsurefire.reportNameSuffix=sonar
+      - name: Build and test every module, collect coverage
+        # JaCoCo prepare-agent/report run via pom.xml, so every module's own tests produce a
+        # coverage report for Sonar. This used to test only autoframex-selenium, so Sonar
+        # showed 0% coverage for the other seven modules. The suites run here are the
+        # browser-free default suite of each module.
+        run: mvn -B -ntp clean verify -Denv=qa -Dheadless=true -Dsurefire.reportNameSuffix=sonar
 
       - name: Run SonarQube analysis
-        # Runs at the reactor root (not -pl-scoped) so Sonar analyzes every
-        # module's source, not just autoframex-selenium's — coverage will
-        # correctly show 0% for modules this job's one test step didn't
-        # exercise (a known simplification, no cross-module JaCoCo
-        # aggregation attempted here — see ci.yml's coverage-floor step).
+        # Runs at the reactor root so Sonar analyzes every module's source. The token and
+        # host come from the environment (SONAR_TOKEN / SONAR_HOST_URL, which the scanner
+        # reads itself), not the command line, where they would show in the process list.
+        # sonar.qualitygate.wait makes this step fail when the quality gate fails; without
+        # it the analysis is only uploaded and nothing ever blocks.
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          mvn sonar:sonar \
+          mvn -B -ntp sonar:sonar \
             -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY || 'autoFrameX' }} \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths='**/target/site/jacoco/jacoco.xml' \
+            -Dsonar.qualitygate.wait=true
 
       - name: Upload Surefire XML results
         if: always()
