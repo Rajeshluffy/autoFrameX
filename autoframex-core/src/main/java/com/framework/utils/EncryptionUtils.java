@@ -69,8 +69,14 @@ public final class EncryptionUtils {
     // The old single pattern (key\s*[=:]\s*\S+) missed the quoted forms, and
     // against a compact JSON line its greedy \S+ swallowed every field after
     // the match, corrupting the log record.
+    //
+    // A match may only START at the beginning of a token ((?<![\w.-])). Without that, the
+    // leading [\w.-]* is tried from every position of a long run of word characters (a
+    // base64 screenshot, a long id) and each attempt scans to the end of the run: quadratic,
+    // about 16 s for 20,000 characters, on every log line. Anchored, it is linear and
+    // matches exactly what the unanchored form matched.
     private static final String KEY =
-            "[\\w.-]*(?:password|passwd|pwd|secret|token|key|auth\\b)";
+            "(?<![\\w.-])[\\w.-]*(?:password|passwd|pwd|secret|token|key|auth\\b)";
     private static final String OPT_QUOTE = "(?:\\\\?[\"'])?";
 
     /** Authorization: scheme credentials -- masks scheme and credentials together. */

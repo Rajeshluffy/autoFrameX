@@ -1,9 +1,11 @@
 package com.framework.utils;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertThrows;
+import static org.testng.Assert.assertTrue;
 
 import org.testng.SkipException;
 import org.testng.annotations.AfterMethod;
@@ -121,6 +123,37 @@ public class EncryptionUtilsTest {
         String harmless = "Author=Bob opened the page; status=200";
         assertEquals(EncryptionUtils.maskSensitiveValues(harmless), harmless);
         assertNull(EncryptionUtils.maskSensitiveValues(null));
+    }
+
+    @Test
+    public void masksKeysThatCarryAPrefix() {
+        assertEquals(EncryptionUtils.maskSensitiveValues("dbPassword=hunter2"), "dbPassword=***");
+        assertEquals(EncryptionUtils.maskSensitiveValues("x-api-key: abc123"), "x-api-key: ***");
+        assertEquals(EncryptionUtils.maskSensitiveValues("{\"api.token\":\"abc\"}"), "{\"api.token\":\"***\"}");
+    }
+
+    /**
+     * The key pattern used to be tried from every position of a long run of word characters, and each
+     * attempt scanned to the end of the run: 20,000 characters took about 16 seconds, per log line.
+     * A long base64 screenshot or id in a log line must not stall the test run.
+     */
+    @Test(timeOut = 10_000)
+    public void aLongUnbrokenRunIsMaskedInLinearTime() {
+        String longRun = "x".repeat(200_000);
+        long started = System.nanoTime();
+        String masked = EncryptionUtils.maskSensitiveValues(longRun + " password=abc");
+        long elapsedMs = (System.nanoTime() - started) / 1_000_000;
+
+        assertTrue(masked.endsWith("password=***"), "the secret after the long run is still masked");
+        assertTrue(elapsedMs < 3_000, "200,000 characters took " + elapsedMs + " ms");
+    }
+
+    @Test(timeOut = 10_000)
+    public void aLongRunInsideAJsonBodyDoesNotHideOrDelayTheSecret() {
+        String body = "{\"image\":\"" + "A".repeat(100_000) + "\",\"token\":\"abc123\"}";
+        String masked = EncryptionUtils.maskSensitiveValues(body);
+        assertTrue(masked.contains("\"token\":\"***\""), masked.substring(masked.length() - 40));
+        assertFalse(masked.contains("abc123"));
     }
 
     private static void skipIfKeyInEnvironment() {
