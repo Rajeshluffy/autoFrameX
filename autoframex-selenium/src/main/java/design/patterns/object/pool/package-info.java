@@ -11,8 +11,7 @@
  * <p><b>Design intent:</b> this package (and {@code design.patterns.factory.browser})
  * is meant to be generic, framework-agnostic infrastructure with no knowledge of any
  * one project's configuration — in practice it still imports
- * {@code com.framework.config.data} directly (see that package's Javadoc and
- * {@code PROJECT_REVIEW.md}), a known, not-yet-fully-fixed violation of
+ * {@code com.framework.config.data} directly (see that package's Javadoc), a known, not-yet-fully-fixed violation of
  * that intent.
  *
  * <p><b>Thread safety:</b> {@code DriverPoolManager} is bound per-thread via a

@@ -77,5 +77,4 @@ differently); read those before you upgrade. See [RELEASING.md](RELEASING.md) fo
 ### Documentation
 
 - `CONTRIBUTING.md` moved to the repository root (it lived in the git-ignored `docs/` folder) and no longer
-  links to documents that do not exist. New `CHANGELOG.md` and `RELEASING.md`. README and `PROJECT_REVIEW.md`
-  brought up to date.
+  links to documents that do not exist. New `CHANGELOG.md` and `RELEASING.md`. README brought up to date.

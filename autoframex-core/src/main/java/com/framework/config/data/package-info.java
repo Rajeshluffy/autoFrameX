@@ -21,6 +21,6 @@
  * <p><b>Known coupling (not yet fixed):</b> {@code design.patterns.*} (meant to be
  * generic, framework-agnostic infrastructure) imports this package directly from
  * {@code PoolConfig}, {@code DriverPoolManager}, {@code BrowserFactory}, and
- * {@code RemoteGridBrowser}: a known, not-yet-fixed layering violation (see {@code PROJECT_REVIEW.md}).
+ * {@code RemoteGridBrowser}: a known, not-yet-fixed layering violation.
  */
 package com.framework.config.data;

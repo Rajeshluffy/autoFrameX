@@ -112,8 +112,7 @@ autoFrameX/
 ├── Jenkinsfile                             # Declarative pipeline
 ├── Dockerfile / docker-compose.yml         # Containerised execution
 ├── .github/workflows/                      # ci / regression / sonar / dependency-check / secret-scan
-├── CHANGELOG.md, RELEASING.md, CONTRIBUTING.md
-└── PROJECT_REVIEW.md                       # current review status: what is fixed, what is open
+└── CHANGELOG.md, RELEASING.md, CONTRIBUTING.md
 ```
 
 Suite XML files, test fixtures (`data/accounts.xlsx`), and Cucumber
@@ -525,7 +524,7 @@ their request URLs, were tracked until they were untracked and ignored. To close
 
 ## Contributing and releasing
 
-[CONTRIBUTING.md](CONTRIBUTING.md) covers adding a project and changing the framework; [CHANGELOG.md](CHANGELOG.md) lists what changed (with *behaviour change* marked); [RELEASING.md](RELEASING.md) is the release procedure; [PROJECT_REVIEW.md](PROJECT_REVIEW.md) is the current review status.
+[CONTRIBUTING.md](CONTRIBUTING.md) covers adding a project and changing the framework; [CHANGELOG.md](CHANGELOG.md) lists what changed (with *behaviour change* marked); [RELEASING.md](RELEASING.md) is the release procedure.
 
 ## Dependencies
 
