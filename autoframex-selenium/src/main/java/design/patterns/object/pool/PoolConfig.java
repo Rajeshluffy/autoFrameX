@@ -33,6 +33,7 @@ public class PoolConfig {
 	private final int scriptTimeoutSeconds;
 	private final int implicitWaitSeconds;
 	private final String gridHubUrl;
+	private final Boolean headless;
 
 	private PoolConfig(Builder builder) {
 		this.maxPoolSize = builder.maxPoolSize;
@@ -48,6 +49,7 @@ public class PoolConfig {
 		this.scriptTimeoutSeconds = builder.scriptTimeoutSeconds;
 		this.implicitWaitSeconds = builder.implicitWaitSeconds;
 		this.gridHubUrl = builder.gridHubUrl;
+		this.headless = builder.headless;
 	}
 
 	public int getMaxPoolSize() {
@@ -94,6 +96,15 @@ public class PoolConfig {
 	/** Selenium Grid hub URL, used by {@code GRID_*} browser providers. Empty string if not configured. */
 	public String getGridHubUrl() {
 		return gridHubUrl;
+	}
+
+	/**
+	 * Whether browsers start without a window, as resolved by the framework configuration (suite parameter,
+	 * environment, property, project file). {@code null} means "not configured here": the browser providers
+	 * then fall back to {@code -Dheadless} / {@code HEADLESS}, as they did before this setting existed.
+	 */
+	public Boolean getHeadless() {
+		return headless;
 	}
 
 	/** Seconds before a page load times out — applied to every newly-created driver. */
@@ -155,9 +166,16 @@ public class PoolConfig {
 		private int scriptTimeoutSeconds = DEFAULT_SCRIPT_TIMEOUT_SECONDS;
 		private int implicitWaitSeconds = DEFAULT_IMPLICIT_WAIT_SECONDS;
 		private String gridHubUrl = "";
+		private Boolean headless;
 
 		public Builder() {
 			supportedBrowsers.add("CHROME");
+		}
+
+		/** Headless or windowed for every browser this pool starts; leave unset to defer to {@code -Dheadless} / {@code HEADLESS}. */
+		public Builder headless(boolean headless) {
+			this.headless = headless;
+			return this;
 		}
 
 		/** Selenium Grid hub URL, threaded into {@code GRID_*} browser providers. */

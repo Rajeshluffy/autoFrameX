@@ -30,6 +30,7 @@
             <class name="com.framework.observability.TestEventMaskingTest"/>
             <class name="com.framework.utils.FakerDataFactoryTest"/>
             <class name="com.framework.utils.logging.MaskingLogConvertersTest"/>
+            <class name="com.framework.config.data.ProjectDirectorHeadlessTest"/>
         </classes>
     </test>
 

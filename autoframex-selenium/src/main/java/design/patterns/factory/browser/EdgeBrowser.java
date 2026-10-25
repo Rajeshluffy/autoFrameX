@@ -26,12 +26,22 @@ public class EdgeBrowser implements Browser {
 
     private static final Logger logger = LoggerFactory.getLogger(EdgeBrowser.class);
 
-    private static final EdgeBrowser INSTANCE = new EdgeBrowser();
+    private static final EdgeBrowser INSTANCE = new EdgeBrowser(null);
 
-    private EdgeBrowser() {}
+    /** The pool's headless setting; {@code null} = not configured, so {@code -Dheadless} / {@code HEADLESS} decide. */
+    private final Boolean configuredHeadless;
+
+    private EdgeBrowser(Boolean configuredHeadless) {
+        this.configuredHeadless = configuredHeadless;
+    }
 
     public static EdgeBrowser getInstance() {
         return INSTANCE;
+    }
+
+    /** A provider that follows the pool's headless setting; the shared instance when the pool has none. */
+    public static EdgeBrowser forConfig(design.patterns.object.pool.PoolConfig config) {
+        return config == null || config.getHeadless() == null ? INSTANCE : new EdgeBrowser(config.getHeadless());
     }
 
     @Override
@@ -75,6 +85,9 @@ public class EdgeBrowser implements Browser {
     }
 
     private boolean isHeadlessMode() {
+        if (configuredHeadless != null) {
+            return configuredHeadless;
+        }
         String headless = System.getProperty("headless", System.getenv("HEADLESS"));
         return "true".equalsIgnoreCase(headless);
     }

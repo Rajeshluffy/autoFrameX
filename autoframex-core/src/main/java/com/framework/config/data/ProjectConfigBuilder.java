@@ -43,9 +43,15 @@ public class ProjectConfigBuilder {
 		return this;
 	}
 
-	public ProjectConfigBuilder setRemote(boolean remote) {
-		this.remote = remote;
+	public ProjectConfigBuilder setHeadless(boolean headless) {
+		this.remote = headless;
 		return this;
+	}
+
+	/** @deprecated misnamed: this sets the headless flag. Use {@link #setHeadless(boolean)}. */
+	@Deprecated
+	public ProjectConfigBuilder setRemote(boolean remote) {
+		return setHeadless(remote);
 	}
 
 	public ProjectConfigBuilder setImplicit(short implicit) {

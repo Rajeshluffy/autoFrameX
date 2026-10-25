@@ -12,14 +12,22 @@ public class FireFoxBrowser implements Browser {
 
 	private static final Logger logger = LoggerFactory.getLogger(FireFoxBrowser.class);
 
-	private static final FireFoxBrowser INSTANCE = new FireFoxBrowser();
+	private static final FireFoxBrowser INSTANCE = new FireFoxBrowser(null);
 
-	private FireFoxBrowser() {
-		// Private constructor to prevent instantiation
+	/** The pool's headless setting; {@code null} = not configured, so {@code -Dheadless} / {@code HEADLESS} decide. */
+	private final Boolean configuredHeadless;
+
+	private FireFoxBrowser(Boolean configuredHeadless) {
+		this.configuredHeadless = configuredHeadless;
 	}
 
 	public static FireFoxBrowser getInstance() {
 		return INSTANCE;
+	}
+
+	/** A provider that follows the pool's headless setting; the shared instance when the pool has none. */
+	public static FireFoxBrowser forConfig(design.patterns.object.pool.PoolConfig config) {
+		return config == null || config.getHeadless() == null ? INSTANCE : new FireFoxBrowser(config.getHeadless());
 	}
 
 	@Override
@@ -69,6 +77,9 @@ public class FireFoxBrowser implements Browser {
 	 * @return true if headless mode enabled
 	 */
 	private boolean isHeadlessMode() {
+		if (configuredHeadless != null) {
+			return configuredHeadless;
+		}
 		String headless = System.getProperty("headless",
 				System.getenv("HEADLESS"));
 		return "true".equalsIgnoreCase(headless);

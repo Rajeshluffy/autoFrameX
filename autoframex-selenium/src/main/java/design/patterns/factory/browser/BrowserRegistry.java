@@ -31,9 +31,9 @@ public final class BrowserRegistry {
     private static final ConcurrentMap<String, BrowserProvider> REGISTRY = new ConcurrentHashMap<>();
 
     static {
-        register("CHROME", config -> ChromeBrowser.getInstance());
-        register("FIREFOX", config -> FireFoxBrowser.getInstance());
-        register("EDGE", config -> EdgeBrowser.getInstance());
+        register("CHROME", config -> ChromeBrowser.forConfig(config));
+        register("FIREFOX", config -> FireFoxBrowser.forConfig(config));
+        register("EDGE", config -> EdgeBrowser.forConfig(config));
         register("GRID_CHROME", config -> new RemoteGridBrowser("chrome", config.getGridHubUrl()));
         register("GRID_FIREFOX", config -> new RemoteGridBrowser("firefox", config.getGridHubUrl()));
         register("GRID_EDGE", config -> new RemoteGridBrowser("edge", config.getGridHubUrl()));

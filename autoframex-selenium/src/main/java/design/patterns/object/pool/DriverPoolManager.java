@@ -472,6 +472,11 @@ public class DriverPoolManager {
 		// resolves the same way the other config values on this Builder do.
 		builder.gridHubUrl(config().getGridHubUrl());
 
+		// Headless, resolved once by ProjectDirector (suite parameter > HEADLESS > -Dheadless > project file)
+		// and threaded through as data, so the browser providers follow the same configuration as everything
+		// else instead of each re-reading the JVM property and the environment on their own.
+		builder.headless(config().isHeadless());
+
 		// ── Size limits ───────────────────────────────────────────────────────
 		int maxPoolSize = loadIntConfig("MAX_POOL_SIZE", "maxPoolSize",
 				testngParams, config().getPoolMaxSize());

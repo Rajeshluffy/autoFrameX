@@ -15,14 +15,22 @@ public class ChromeBrowser implements Browser {
 
 	private static final Logger logger = LoggerFactory.getLogger(ChromeBrowser.class);
 
-	private static final ChromeBrowser INSTANCE = new ChromeBrowser();
+	private static final ChromeBrowser INSTANCE = new ChromeBrowser(null);
 
-	private ChromeBrowser() {
-		// Private constructor to prevent instantiation
+	/** The pool's headless setting; {@code null} = not configured, so {@code -Dheadless} / {@code HEADLESS} decide. */
+	private final Boolean configuredHeadless;
+
+	private ChromeBrowser(Boolean configuredHeadless) {
+		this.configuredHeadless = configuredHeadless;
 	}
 
 	public static ChromeBrowser getInstance() {
 		return INSTANCE;
+	}
+
+	/** A provider that follows the pool's headless setting; the shared instance when the pool has none. */
+	public static ChromeBrowser forConfig(design.patterns.object.pool.PoolConfig config) {
+		return config == null || config.getHeadless() == null ? INSTANCE : new ChromeBrowser(config.getHeadless());
 	}
 
 	/**
@@ -124,6 +132,9 @@ public class ChromeBrowser implements Browser {
 	 * @return true if headless mode enabled
 	 */
 	private boolean isHeadlessMode() {
+		if (configuredHeadless != null) {
+			return configuredHeadless;
+		}
 		String headless = System.getProperty("headless",
 				System.getenv("HEADLESS"));
 		return "true".equalsIgnoreCase(headless);

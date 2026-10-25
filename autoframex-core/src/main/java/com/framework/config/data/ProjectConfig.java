@@ -99,6 +99,15 @@ public class ProjectConfig {
 	// Getters
 	// -------------------------------------------------------------------------
 	public String getBrowserName() { return browserName; }
+	/**
+	 * Whether the browser runs without a window. This is the value of the {@code headless} suite parameter,
+	 * {@code HEADLESS} variable, {@code -Dheadless} property or {@code autoFrameX.browser.isheadless}, resolved
+	 * in that order. (The field was stored as "remote", a name that suggested a Grid run; nothing read it.)
+	 */
+	public boolean isHeadless() { return remote; }
+
+	/** @deprecated misnamed: this is the headless setting. Use {@link #isHeadless()}. */
+	@Deprecated
 	public boolean isRemote() { return remote; }
 	public short getImplicit() { return implicit; }
 	public short getExplicit() { return explicit; }

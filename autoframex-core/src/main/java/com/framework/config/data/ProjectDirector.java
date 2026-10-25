@@ -88,7 +88,7 @@ public class ProjectDirector {
         // ── Browser ──────────────────────────────────────────────────────────
         builder.setBrowserName(
                 resolve("browser",           testngParams, "BROWSER",          "browser",          cfg.browserType()));
-        builder.setRemote(
+        builder.setHeadless(
                 resolveBoolean("headless",   testngParams, "HEADLESS",         "headless",         cfg.headless()));
 
         // ── Application URL ───────────────────────────────────────────────────
