@@ -218,7 +218,7 @@ public class DriverPoolManager {
 	 */
 	public void setupDriver(Method method, ConcurrentMap<String, String> methodParams,
 			Consumer<RemoteWebDriver> beforeFirstNavigation) {
-		String testName = getTestName(method);
+		String testName = testNameOf(method, methodParams);
 		long threadId = Thread.currentThread().getId();
 
 		logger.info(String.format("Setting up driver for: %s [Thread: %d]",
@@ -289,9 +289,10 @@ public class DriverPoolManager {
 	 * @param passed whether test passed
 	 */
 	public void teardownDriver(Method method, boolean passed) {
-		String testName = getTestName(method);
 		DriverContext context = contextThreadLocal.get();
 		long threadId = Thread.currentThread().getId();
+		String testName = method != null ? getTestName(method)
+				: context != null ? context.getTestName() : testNameOf(null, null);
 
 		if (context == null || context.getDriver() == null) {
 			logger.warn(String.format("No driver to teardown for: %s [Thread: %d]",
@@ -543,23 +544,26 @@ public class DriverPoolManager {
 	/**
 	 * Determines the browser id (a {@link BrowserRegistry} key) with priority order.
 	 */
-	private String determineBrowserId(Method method, ConcurrentMap<String, String> params) {
+	String determineBrowserId(Method method, ConcurrentMap<String, String> params) {
 		// Priority 1: Method parameter
 		if (params != null && params.containsKey("browser")) {
 			return resolveBrowserId(params.get("browser"));
 		}
 
-		// Priority 2: Method annotation
-		BrowserConfig methodConfig = method.getAnnotation(BrowserConfig.class);
-		if (methodConfig != null) {
-			return resolveBrowserId(methodConfig.value());
-		}
+		// Priorities 2 and 3 read annotations, so they need a method: a Cucumber scenario has none.
+		if (method != null) {
+			// Priority 2: Method annotation
+			BrowserConfig methodConfig = method.getAnnotation(BrowserConfig.class);
+			if (methodConfig != null) {
+				return resolveBrowserId(methodConfig.value());
+			}
 
-		// Priority 3: Class annotation
-		BrowserConfig classConfig = method.getDeclaringClass()
-				.getAnnotation(BrowserConfig.class);
-		if (classConfig != null) {
-			return resolveBrowserId(classConfig.value());
+			// Priority 3: Class annotation
+			BrowserConfig classConfig = method.getDeclaringClass()
+					.getAnnotation(BrowserConfig.class);
+			if (classConfig != null) {
+				return resolveBrowserId(classConfig.value());
+			}
 		}
 
 		// Priority 4: CI/CD environment
@@ -602,7 +606,7 @@ public class DriverPoolManager {
 	 * touching the properties file. Step 6 is the normal path when running with
 	 * just {@code configClass} + {@code environment} in the TestNG XML.
 	 */
-	private String determineUrl(Method method, ConcurrentMap<String, String> params) {
+	String determineUrl(Method method, ConcurrentMap<String, String> params) {
 		// Priority 1: explicit "url" TestNG parameter (per-method)
 		if (params != null) {
 			String url = params.get("url");
@@ -617,8 +621,8 @@ public class DriverPoolManager {
 			}
 		}
 
-		// Priority 3: @BrowserConfig annotation on the test method
-		BrowserConfig methodConfig = method.getAnnotation(BrowserConfig.class);
+		// Priority 3: @BrowserConfig annotation on the test method (a Cucumber scenario has no method)
+		BrowserConfig methodConfig = method != null ? method.getAnnotation(BrowserConfig.class) : null;
 		if (methodConfig != null && !methodConfig.url().isEmpty()) {
 			return methodConfig.url();
 		}
@@ -680,6 +684,15 @@ public class DriverPoolManager {
 		return loadIntConfig("WAIT_TIMEOUT", "waitTimeout", params, config().getDefaultWaitTimeout());
 	}
 
+	/**
+	 * Whether {@link #initializePool} has run (and the pool was not shut down since). Under TestNG the
+	 * {@code ProjectSpecificMethods} lifecycle initializes the pool; a plain Cucumber run has no such lifecycle,
+	 * so its hooks check this first.
+	 */
+	public boolean isPoolInitialized() {
+		return poolInitialized && driverPool != null;
+	}
+
 	private void ensurePoolInitialized() {
 		if (!poolInitialized || driverPool == null) {
 			throw new IllegalStateException(
@@ -706,6 +719,19 @@ public class DriverPoolManager {
 
 	private String getTestName(Method method) {
 		return method.getDeclaringClass().getSimpleName() + "." + method.getName();
+	}
+
+	/**
+	 * The name a test is logged and tracked under. A TestNG test has a method; a Cucumber scenario has none
+	 * ({@code method} is {@code null}), so its {@code scenarioName} parameter is used, or the thread when it
+	 * has not set one.
+	 */
+	static String testNameOf(Method method, ConcurrentMap<String, String> params) {
+		if (method != null) {
+			return method.getDeclaringClass().getSimpleName() + "." + method.getName();
+		}
+		String scenario = params != null ? params.get("scenarioName") : null;
+		return scenario != null && !scenario.isBlank() ? scenario : "scenario@thread-" + Thread.currentThread().getId();
 	}
 
 	// ========================================================================

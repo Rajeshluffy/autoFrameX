@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * thread), since TestNG's {@code parallel="methods"}/{@code "classes"} runs test
  * methods on different threads than the one that ran {@code @BeforeTest}. See
  * {@code Reporter.initFromContext}, {@code ProjectSpecificMethods.preCondition},
- * {@code ScenarioHooks.setUp}, and {@code CucumberProjectBase.setUp}.
+ * {@code ScenarioHooks.setUp}, and {@code CucumberHooks.setUp}.
  *
  * <p><b>Known limitation:</b> the Owner library's own {@code ConfigCache} (used by
  * {@link ConfigurationManager}) is itself a process-wide cache keyed by

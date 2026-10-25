@@ -68,6 +68,17 @@ differently); read those before you upgrade. See [RELEASING.md](RELEASING.md) fo
 - JMeter result files are untracked and ignored; credential defaults are blank. The credentials that were
   committed earlier are still in git history: they must be rotated (see README, *Secrets*).
 
+### Cucumber
+
+- **Behaviour change: the lifecycle hooks moved to `CucumberHooks`.** `CucumberProjectBase` defined the hooks
+  itself, and Cucumber-JVM refuses to load a step class that extends a class with hooks, so the documented
+  `class LoginSteps extends CucumberProjectBase` could not run at all. Step classes still extend
+  `CucumberProjectBase`; add `com.framework.cucumber.api.base` to the runner's glue so Cucumber finds
+  `CucumberHooks`. Without that entry no browser is acquired.
+- The hooks now initialize the driver pool (a plain Cucumber run has no `@BeforeTest` to do it), and the pool
+  accepts a null `Method` (a scenario has none): `setupDriver(null, ...)` used to throw
+  `NullPointerException`. New `DriverPoolManager.isPoolInitialized()`.
+
 ### API module
 
 - Shared token cache, `ApiRequest`, typed responses, `ApiAssertions`, safe-call retries, cURL repro, cleanup

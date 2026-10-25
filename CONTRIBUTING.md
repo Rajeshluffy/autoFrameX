@@ -45,7 +45,7 @@ URLs, credentials and database to use.
    ```
 
 5. **Write your test class**, extending `ProjectSpecificMethods` (TestNG) or `CucumberProjectBase`
-   (Cucumber step classes). `autoframex-selenium/src/test/java/com/framework/testng/examples/`
+   (Cucumber step classes; add `com.framework.cucumber.api.base` to the runner's glue so `CucumberHooks` runs). `autoframex-selenium/src/test/java/com/framework/testng/examples/`
    (`DataProviderExampleTest`, `TargetedExampleTest`) holds two complete, runnable references, one per
    execution mode. The module map is in the [README](README.md#project-structure).
 

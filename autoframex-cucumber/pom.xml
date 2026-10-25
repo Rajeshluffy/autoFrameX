@@ -26,7 +26,9 @@
 	    Cucumber BDD glue: com.framework.cucumber.api.base (main), plus the
 	    onboarding example runner/step-defs (test) that intentionally span
 	    selenium (UI steps) and api (API steps) in one PicoContainer-injected
-	    scenario — see docs/CUCUMBER_DEPENDENCY_INJECTION_PATTERN.md.
+	    scenario. The lifecycle hooks are CucumberHooks (a runner adds this
+	    package to its glue); step classes extend CucumberProjectBase, which has
+	    no hooks because Cucumber will not load a step class that extends one.
 	-->
 
 	<dependencies>

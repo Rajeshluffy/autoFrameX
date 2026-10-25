@@ -290,7 +290,13 @@ Selenium behaviour worth knowing:
 
 ### Cucumber
 
-`CucumberProjectBase` wires Cucumber into the TestNG lifecycle, including [API capture](#automatic-api-capture): with `apiCaptureEnabled` on, each scenario's browser calls are recorded from the very first page load into `reports/<run>/apicapture/<feature>/<scenario>_line<N>_<NN>/` (the scenario's line number tells the rows of a Scenario Outline apart). `CucumberScenarioContext` is a PicoContainer-injected shared state object — step definition classes receive it via constructor injection, eliminating static fields.
+Step classes that drive the browser extend `CucumberProjectBase` (it gives them the Selenium actions and `getDriver()`). The lifecycle is in `CucumberHooks`, a separate class Cucumber loads from the runner's glue, because Cucumber refuses to load a step class that extends a class defining hooks. Add the package to the glue, or no browser is acquired:
+
+```java
+@CucumberOptions(glue = {"my.step.defs", "com.framework.cucumber.api.base"})
+```
+
+The hooks acquire a driver from the pool and open the app URL before each scenario (they fail the scenario if the URL cannot be opened), and take a failure screenshot, write the API capture and return the driver after it. They run for every scenario, so exclude API-only ones in the runner (`tags = "not @api"`). They include [API capture](#automatic-api-capture): with `apiCaptureEnabled` on, each scenario's browser calls are recorded from the very first page load into `reports/<run>/apicapture/<feature>/<scenario>_line<N>_<NN>/` (the scenario's line number tells the rows of a Scenario Outline apart). `CucumberScenarioContext` is a PicoContainer-injected shared state object — step definition classes receive it via constructor injection, eliminating static fields.
 
 ### REST Assured API Layer
 

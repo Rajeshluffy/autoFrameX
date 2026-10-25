@@ -8,6 +8,7 @@
     <test name="Cucumber base">
         <classes>
             <class name="com.framework.cucumber.api.base.CucumberProjectBaseTest"/>
+            <class name="com.framework.cucumber.api.base.CucumberGlueTest"/>
         </classes>
     </test>
 </suite>
