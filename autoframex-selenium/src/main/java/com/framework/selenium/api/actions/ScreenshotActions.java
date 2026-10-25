@@ -40,7 +40,7 @@ public class ScreenshotActions {
 		try {
 			File screenshot = driver().getScreenshotAs(OutputType.FILE);
 			File destination = new File("./" + ExtentReportManager.getFolderName() + "/images/" + number + ".jpg");
-			FileUtils.copyFile(screenshot, destination);
+			com.framework.utils.ScreenshotUtils.copyThenDelete(screenshot, destination);
 		} catch (WebDriverException e) {
 			reporter.reportStep("Screenshot failed - browser closed: " + e.getMessage(), "warning", false);
 		} catch (IOException e) {
@@ -54,7 +54,7 @@ public class ScreenshotActions {
 		try {
 			File screenshot = driver().getScreenshotAs(OutputType.FILE);
 			File destination = new File("./" + ExtentReportManager.getFolderName() + "/images/" + name + "_" + number + ".jpg");
-			FileUtils.copyFile(screenshot, destination);
+			com.framework.utils.ScreenshotUtils.copyThenDelete(screenshot, destination);
 		} catch (WebDriverException e) {
 			reporter.reportStep("Screenshot failed: " + e.getMessage(), "warning", false);
 		} catch (IOException e) {
@@ -68,7 +68,7 @@ public class ScreenshotActions {
 			WebElement canvas = driver().findElement(By.cssSelector("canvas"));
 			File sourceFile = canvas.getScreenshotAs(OutputType.FILE);
 			File destination = new File("./Temp/" + name + ".jpg");
-			FileUtils.copyFile(sourceFile, destination);
+			com.framework.utils.ScreenshotUtils.copyThenDelete(sourceFile, destination);
 		} catch (WebDriverException e) {
 			reporter.reportStep("Screenshot failed: " + e.getMessage(), "warning", false);
 		} catch (IOException e) {

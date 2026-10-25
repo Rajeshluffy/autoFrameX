@@ -218,7 +218,7 @@ public class VideoRecorder {
             String name = FRAME_PREFIX + String.format("%05d", seq) + ".png";
             File dest = new File(framesDir, name);
 
-            FileUtils.copyFile(tmp, dest);
+            ScreenshotUtils.copyThenDelete(tmp, dest);
             frameCounter.incrementAndGet();
 
         } catch (Exception e) {

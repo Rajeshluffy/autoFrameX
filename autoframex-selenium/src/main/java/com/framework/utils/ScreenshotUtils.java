@@ -34,6 +34,25 @@ public final class ScreenshotUtils {
     // =========================================================================
 
     /**
+     * Copies a screenshot that Selenium wrote to the system temp directory, then deletes that original.
+     *
+     * <p>{@code getScreenshotAs(OutputType.FILE)} creates a temp PNG and only marks it {@code deleteOnExit},
+     * so a caller that copies it elsewhere and keeps the original leaks one file per capture until the JVM
+     * exits: 7,200 an hour for a recorder at two frames a second. The original is deleted even when the copy
+     * fails.
+     *
+     * @param tempScreenshot the file returned by {@code getScreenshotAs(OutputType.FILE)}
+     * @param destination    where to keep the image
+     */
+    public static void copyThenDelete(File tempScreenshot, File destination) throws java.io.IOException {
+        try {
+            FileUtils.copyFile(tempScreenshot, destination);
+        } finally {
+            FileUtils.deleteQuietly(tempScreenshot);
+        }
+    }
+
+    /**
      * Captures the current viewport and saves it as a JPEG.
      *
      * @param driver    WebDriver for the current thread
@@ -44,7 +63,7 @@ public final class ScreenshotUtils {
         try {
             File src = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
             String path = buildPath(outputDir, "viewport");
-            FileUtils.copyFile(src, new File(path));
+            copyThenDelete(src, new File(path));
             logger.debug("Viewport screenshot saved: " + path);
             return path;
         } catch (Exception e) {
@@ -73,7 +92,7 @@ public final class ScreenshotUtils {
         try {
             File src = element.getScreenshotAs(OutputType.FILE);
             String path = buildPath(outputDir, "element");
-            FileUtils.copyFile(src, new File(path));
+            copyThenDelete(src, new File(path));
             logger.debug("Element screenshot saved: " + path);
             return path;
         } catch (Exception e) {
@@ -98,7 +117,7 @@ public final class ScreenshotUtils {
             File src = element.getScreenshotAs(OutputType.FILE);
             ensureDir(outputDir);
             String path = outputDir + File.separator + fileName;
-            FileUtils.copyFile(src, new File(path));
+            copyThenDelete(src, new File(path));
             logger.debug("Element screenshot saved: " + path);
             return path;
         } catch (Exception e) {
@@ -166,7 +185,11 @@ public final class ScreenshotUtils {
                 js.executeScript("window.scrollTo(0, " + scrollY + ")");
                 sleepMs(150); // allow repaint
                 File strip = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-                strips.add(javax.imageio.ImageIO.read(strip));
+                try {
+                    strips.add(javax.imageio.ImageIO.read(strip));
+                } finally {
+                    FileUtils.deleteQuietly(strip); // the temp original is read into memory; do not leave the file
+                }
             }
 
             // Stitch strips vertically
