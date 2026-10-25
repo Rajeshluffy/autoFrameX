@@ -1,109 +1,92 @@
-# autoFrameX — Project Review & High-Priority Remediation
+# autoFrameX — Review Status
 
-Reviewed: 2026-10-13 · Branch: `main` · Scope: architecture, build, CI/CD (GitHub Actions, Jenkins, Docker, K8s), and ~15 core classes read in depth.
-
-**Not covered:** internals of `WebDriverPoolFactory`, `Reporter`, `VideoRecorder`, the Cucumber glue, the performance module, and the JMeter plans.
+First reviewed 2026-10-13, re-reviewed since, and brought up to date with the hardening work recorded in
+[CHANGELOG.md](CHANGELOG.md). This file says what is fixed, how it was checked, and what is still open. It
+replaces the first review's findings list, which had gone stale (most of it was fixed).
 
 ## 1. Build status
 
-`mvn clean install` (offline) → **BUILD SUCCESS**, all 9 reactor entries.
+`mvn -B clean install` on the full reactor: **BUILD SUCCESS**, every module's own suite and every gate.
 
-| Module | Tests | Failures |
-|---|---|---|
-| `autoframex-core` | 47 (35 existing + 12 new) | 0 |
-| `autoframex-selenium` | 86 | 0 |
-| `autoframex-cucumber` | 2 | 0 |
-| `autoframex-security` | 2 | 0 |
-| `autoframex-api`, `-database`, `-performance`, `-testkit` | none reported | n/a |
+| Module | Tests | Line coverage | Floor |
+|---|---|---|---|
+| `autoframex-core` | 121 | 70% | 67% |
+| `autoframex-selenium` | 243 | 43% | 40% |
+| `autoframex-api` | 118 | 91% | 88% |
+| `autoframex-database` | 10 | 47% | 43% |
+| `autoframex-cucumber` | 5 | 30% | 27% |
+| `autoframex-performance` | 14 | 75% | 70% |
+| `autoframex-security` | 23 | 64% | 60% |
+| `autoframex-testkit` | 2 | n/a | n/a |
 
-Caveat: JaCoCo was skipped for modules with no execution data, so the 20% coverage floor was only checked for `core` and `selenium`. A green build says little about the untested modules.
+Total 536 tests, 0 failures, 0 skipped. CI (`ci.yml`) runs the same build for every module.
 
-## 2. What's good
+What the numbers do **not** say: no test starts a real browser. Selenium behaviour is tested against
+session-less fake drivers (a `RemoteWebDriver` subclass or a `java.lang.reflect.Proxy`), which proves the
+framework's own logic (what it waits for, what it throws, what it cleans up) but not how Chrome, Firefox or a
+Grid node responds. See §4.
+
+## 2. What is good
 
 - The 8-module split has no dependency cycles, and an ArchUnit rule guards it.
-- Config priority chain (param → env → system property → default) is a single implementation (`ConfigResolver`).
-- Driver handling is context-aware and thread-safe; failed drivers are poisoned, never re-pooled.
-- Regression tests for the pool, retry engine, and registry are well targeted.
+- One config resolver (`ConfigResolver`): TestNG parameter, then environment variable, then `-D`, then default;
+  blank and unfilled `${...}` values count as unset; booleans are strict.
+- Driver handling is context-aware and thread-safe; failed drivers are poisoned, never re-pooled; a browser is
+  quit if its setup fails; the reuse cap and a second browser type work.
+- The quality gates fail the build (coverage floors, PMD 1-2, SpotBugs High), the Maven and JDK versions are
+  enforced, and every plugin version is pinned.
+- Credentials are masked in logs, exceptions and the event stream; gitleaks scans every push.
 
-## 3. High-priority findings and status
+## 3. Fixed since the first review
 
-| # | Finding | Status |
+| Area | What was wrong | Fix and check |
 |---|---|---|
-| 1 | Credential files baked into the Docker image (`.dockerignore` bare names only match the context root) | **Fixed** — needs a runtime-injection decision (see §5) |
-| 2 | Jenkins pipeline can go green when a suite never ran | **Fixed in the Jenkinsfile, untested** (Jenkins is down) |
-| 3 | `EncryptionUtils` returned `null` on a missing key, contradicting its Javadoc | **Fixed + tested** |
-| 4 | Log masking missed JSON and could corrupt log lines | **Fixed + tested** |
-| 5 | Local `main` diverged from `origin/main` (11 ahead, 12 behind) | **Open** — command blocked by the tool, run it yourself (§5) |
+| Checks that passed without checking | An SLA breach only logged; an error response met any SLA; missing data files, unknown environments and empty URLs were tolerated; `getBackgroundColor` read `color`; `verifyPartialAttribute` returned nothing; a Cucumber scenario ran on a blank page when the URL failed | Each now fails loudly; each has a test that fails without the fix (`PerformanceAssertionsAreHonestTest`, `ConfigResolverTest`, `ElementInspectionHonestyTest`, `CucumberProjectBaseTest`, ...) |
+| Selenium waits | Window switching failed before the popup opened and left the browser on the wrong window; a fallback locator waited behind the primary's full implicit wait; implicit and explicit waits stacked | `WindowSwitchingTest`, `LocatorActionsTwoLocatorTest`, `ImplicitWaitTest` |
+| Pool and drivers | `maxReuseCount` never took effect; a second browser type was not served; headless was ignored unless `-Dheadless`; a temp screenshot leaked per video frame; a browser leaked when timeouts failed; hung health checks left non-daemon threads | `PoolReuseCapTest`, `PoolSecondBrowserTest`, `BrowserHeadlessConfigTest`, `ScreenshotTempFileTest`, `DriverCreationCleanupTest`, `PoolHealthCheckThreadsTest` |
+| Grid | File upload sent the local path as text; a refused upload drove a `Robot` on the test runner | `LocalFileDetector` on Grid sessions; the fallback fails on a remote session (`FileUploadRemoteSessionTest`, `DriverCreationCleanupTest`) |
+| Video | A frame taken while an alert was open dismissed it | Frames are skipped while an alert is open (`VideoRecorderAlertTest`, red without the guard) |
+| Secrets | Quadratic masking regex (20,000 characters: 16 s); credentials in JMeter results; credential defaults; `SecretDetector` missed `dbPassword`-style keys | Linear regexes; results untracked; blank defaults; gitleaks; detector checks keys by name |
+| CI | Two workflows selected a group no test declared and went green; only some modules were tested; gates were reports | `ci.yml` builds everything; gates fail the build |
+| Dependencies | Known-vulnerable versions; broken SnakeYAML override | Upgraded; Dependabot added |
+| Earlier medium findings | `ZapSecurityUtils` false green, double auth scheme in `RequestSpecBuilder`, shared `DBManager` connection, `closeAfterEach` no-op, unconditional `--no-sandbox` | Fixed 2026-10-15 (see git history) |
+| `main` diverged from `origin/main` | 11 ahead, 12 behind with identical trees | Resolved: `main` is now only ahead of `origin/main` (9 local commits not yet pushed) |
 
-### 3.1 Docker secrets (item 1)
+## 4. Still open
 
-- Jenkins injects `alfaDOCKConfig.properties` / `leafTapConfig.properties` under `autoframex-core/src/main/resources/`, and the Dockerfile copies that whole tree into the image.
-- Docker matches a bare `.dockerignore` pattern against the context root only, so the old rules never excluded those files.
-- `.dockerignore` now uses `**/alfaDOCKConfig.properties` and `**/leafTapConfig.properties`.
-- The ineffective `Config.properties` rule was removed (it matched nothing and carried a misleading comment).
-- The Jenkinsfile's "Build Docker Image" comment, which claimed the image picks up the injected files, was corrected.
+### Needs your action
 
-### 3.2 Jenkinsfile (item 2)
+- **Rotate the credentials that are in git history** (README, *Secrets*): the AlfaDOCK, Leaftaps and Leaftaps
+  database credentials in `alfaDOCKConfig.properties` / `leafTapConfig.properties`, and the ERP key that the
+  JMeter results recorded. Rotation is what makes them safe; rewriting history only stops them being
+  downloadable and needs a force push of every branch.
+- **Push the local commits** when you have looked at them. Nothing has been pushed from this review's work.
+- **Decide runtime config for AlfaDOCK / Leaftaps**: with the credential files out of the Docker image, those
+  suites need them injected at run time (for example a Kubernetes Secret mounted into the Job's pod). Not built.
 
-- **Fast failure:** `kubectl wait --for=condition=complete … || true` sat out its full 10-minute timeout when a Job failed. It is replaced by a poll loop (120 × 5 s) that exits on Complete or Failed and prints the last 60 log lines on failure.
-- **Empty-result guard:** a suite that produces no surefire XML now fails its stage instead of leaving the quality gate nothing to count.
-- **Opt-in suites:** `RUN_ALFADOCK_SUITE` and `RUN_GPN_SUITE` (default `false`). Their suite files (`alfaDOCKtestng.xml`, `gpn.xml`) are not in this repo, so those Jobs always failed.
-- **Parameter validation:** new *Validate Parameters* stage restricts `MODULE` (`autoframex-<name>`), `SUITE_FILE` (plain `*.xml` name) and `THREAD_COUNT` (number) before they reach shell scripts, closing a shell-injection route for anyone who can start a build.
-- **Sonar stage:** its `when` tested `env.SONAR_TOKEN`, which only exists inside `withCredentials`, so the stage never ran. It now probes for the `sonar-token` and `sonar-host-url` credentials. The token is passed through the shell environment instead of Groovy string interpolation.
-- The three K8s suite scripts were generated from one template so they cannot drift apart.
-- Verification so far: brace/parenthesis balance only. No Groovy or Jenkins was available.
+### Not verified
 
-### 3.3 `EncryptionUtils` (item 3)
+- No real browser or Selenium Grid was started by these tests: Chrome's response to the headless switch, the
+  `LocalFileDetector` upload against a real node, and the alert guard against a real `confirm()` are
+  reasoned from the W3C behaviour and the fake-driver tests, not observed. A smoke run on a real browser and a
+  Grid (the `testng-parallel-smoke.xml` suite) is the check to run before relying on them.
+- The `secret-scan.yml` (gitleaks) workflow and `Jenkinsfile.api` with credentials have not run on a real
+  runner. ZAP replies in the security tests are modelled on ZAP's documented API, not compared with a live ZAP.
 
-`deriveKey` was called inside `catch (Exception)`, so the "no key configured" `IllegalStateException` became a logged error and a `null` return. `encrypt` and `decrypt` now read the passphrase before the `try`, so a missing key throws. A corrupt value or a wrong key still returns `null`.
+### Known gaps
 
-### 3.4 Log masking (item 4)
-
-- The old pattern `key\s*[=:]\s*\S+` missed `"password":"abc"`.
-- Against a compact JSON log line its greedy `\S+` swallowed every field after the match, corrupting the record the file encoder writes.
-- The new patterns cover plain `key=value`, quoted JSON values (including spaces), JSON escaped inside a JSON log line, and `Authorization: Bearer|Basic …` headers. Matching stops at the value's end.
-- Behaviour change: the original delimiter is now preserved (`password: abc` → `password: ***`; it used to become `password=***`).
-
-## 4. Files changed (uncommitted)
-
-| File | Change |
-|---|---|
-| `autoframex-core/src/main/java/com/framework/utils/EncryptionUtils.java` | key handling + masking patterns |
-| `autoframex-core/src/test/java/com/framework/utils/EncryptionUtilsTest.java` | new, 12 tests |
-| `autoframex-core/testng.xml` | registers the new test class |
-| `.dockerignore` | `**/` patterns for the two credential files |
-| `Jenkinsfile` | items in §3.2 |
-| `PROJECT_REVIEW.md` | this document |
-
-## 5. Needs your action
-
-**Item 5 — diverged `main`.** Verified: local and `origin/main` have the identical tree hash, and the 11 local commits have the same patch IDs as the 11 remote ones. The only extra remote commit is empty. This realigns the branch and keeps all uncommitted edits (old tip: `4aaf496`):
-
-```bash
-git reset --mixed origin/main
-```
-
-**Decision — runtime config for AlfaDOCK / Leaftaps.** With the credential files out of the image, suites that need them must receive them at runtime, typically a Kubernetes Secret mounted into the Job's pod. Not built yet: it can't be tested while Jenkins is down, and those suites are now off by default.
-
-**When Jenkins is back:** run one pipeline with default parameters first. The new job-wait loop is the part most worth watching.
-
-## 6. Remaining findings (not yet addressed)
-
-### Medium
-
-- **FIXED 2026-10-15: `ZapSecurityUtils` can give a false green.** `startPassiveScan` doesn't wait for the spider or the passive-scan queue, so `assertNoCriticalAlerts` may run before any alerts exist. HTTP statuses aren't checked, and a failed report write is swallowed.
-- **FIXED 2026-10-15: `RequestSpecBuilder` sends two auth schemes.** `setOAuth` also stores the username and password, so `build()` applies Basic auth and then the OAuth token. `RequestAuthentication` doesn't check the token response status and caches for a fixed hour instead of honouring `expires_in`.
-- **FIXED 2026-10-15: `DBManager` isn't safe to share.** One instance per config class name (later configs ignored), one shared connection across threads, and `executeQuery` swallows errors and returns `null`.
-- **FIXED 2026-10-15: `closeAfterEach` does nothing in teardown.** Both branches call `release(driver, false)`, and the comments describe different behaviour (`DriverPoolManager.java:284`).
-- **FIXED 2026-10-15: Unconditional browser flags.** `--no-sandbox`, `acceptInsecureCerts` and disabled Safe Browsing downloads are always on, including for `prod` runs. Gate them on CI/container mode.
-- **Docs are not versioned.** `/docs/` is in `.gitignore`. The pom and code comments reference `docs/TECHNICAL_DEBT_REGISTER.md` and `docs/CODING_STANDARDS.md`, which don't exist.
-- **Thin test coverage (improved 2026-10-15: `autoframex-api`, `-database` and `-security` now have unit suites).** `autoframex-database` and `autoframex-security` have no tests; `autoframex-api` has one WireMock helper. About 107 `@Test` methods in total. The coverage floor is 20% and non-fatal, and CI only measures the selenium module.
-
-### Low
-
-- `performance/` is 42 MB, mostly a committed JMeter HTML report; the git pack is 17.7 MB because of it. Ignore `performance/**/results/`.
+- Layering: `design.patterns.*` (the pool and browser factories) still imports `com.framework.config.data`
+  directly, against its own package's stated intent. `ArchitectureRulesTest` guards the rest.
+- Coverage is thinnest where it matters for browsers: `autoframex-selenium` 43%, `autoframex-cucumber` 30%.
+  Raise a module's floor in its pom when its coverage rises.
+- Checkstyle is report-only (its Google config does not match this code's style). PMD priority 3 to 5 do not
+  fail the build; raise `pmd.gate.priority` to 3 once they are cleared (`-Dpmd.gate.priority=3` shows the list).
+- `performance/` is large (a committed JMeter HTML report inflated the git pack); ignore
+  `performance/**/results/` if it grows again.
 - `ProjectSpecificMethods.faker()` returns `null` (dead API).
-- FIXED 2026-10-15 for API groups (they now default to no retry): every `@Test` gets 4 retries by default, including non-idempotent API calls. A failure on the same line twice stops retrying, so deterministic failures get only one retry.
-- Logback 1.4.7, TestNG 7.7.0 and Surefire 3.0.0-M7 are old; the weekly dependency-check should flag them.
-- `ci.yml` runs on every push to any branch and again on PRs. `sonar.yml` will fail on fork PRs, which don't receive secrets.
-- SpotBugs findings print at `[ERROR]` level while the build still passes. The `Random` finding in `EncryptionUtils` is a false positive (it is `SecureRandom`).
+- `ci.yml` runs on every push to any branch and again on pull requests. `sonar.yml` fails on fork pull
+  requests, which do not receive secrets.
+- The `docs/` folder is deliberately git-ignored (it holds an ERP API spec and a generator script); the
+  contributor guide that lived there is now the root `CONTRIBUTING.md`. The architecture and coding-standards
+  documents that code comments used to point at do not exist; those comments now point at the README and
+  `CONTRIBUTING.md`.

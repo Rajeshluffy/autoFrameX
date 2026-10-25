@@ -16,8 +16,8 @@
 		     ZAP server - no ZAP install needed). Without this the parent's testng.xml
 		     default is used, which doesn't exist in this module and would crash Surefire. -->
 		<testng.suite.file>testng.xml</testng.suite.file>
-		<!-- Coverage floor: line coverage was 53% when this was set; the build fails below it. -->
-		<jacoco.minimum.line>0.48</jacoco.minimum.line>
+		<!-- Coverage floor: line coverage was 64% when this was set; the build fails below it. -->
+		<jacoco.minimum.line>0.60</jacoco.minimum.line>
 	</properties>
 
 	<!--

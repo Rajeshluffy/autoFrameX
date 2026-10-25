@@ -18,8 +18,8 @@
 		     tests. The runner still runs, deliberately, via the "Cucumber PicoContainer DI"
 		     test block in autoframex-testkit/testng.xml when that suite is invoked. -->
 		<testng.suite.file>testng.xml</testng.suite.file>
-		<!-- Coverage floor: line coverage was 18% when this was set; the build fails below it. -->
-		<jacoco.minimum.line>0.13</jacoco.minimum.line>
+		<!-- Coverage floor: line coverage was 30% when this was set; the build fails below it. -->
+		<jacoco.minimum.line>0.27</jacoco.minimum.line>
 	</properties>
 
 	<!--

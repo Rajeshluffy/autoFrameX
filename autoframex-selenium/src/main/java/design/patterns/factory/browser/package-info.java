@@ -19,7 +19,6 @@
  * {@code BrowserType} (the enum) is kept only as a small, stable, backward-compatible
  * surface for a caller that already holds one of its 6 constants (e.g. via
  * {@code BrowserFactory.createDriver(BrowserType, ...)}) — the pool itself no longer
- * uses it as a key. See {@code BrowserRegistry}'s Javadoc and
- * {@code docs/CODING_STANDARDS.md}.
+ * uses it as a key. See {@code BrowserRegistry}'s Javadoc.
  */
 package design.patterns.factory.browser;

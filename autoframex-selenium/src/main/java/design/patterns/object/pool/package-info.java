@@ -12,7 +12,7 @@
  * is meant to be generic, framework-agnostic infrastructure with no knowledge of any
  * one project's configuration — in practice it still imports
  * {@code com.framework.config.data} directly (see that package's Javadoc and
- * {@code docs/TECHNICAL_DEBT_REGISTER.md}), a known, not-yet-fully-fixed violation of
+ * {@code PROJECT_REVIEW.md}), a known, not-yet-fully-fixed violation of
  * that intent.
  *
  * <p><b>Thread safety:</b> {@code DriverPoolManager} is bound per-thread via a

@@ -48,14 +48,14 @@ A shared, enterprise-grade test automation framework built on Selenium 4, TestNG
 | BDD | Cucumber JVM + PicoContainer | 7.21.1 |
 | API testing | REST Assured | 5.5.0 |
 | Reporting | ExtentReports | 5.1.2 |
-| Data | Apache POI, JavaFaker, SnakeYAML | 5.2.4 / 1.0.2 / 2.6 |
+| Data | Apache POI, JavaFaker, SnakeYAML | 5.4.1 / 1.0.2 / 2.6 |
 | JSON | Jackson Databind, Gson | 2.18.0 / 2.11.0 |
-| Logging | SLF4J + Logback + Logstash encoder | 2.0.5 / 1.4.7 / 7.4 |
+| Logging | SLF4J + Logback + Logstash encoder | 2.0.17 / 1.5.18 / 8.1 |
 | Database | MySQL Connector/J | 9.6.0 |
 | Security | OWASP ZAP (via ZapSecurityUtils) | — |
 | Video | WebDriver screenshots + FFmpeg (system binary) | — |
-| Build | Maven | 3.x |
-| Java | Java | 17 |
+| Build | Maven (3.8.8 or newer, enforced) | 3.8.8+ |
+| Java | Java (17 or newer to build; compiled with `--release 17`) | 17 |
 
 ---
 
@@ -111,7 +111,9 @@ autoFrameX/
 │
 ├── Jenkinsfile                             # Declarative pipeline
 ├── Dockerfile / docker-compose.yml         # Containerised execution
-└── .github/workflows/                      # ci / regression / sonar / dependency-check
+├── .github/workflows/                      # ci / regression / sonar / dependency-check / secret-scan
+├── CHANGELOG.md, RELEASING.md, CONTRIBUTING.md
+└── PROJECT_REVIEW.md                       # current review status: what is fixed, what is open
 ```
 
 Suite XML files, test fixtures (`data/accounts.xlsx`), and Cucumber
@@ -125,8 +127,8 @@ not the reactor root.
 
 **Prerequisites**
 
-- Java 16+
-- Maven 3.6+
+- Java 17+ (the build compiles for Java 17 whatever newer JDK you use)
+- Maven 3.8.8+ (the build fails early on an older Maven or JDK)
 - Chrome / Firefox / Edge installed (or a running Selenium Grid)
 
 **Clone and build**
@@ -203,6 +205,8 @@ A few settings used to be hard-wired and are now decisions you can see and overr
 | `acceptInsecureCerts` / `ACCEPT_INSECURE_CERTS` | on except for production | Accept invalid TLS certificates. Production is `environment=prod` or `production`. |
 | `relaxedDownloads` / `RELAXED_DOWNLOADS` | on except for production | Chrome download protection switched off for download tests. |
 
+Configuration values follow one rule everywhere: a TestNG parameter beats an environment variable, which beats a `-D` property, which beats the default, and a value that is **blank, or a `${...}` placeholder nothing filled in, counts as not set** and falls through to the next source. Booleans must be `true` or `false`; anything else throws instead of quietly meaning `false`. An unknown environment, an empty production URL, and a missing or empty data file throw with the key or file named.
+
 Other behaviour that changed with the same review:
 
 - **OAuth:** a token request that is rejected now throws with the HTTP status and the server's `error` / `error_description`; it used to return `null` and let later calls go out without credentials. The cache lasts as long as the server's `expires_in` (minus 30 s), one hour if it sends none. `setOAuth` no longer also sets up Basic auth with the user's password, and when Basic, OAuth and a bearer token are all configured only one is applied: bearer, then OAuth, then Basic.
@@ -260,6 +264,13 @@ different module's suite (see `docker-compose.yml`).
 
 `SeleniumBase` implements `Browser` and `Element` interfaces and provides a robust wrapper around WebDriver — explicit waits on every interaction, stale element retry, screenshot on failure, and centralised Extent reporting. `BasePage` is the Page Object base class.
 
+Selenium behaviour worth knowing:
+
+- `switchToWindow(index)` waits (up to the short wait time) for a window that is still opening; `switchToWindowByTitle` / `switchToWindowByUrl` return whether a window matched, and put the browser back on its original window when none did.
+- A two-locator lookup (primary and fallback) polls both together for one implicit-wait period, instead of waiting out the whole period on the primary first.
+- On Selenium Grid, `sendKeys(path)` on a file input uploads the file from the test machine (the session has a `LocalFileDetector`). If `sendKeys` is refused on a remote session the step fails with the reason: the OS-dialog fallback only works against a local browser.
+- The video recorder skips a frame while an alert is open; a screenshot would dismiss it.
+
 ### TestNG Lifecycle
 
 `ProjectSpecificMethods` manages the full TestNG lifecycle:
@@ -290,11 +301,13 @@ different module's suite (see `docker-compose.yml`).
 
 `PerformanceTestBase` extends `ProjectSpecificMethods` and skips WebDriver acquisition for API-only tests. Key helpers:
 
-- `measureApi(supplier, slaMs)` — times a single API call, warns on SLA breach
-- `measurePageLoad(pageName, slaMs)` — reads Navigation Timing API from a live page
-- `runLoadTest(supplier, threads, durationSeconds)` — every worker thread hammers `supplier` until `durationSeconds` elapses; returns P95/P99 latency stats
+- `measureApi(name, supplier, slaMs)` — times a single API call and **fails the test** when the SLA is breached or the call returned an HTTP error status
+- `measurePageLoad(pageName, slaMs)` — reads Navigation Timing API from a live page; fails when the SLA is breached or the timing is unavailable
+- `runLoadTest(supplier, threads, durationSeconds)` — every worker thread hammers `supplier` until `durationSeconds` elapses; returns P95/P99 latency stats (a run with no successful call is a failure, not a pass)
 
-These are explicit, opt-in, and SLA-asserting — call them yourself when you need a hard pass/warn threshold on one specific call. For passive, always-on timing visibility across every UI/API operation with no code changes, see [Automatic Performance Capture](#automatic-performance-capture) below.
+To tune thresholds without failing builds, run with `-Dperformance.sla.enforce=false`: breaches are then only logged.
+
+These are explicit, opt-in, and SLA-asserting — call them yourself when you need a hard pass/fail threshold on one specific call. For passive, always-on timing visibility across every UI/API operation with no code changes, see [Automatic Performance Capture](#automatic-performance-capture) below.
 
 ### Security Module
 
@@ -317,7 +330,7 @@ These are explicit, opt-in, and SLA-asserting — call them yourself when you ne
 ### Utilities
 
 Split across `autoframex-core` (no Selenium dependency) and
-`autoframex-selenium` (needs a live `WebDriver`) per TD-20:
+`autoframex-selenium` (needs a live `WebDriver`):
 
 | Class | Purpose | Module |
 |---|---|---|
@@ -429,6 +442,7 @@ GitHub Actions workflows are in `.github/workflows/`:
 | `regression.yml` | Manual dispatch | Chosen via the `module` input (default `autoframex-testkit`) |
 | `sonar.yml` | Push / PR to main | Every module's tests with coverage, then Sonar analysis at the reactor root; fails if the Sonar quality gate fails |
 | `dependency-check.yml` | Weekly + manual dispatch | Reactor root (scans every module) |
+| `secret-scan.yml` | Push / PR | gitleaks over the pushed commits (`.gitleaks.toml`) |
 | `Jenkinsfile.api` (Jenkins) | Per job | One module's suite with Maven, no Docker; see `autoframex-api/README.md` |
 
 There are no ZAP-scan or load-test workflows here: a scan or load test needs a test class that
@@ -460,8 +474,9 @@ These fail the build; they are not reports:
 
 | Gate | Fails when | Notes |
 |---|---|---|
+| Build environment | Maven older than 3.8.8, JDK older than 17, or any plugin without a pinned version | `maven-enforcer-plugin` in the root pom, runs in `validate`; compiles with `--release 17` |
 | Tests | any test of any module fails | each module runs its own default suite |
-| JaCoCo line coverage | a module drops below its floor, `jacoco.minimum.line` in that module's pom | floors sit a few points under today's coverage (api 85%, core 60%, selenium 33%, security 48%, database 42%, cucumber 13%, performance 5%). Raise a floor when coverage rises. |
+| JaCoCo line coverage | a module drops below its floor, `jacoco.minimum.line` in that module's pom | floors sit a few points under today's coverage (api 88%, core 67%, performance 70%, security 60%, database 43%, selenium 40%, cucumber 27%). Raise a floor when coverage rises. |
 | PMD | a priority 1 or 2 violation | priority 3 to 5 are listed but do not fail; raise `pmd.gate.priority` to 3 once they are cleared (`-Dpmd.gate.priority=3` shows what that would fail on) |
 | SpotBugs | a High-priority finding | `-Dspotbugs.gate.threshold=Medium` also gates Medium findings (one is known: `AbstractDatabaseConnection.connect()`) |
 
@@ -507,6 +522,10 @@ their request URLs, were tracked until they were untracked and ignored. To close
      --path-glob 'performance/jmeter/results/*'
    git push --force --mirror
    ```
+
+## Contributing and releasing
+
+[CONTRIBUTING.md](CONTRIBUTING.md) covers adding a project and changing the framework; [CHANGELOG.md](CHANGELOG.md) lists what changed (with *behaviour change* marked); [RELEASING.md](RELEASING.md) is the release procedure; [PROJECT_REVIEW.md](PROJECT_REVIEW.md) is the current review status.
 
 ## Dependencies
 

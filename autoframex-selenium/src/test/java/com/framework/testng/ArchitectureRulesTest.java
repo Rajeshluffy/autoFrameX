@@ -20,8 +20,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
  * Architectural guardrails enforced automatically, not just documented.
  *
  * <p>Both rules here exist because of a real problem found (and fixed) during the
- * 2026-07 architecture review — see {@code docs/TECHNICAL_DEBT_REGISTER.md} and
- * {@code docs/CODING_STANDARDS.md}. Run as an ordinary TestNG test
+ * 2026-07 architecture review (see {@code CONTRIBUTING.md}). Run as an ordinary TestNG test
  * ({@code com.tngtech.archunit:archunit} core artifact, not {@code archunit-junit5} —
  * this project uses TestNG).
  */

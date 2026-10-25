@@ -9,8 +9,7 @@
  * {@code EncryptionUtils}, {@code LogUtils}, {@code ScreenshotUtils}) are {@code final}
  * with a private constructor. Classes carrying real ThreadLocal or cache state
  * ({@code FakerDataFactory}, {@code DataLibrary}, {@code Reporter}, {@code VideoRecorder})
- * document their own lifecycle/cleanup contract — see
- * {@code docs/CODING_STANDARDS.md} for the convention.
+ * document their own lifecycle/cleanup contract in their class Javadoc.
  *
  * <p><b>Package boundary:</b> this package must never import
  * {@code com.framework.testng.api.base} or {@code com.framework.selenium.api.base} —

@@ -17,8 +17,8 @@
 		     back to the parent's testng.xml default, which doesn't exist in
 		     this module and crashes Surefire. -->
 		<testng.suite.file>testng.xml</testng.suite.file>
-		<!-- Coverage floor: line coverage was 66% when this was set; the build fails below it. -->
-		<jacoco.minimum.line>0.60</jacoco.minimum.line>
+		<!-- Coverage floor: line coverage was 70% when this was set; the build fails below it. -->
+		<jacoco.minimum.line>0.67</jacoco.minimum.line>
 	</properties>
 
 	<!--

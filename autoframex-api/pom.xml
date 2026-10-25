@@ -19,7 +19,7 @@
 		     default is used, which doesn't exist in this module and would crash Surefire. -->
 		<testng.suite.file>testng.xml</testng.suite.file>
 		<!-- Coverage floor: line coverage was 91% when this was set; the build fails below it. -->
-		<jacoco.minimum.line>0.85</jacoco.minimum.line>
+		<jacoco.minimum.line>0.88</jacoco.minimum.line>
 	</properties>
 
 	<dependencies>
