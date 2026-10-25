@@ -114,6 +114,13 @@
             <class name="design.patterns.object.pool.PoolSecondBrowserTest"/>
             <class name="com.framework.utils.ScreenshotTempFileTest"/>
             <class name="com.framework.selenium.api.actions.ElementInspectionHonestyTest"/>
+            <class name="com.framework.utils.ImplicitWaitTest"/>
+            <class name="com.framework.selenium.api.actions.LocatorActionsTwoLocatorTest"/>
+            <class name="com.framework.selenium.api.actions.WindowSwitchingTest"/>
+            <class name="design.patterns.factory.browser.DriverCreationCleanupTest"/>
+            <class name="design.patterns.object.pool.PoolHealthCheckThreadsTest"/>
+            <class name="com.framework.selenium.api.actions.FileUploadRemoteSessionTest"/>
+            <class name="com.framework.utils.VideoRecorderAlertTest"/>
             <class name="design.patterns.factory.browser.BrowserHeadlessConfigTest"/>
             <class name="com.framework.testng.api.base.RetryPolicyTest"/>
             <class name="design.patterns.factory.browser.BrowserSecurityPolicyTest"/>

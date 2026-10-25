@@ -12,6 +12,7 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import com.framework.utils.ImplicitWait;
 import com.framework.utils.Reporter;
 import com.framework.utils.WaitUtils;
 
@@ -112,8 +113,9 @@ public class WaitActions implements ElementWaiter {
 	}
 
 	public void waitForSpinnerDisappear() {
-		getWait(30).until(ExpectedConditions.invisibilityOfElementLocated(
-				By.cssSelector(".loading-spinner")));
+		// With no spinner on the page every poll would otherwise wait out the whole implicit wait.
+		ImplicitWait.without(driver(), () -> getWait(30).until(ExpectedConditions.invisibilityOfElementLocated(
+				By.cssSelector(".loading-spinner"))));
 	}
 
 	/**

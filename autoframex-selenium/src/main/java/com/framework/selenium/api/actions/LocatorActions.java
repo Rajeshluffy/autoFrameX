@@ -12,10 +12,14 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 
 import com.framework.selenium.api.design.Locators;
 import com.framework.selenium.exception.ElementNotFoundException;
+import com.framework.utils.ImplicitWait;
 import com.framework.utils.Reporter;
 
 /** Element-location strategies — extracted from {@code SeleniumBase} as part of the TD-07 composition refactor. */
 public class LocatorActions implements ElementLocator {
+
+	/** How often the two-locator lookup looks again while neither element is there yet. */
+	static final long POLL_MILLIS = 200;
 
 	private final Supplier<RemoteWebDriver> driverSupplier;
 	private final StepReporter reporter;
@@ -71,16 +75,47 @@ public class LocatorActions implements ElementLocator {
 		}
 
 		try {
-			if (!driver().findElements(by1).isEmpty()) {
+			// Both locators are polled together for at most one implicit-wait period, with the implicit wait
+			// itself off. Probing them one after the other under the implicit wait made the fallback start
+			// only after the primary had waited the whole period (10 s by default) for an element that was
+			// never going to be there, and a miss on both took twice that.
+			WebElement[] found = new WebElement[2];     // [0] primary, [1] fallback
+			long patienceNanos = ImplicitWait.current(driver()).toNanos();
+			ImplicitWait.without(driver(), () -> {
+				long deadline = System.nanoTime() + patienceNanos;
+				while (true) {
+					List<WebElement> first = driver().findElements(by1);
+					if (!first.isEmpty()) {
+						found[0] = first.get(0);
+						return;
+					}
+					List<WebElement> second = driver().findElements(by2);
+					if (!second.isEmpty()) {
+						found[1] = second.get(0);
+						return;
+					}
+					if (System.nanoTime() - deadline >= 0) {
+						return;
+					}
+					try {
+						Thread.sleep(POLL_MILLIS);
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+						return;
+					}
+				}
+			});
+
+			if (found[0] != null) {
 				reporter.reportStep("Element found using primary locator - " + locatorType1 + ": " + value1,
 						"pass", false);
-				return driver().findElement(by1);
+				return found[0];
 			}
 
-			if (!driver().findElements(by2).isEmpty()) {
+			if (found[1] != null) {
 				reporter.reportStep("Element found using fallback locator - " + locatorType2 + ": " + value2,
 						"pass", false);
-				return driver().findElement(by2);
+				return found[1];
 			}
 
 			String errorMsg = "Element not found with either locator - " + locatorType1 + ": " + value1 +

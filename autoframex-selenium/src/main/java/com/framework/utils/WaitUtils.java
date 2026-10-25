@@ -122,10 +122,12 @@ public final class WaitUtils {
 	public static <T> T waitFor(RemoteWebDriver driver, StepReporter reporter,
 			ExpectedCondition<T> condition, int timeoutInSeconds, String errorMessage) {
 		try {
-			return getWait(driver, timeoutInSeconds)
+			// Polled with the implicit wait off: under it, every poll for an element that is not there blocks for
+			// the whole implicit time, so a 5 s wait could take 10 s or more (see ImplicitWait).
+			return ImplicitWait.without(driver, () -> getWait(driver, timeoutInSeconds)
 					.ignoring(StaleElementReferenceException.class)
 					.ignoring(NoSuchElementException.class)
-					.until(condition);
+					.until(condition));
 		} catch (TimeoutException e) {
 			if (reporter != null) {
 				reporter.reportStep(errorMessage + " after " + timeoutInSeconds + " seconds", "warning", false);

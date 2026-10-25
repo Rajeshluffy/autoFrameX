@@ -57,7 +57,18 @@ public class BrowserFactory implements WebDriverFactoryInterface {
 		logger.debug("Creating driver via BrowserRegistry: " + browserId);
 		PoolConfig effective = config != null ? config : new PoolConfig.Builder().build();
 		RemoteWebDriver driver = BrowserRegistry.resolve(browserId, effective).launchBrowser();
-		configureTimeouts(driver, effective);
+		try {
+			configureTimeouts(driver, effective);
+		} catch (RuntimeException e) {
+			// The browser (or the Grid session) is already running; nothing else holds a reference to it, so a
+			// failure here used to leave it open for the rest of the run.
+			try {
+				driver.quit();
+			} catch (RuntimeException quitFailure) {
+				e.addSuppressed(quitFailure);
+			}
+			throw e;
+		}
 		return driver;
 	}
 

@@ -22,10 +22,44 @@ public class FileUploadActions {
 
 	private final StepReporter reporter;
 	private final ElementClicker clickActions;
+	private final java.util.function.Predicate<WebElement> remoteSession;
 
 	public FileUploadActions(StepReporter reporter, ElementClicker clickActions) {
+		this(reporter, clickActions, FileUploadActions::isRemoteSession);
+	}
+
+	/** For tests: decide for yourself whether the element belongs to a remote (Grid) browser. */
+	FileUploadActions(StepReporter reporter, ElementClicker clickActions, java.util.function.Predicate<WebElement> remoteSession) {
 		this.reporter = reporter;
 		this.clickActions = clickActions;
+		this.remoteSession = remoteSession;
+	}
+
+	/**
+	 * Whether the element belongs to a plain {@link org.openqa.selenium.remote.RemoteWebDriver}, which is what a
+	 * Selenium Grid session is (a local Chrome or Firefox is a subclass of it).
+	 */
+	static boolean isRemoteSession(WebElement ele) {
+		if (!(ele instanceof org.openqa.selenium.WrapsDriver)) {
+			return false;
+		}
+		org.openqa.selenium.WebDriver driver = ((org.openqa.selenium.WrapsDriver) ele).getWrappedDriver();
+		return driver != null && driver.getClass().equals(org.openqa.selenium.remote.RemoteWebDriver.class);
+	}
+
+	/**
+	 * Last resort when {@code sendKeys} was refused. On a local browser this drives the OS file dialog; on a
+	 * remote browser it cannot work (the dialog is on the node's machine, the keystrokes would go to whatever
+	 * window has focus on the test runner), so the step fails with the reason instead.
+	 */
+	private void fallbackToOsDialog(WebElement ele, Runnable triggerDialog, String filePath) {
+		if (remoteSession.test(ele)) {
+			reporter.reportStep("File upload failed: sendKeys was refused and the OS-dialog fallback cannot work on a "
+					+ "remote (Grid) browser. Check that the element is a real <input type=\"file\"> and that the file "
+					+ "exists on this machine: " + filePath, "fail", true);
+			return;
+		}
+		fileUploadViaOsDialog(triggerDialog, filePath);
 	}
 
 	public void fileUpload(WebElement ele, String filePath) {
@@ -44,7 +78,7 @@ public class FileUploadActions {
 					+ e.getMessage(), "info", false);
 		}
 
-		fileUploadViaOsDialog(() -> clickActions.hoverAndClick(ele), filePath);
+		fallbackToOsDialog(ele, () -> clickActions.hoverAndClick(ele), filePath);
 	}
 
 	public void fileUploadWithJs(WebElement ele, String filePath) {
@@ -58,7 +92,7 @@ public class FileUploadActions {
 					+ e.getMessage(), "info", false);
 		}
 
-		fileUploadViaOsDialog(() -> clickActions.clickWithJs(ele), filePath);
+		fallbackToOsDialog(ele, () -> clickActions.clickWithJs(ele), filePath);
 	}
 
 	/**

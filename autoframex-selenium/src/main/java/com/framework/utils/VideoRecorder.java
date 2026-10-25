@@ -203,6 +203,13 @@ public class VideoRecorder {
 
     private void captureFrame() {
         try {
+            if (alertIsOpen()) {
+                // W3C's default for a command sent while an alert is open is "dismiss and notify": the
+                // screenshot itself would cancel a confirm() the test is about to answer, and the test's
+                // own acceptAlert() would then fail with "no alert present". Skip this frame instead.
+                logger.debug("[Thread-{}] Frame skipped: an alert is open", threadId);
+                return;
+            }
             File tmp = driver.getScreenshotAs(OutputType.FILE);
 
             // Sequence number (and frameCounter itself) is only assigned/incremented
@@ -224,6 +231,21 @@ public class VideoRecorder {
         } catch (Exception e) {
             // Never propagate from a ScheduledExecutorService — it would cancel future ticks.
             logger.debug("[Thread-{}] Frame capture skipped: {}", threadId, e.getMessage());
+        }
+    }
+
+    /** Whether an alert, confirm or prompt is open. Asking does not dismiss it. */
+    private boolean alertIsOpen() {
+        if (!(driver instanceof org.openqa.selenium.WebDriver)) {
+            return false;
+        }
+        try {
+            ((org.openqa.selenium.WebDriver) driver).switchTo().alert();
+            return true;
+        } catch (org.openqa.selenium.NoAlertPresentException e) {
+            return false;
+        } catch (RuntimeException e) {
+            return false;   // session gone, or a driver without alert support: the screenshot attempt will say so
         }
     }
 

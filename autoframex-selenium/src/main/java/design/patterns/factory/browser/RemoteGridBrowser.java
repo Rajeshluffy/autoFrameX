@@ -81,13 +81,24 @@ public class RemoteGridBrowser implements Browser {
                 options = options.merge(capabilities);
             }
             logger.info("Connecting to Selenium Grid: " + hubUrl + " [browser=" + browserName + "]");
-            return new RemoteWebDriver(new URL(hubUrl), options);
+            RemoteWebDriver driver = new RemoteWebDriver(new URL(hubUrl), options);
+            useLocalFileUploads(driver);
+            return driver;
         } catch (MalformedURLException e) {
             throw new RuntimeException(
                 "Invalid Selenium Grid hub URL: '" + hubUrl + "'. "
                 + "Set autoFrameX.grid.hub.url in frameworkConfig.properties "
                 + "or pass -DgridHubUrl=<url> at runtime.", e);
         }
+    }
+
+    /**
+     * Makes {@code sendKeys("/path/to/file")} on a file input upload the file from this machine to the node.
+     * Without a file detector the path is sent as plain text, the node looks for it on its own disk, and the
+     * upload fails with "file not found" (or, before the fallback was closed off, drove a Robot on the runner).
+     */
+    static void useLocalFileUploads(RemoteWebDriver driver) {
+        driver.setFileDetector(new org.openqa.selenium.remote.LocalFileDetector());
     }
 
     private MutableCapabilities buildOptions() {

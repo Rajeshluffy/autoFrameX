@@ -61,6 +61,17 @@ public final class WebDriverPoolFactory implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(WebDriverPoolFactory.class);
 
     private static final int HEALTH_CHECK_TIMEOUT_SECONDS = 5;
+
+    /**
+     * Threads that run the health checks. They are daemon threads and shared: a check used to get its own
+     * new non-daemon executor, and against a hung driver the thread stayed blocked in the socket read after
+     * {@code shutdownNow()}, so each hung check left a thread that could delay the JVM's exit.
+     */
+    private static final ExecutorService HEALTH_CHECK_THREADS = Executors.newCachedThreadPool(runnable -> {
+        Thread thread = new Thread(runnable, "pool-health-check");
+        thread.setDaemon(true);
+        return thread;
+    });
     private static final int CLEANUP_INTERVAL_MINUTES     = 5;
 
     // ── Configuration + factory ──────────────────────────────────────────────
@@ -607,15 +618,18 @@ public final class WebDriverPoolFactory implements AutoCloseable {
     /** Health-check on borrow — ~50 ms cost prevents zombie sessions reaching test code. */
     private boolean performHealthCheck(RemoteWebDriver driver) {
         if (!config.isHealthCheckEnabled()) return true;
-        ExecutorService exec = Executors.newSingleThreadExecutor();
+        Future<?> check = HEALTH_CHECK_THREADS.submit(driver::getCurrentUrl);
         try {
-            exec.submit(driver::getCurrentUrl).get(HEALTH_CHECK_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            check.get(HEALTH_CHECK_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             return true;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
         } catch (Exception e) {
             logger.debug("Health check failed: " + e.getMessage());
             return false;
         } finally {
-            exec.shutdownNow();
+            check.cancel(true);
         }
     }
 
