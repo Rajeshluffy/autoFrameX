@@ -87,6 +87,28 @@ differently); read those before you upgrade. See [RELEASING.md](RELEASING.md) fo
   that selects no scenario fails instead of passing with zero tests. A runner must not extend another runner:
   Cucumber merges the options of superclasses.
 
+### Security
+
+- **`SecurityTestBase` could not run.** Any subclass made TestNG stop the whole suite with "The following methods
+  have cyclic dependencies": `generateZapReport` declared `dependsOnMethods = "endReport"`, while TestNG already runs a
+  subclass's `@AfterSuite` before its superclass's. No test in the repository extended the class, so nobody saw it.
+  The explicit dependency is gone, and `SecurityTestBaseLifecycleTest` is the first subclass, run inside the real TestNG
+  lifecycle against a fake ZAP.
+- A security suite no longer pre-warms two real Chrome browsers it never uses (the inherited `@BeforeTest`).
+- **Reporter:** a test class with neither `@TestMetadata` nor `setValues()` got a default name but a `null` author and
+  category, and `startTestCase()` threw `NullPointerException` in `@BeforeClass`, skipping every method of the class.
+  Author and category now default to `unknown` and `uncategorized`.
+- ZAP calls carry an API key when `zap.api.key` or `ZAP_API_KEY` is set (header, not URL). The ZAP check at suite start
+  uses the same timeouts and error handling as every other call. New `ZapSecurityUtils.verifyReachable`.
+- **Behaviour change: `InputSanitizer`.** It had no test and was wrong both ways: ordinary text containing "select",
+  "update", "create" or "script" was reported as SQL injection, while payloads like `<details open ontoggle=...>`,
+  `' OR 'a'='a` or `data:text/html` passed. Detection is now statement-shaped, so a project that relied on a
+  bare keyword being flagged will see fewer reports and more real ones. `sanitize` escapes CR, LF and the Unicode line
+  separators.
+- `SecretDetector`: the connection-string patterns took 12 s on 50,000 characters of `jdbc:jdbc:...` (every start
+  position scanned to the end); lengths are now bounded. A repeated group in the new `InputSanitizer` pattern
+  overflowed the stack on 30,000 columns; it is bounded too, and both have hostile-input tests.
+
 ### API module
 
 - Shared token cache, `ApiRequest`, typed responses, `ApiAssertions`, safe-call retries, cURL repro, cleanup

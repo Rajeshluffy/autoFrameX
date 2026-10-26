@@ -101,6 +101,24 @@ public class SecretDetectorTest {
 		assertFalse(SecretDetector.scan("   "));
 	}
 
+	@Test
+	public void longHostileValuesAreScannedQuicklyAndWithoutOverflowingTheStack() {
+		String[] values = {
+				"password=".repeat(10_000),
+				"A".repeat(60_000),
+				"jdbc:".repeat(10_000),
+				"-----BEGIN ".repeat(5_000),
+				"=".repeat(60_000),
+				"api_key:".repeat(10_000),
+		};
+		for (String value : values) {
+			long started = System.nanoTime();
+			SecretDetector.scan(value);
+			long ms = (System.nanoTime() - started) / 1_000_000;
+			assertTrue(ms < 1_000, "took " + ms + " ms on " + value.length() + " characters");
+		}
+	}
+
 	// ------------------------------------------------------------------- the assertion
 
 	@Test

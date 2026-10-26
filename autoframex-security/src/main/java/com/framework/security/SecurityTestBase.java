@@ -11,6 +11,7 @@ import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.BeforeSuite;
 
 import com.framework.testng.api.base.ProjectSpecificMethods;
@@ -41,9 +42,10 @@ import com.framework.utils.FakerDataFactory;
  * </pre>
  *
  * <h3>ZAP setup</h3>
- * Start ZAP before running the suite:
+ * Start ZAP before running the suite, with an API key the tests are given too:
  * <pre>
- *   zap.sh -daemon -port 8080 -config api.disablekey=true
+ *   zap.sh -daemon -port 8080 -config api.key=&lt;key&gt;
+ *   mvn test -Dzap.api.key=&lt;key&gt;        (or set ZAP_API_KEY)
  * </pre>
  * Override the default URL via system property: {@code -Dzap.base.url=http://localhost:8090}
  */
@@ -70,11 +72,8 @@ public abstract class SecurityTestBase extends ProjectSpecificMethods {
     public void startZap() {
         logger.info("=== SecurityTestBase: Verifying ZAP at {} ===", zapBaseUrl());
         try {
-            io.restassured.RestAssured.given()
-                .baseUri(zapBaseUrl())
-                .get("/JSON/core/view/version/")
-                .then().statusCode(200);
-            logger.info("✓ ZAP is running at {}", zapBaseUrl());
+            String version = ZapSecurityUtils.verifyReachable(zapBaseUrl());
+            logger.info("✓ ZAP {} is running at {}", version, zapBaseUrl());
         } catch (Exception e) {
             logger.warn("ZAP not reachable at {} — security tests will fail: {}",
                     zapBaseUrl(), e.getMessage());
@@ -84,8 +83,13 @@ public abstract class SecurityTestBase extends ProjectSpecificMethods {
     /**
      * Generates the ZAP HTML report after all security tests complete.
      * Report is written to {@code reports/zap/zap-security-report.html}.
+     *
+     * <p>No {@code dependsOnMethods}: TestNG already runs a subclass's {@code @AfterSuite} before its
+     * superclass's ({@code Reporter.endReport}, {@code SeleniumBase.shutdownDriverPool}), and an explicit
+     * dependency on {@code endReport} contradicts that. TestNG then refuses to start any suite that contains a
+     * subclass of this class ("The following methods have cyclic dependencies").
      */
-    @AfterSuite(alwaysRun = true, dependsOnMethods = "endReport")
+    @AfterSuite(alwaysRun = true)
     public void generateZapReport() {
         logger.info("=== SecurityTestBase: Generating ZAP report ===");
         try {
@@ -101,6 +105,18 @@ public abstract class SecurityTestBase extends ProjectSpecificMethods {
     // =========================================================================
     // METHOD LIFECYCLE — skip WebDriver
     // =========================================================================
+
+    /**
+     * Does not start the browser pool. {@code SeleniumBase.initDriverPool} is a {@code @BeforeTest} every
+     * subclass inherits, and it pre-warms the pool's minimum number of real browsers (two Chrome windows by
+     * default). A security suite talks to ZAP and to APIs and never takes one, so it would need Chrome installed
+     * and pay the start-up for nothing, and fail outright where no browser exists.
+     */
+    @Override
+    @BeforeTest(alwaysRun = true)
+    public synchronized void initDriverPool(ITestContext context) {
+        logger.info("SecurityTestBase: not starting the browser pool (a security suite uses no browser)");
+    }
 
     @Override
     @BeforeMethod(alwaysRun = true)

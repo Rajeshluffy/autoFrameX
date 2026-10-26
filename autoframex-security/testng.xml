@@ -9,6 +9,8 @@
         <classes>
             <class name="com.framework.security.ZapSecurityUtilsTest"/>
             <class name="com.framework.security.SecretDetectorTest"/>
+            <class name="com.framework.security.InputSanitizerTest"/>
+            <class name="com.framework.security.SecurityTestBaseLifecycleTest"/>
         </classes>
     </test>
 </suite>

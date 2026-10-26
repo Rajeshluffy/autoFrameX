@@ -26,6 +26,7 @@
             <class name="com.framework.config.data.ProjectDirectorEnvironmentTest"/>
             <class name="com.framework.utils.DataLibraryFailureTest"/>
             <class name="com.framework.utils.ReporterClassNodeTest"/>
+            <class name="com.framework.utils.ReporterDefaultMetadataTest"/>
             <class name="com.framework.observability.TestEventCollectorRestartTest"/>
             <class name="com.framework.observability.TestEventMaskingTest"/>
             <class name="com.framework.utils.FakerDataFactoryTest"/>

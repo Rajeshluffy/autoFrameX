@@ -203,6 +203,17 @@ public abstract class Reporter implements StepReporter {
             testcaseName = this.getClass().getSimpleName();
             logger.warn("testcaseName not set, defaulting to: " + testcaseName);
         }
+        // ExtentReports rejects null here (NullPointerException from assignAuthor/assignCategory), which used to
+        // skip every method of a class that had no @TestMetadata annotation.
+        if (testDescription == null) {
+            testDescription = "";
+        }
+        if (authors == null || authors.isBlank()) {
+            authors = "unknown";
+        }
+        if (category == null || category.isBlank()) {
+            category = "uncategorized";
+        }
 
         logger.info("Creating test case node: " + testcaseName);
 

@@ -318,7 +318,10 @@ These are explicit, opt-in, and SLA-asserting — call them yourself when you ne
 
 `SecurityTestBase` integrates OWASP ZAP:
 
-- `@BeforeSuite` verifies ZAP is reachable
+- `@BeforeSuite` verifies ZAP is reachable (a warning, not a failure, if it is not)
+- Start ZAP with an API key and give the tests the same one (`-Dzap.api.key=...` or `ZAP_API_KEY`); it is sent as an `X-ZAP-API-Key` header, never in a URL. `-config api.disablekey=true` still works but lets anyone who can reach the port control ZAP
+- A security suite starts no browser: `SecurityTestBase` overrides the inherited `@BeforeTest` that would pre-warm Chrome
+- `InputSanitizer.containsSqlInjection` / `containsXss` report statement-shaped SQL and real markup and event-handler payloads, not the bare words "select" or "update"; `sanitize` also escapes line breaks so a value cannot forge a log line
 - `@AfterSuite` generates an HTML report into `reports/zap/`
 - Helpers for passive scan, active scan, alert assertions, and secret masking via `SecretDetector`
 - A security check never passes because nothing was checked: `runPassiveScan(url)` waits for the crawl and for ZAP's analysis queue to drain, and `assertNoCriticalAlerts(url)` re-checks the queue, refuses to pass when ZAP has recorded no traffic for the target, and treats any HTTP error, ZAP error body or unexpected reply as a failure rather than as "no alerts"

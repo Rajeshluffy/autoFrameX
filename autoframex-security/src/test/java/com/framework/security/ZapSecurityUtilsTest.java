@@ -44,6 +44,7 @@ public class ZapSecurityUtilsTest {
 	private final ConcurrentMap<String, Deque<Reply>> routes = new ConcurrentHashMap<>();
 	private final ConcurrentMap<String, AtomicInteger> hits = new ConcurrentHashMap<>();
 	private final ConcurrentMap<String, String> lastQuery = new ConcurrentHashMap<>();
+	private final ConcurrentMap<String, String> lastApiKey = new ConcurrentHashMap<>();
 
 	private static final class Reply {
 		final int status;
@@ -60,11 +61,13 @@ public class ZapSecurityUtilsTest {
 		routes.clear();
 		hits.clear();
 		lastQuery.clear();
+		lastApiKey.clear();
 		server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
 		server.createContext("/", exchange -> {
 			String path = exchange.getRequestURI().getPath();
 			hits.computeIfAbsent(path, p -> new AtomicInteger()).incrementAndGet();
 			lastQuery.put(path, String.valueOf(exchange.getRequestURI().getQuery()));
+			lastApiKey.put(path, String.valueOf(exchange.getRequestHeaders().getFirst("X-ZAP-API-Key")));
 			Deque<Reply> queue = routes.get(path);
 			Reply reply;
 			if (queue == null || queue.isEmpty()) {
@@ -329,5 +332,58 @@ public class ZapSecurityUtilsTest {
 				walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> p.toFile().delete());
 			}
 		}
+	}
+
+	@Test
+	public void theApiKeyIsSentAsAHeaderNotInTheUrl() {
+		queueEmpty();
+		String previous = System.getProperty("zap.api.key");
+		System.setProperty("zap.api.key", "s3cret-key");
+		try {
+			ZapSecurityUtils.waitForPassiveScanComplete(zap, 5, 1);
+
+			Assert.assertEquals(lastApiKey.get("/JSON/pscan/view/recordsToScan/"), "s3cret-key");
+			Assert.assertFalse(lastQuery.get("/JSON/pscan/view/recordsToScan/").contains("s3cret-key"),
+					"the key must not appear in the URL, where it would end up in logs");
+		} finally {
+			if (previous == null) {
+				System.clearProperty("zap.api.key");
+			} else {
+				System.setProperty("zap.api.key", previous);
+			}
+		}
+	}
+
+	@Test
+	public void withoutAKeyNoKeyHeaderIsSent() {
+		queueEmpty();
+		String previous = System.getProperty("zap.api.key");
+		System.clearProperty("zap.api.key");
+		try {
+			ZapSecurityUtils.waitForPassiveScanComplete(zap, 5, 1);
+
+			Assert.assertEquals(lastApiKey.get("/JSON/pscan/view/recordsToScan/"), "null");
+		} finally {
+			if (previous != null) {
+				System.setProperty("zap.api.key", previous);
+			}
+		}
+	}
+
+	@Test
+	public void verifyReachableReturnsTheVersionAndNamesAnUnreachableZap() {
+		on("/JSON/core/view/version/", 200, "{\"version\":\"2.15.0\"}");
+		Assert.assertEquals(ZapSecurityUtils.verifyReachable(zap), "2.15.0");
+
+		server.stop(0);
+		IllegalStateException e = Assert.expectThrows(IllegalStateException.class, () -> ZapSecurityUtils.verifyReachable(zap));
+		Assert.assertTrue(e.getMessage().contains(zap), e.getMessage());
+	}
+
+	@Test
+	public void verifyReachableRejectsAnErrorReply() {
+		on("/JSON/core/view/version/", 403, "{\"code\":\"bad_api_key\",\"message\":\"Bad API key\"}");
+		IllegalStateException e = Assert.expectThrows(IllegalStateException.class, () -> ZapSecurityUtils.verifyReachable(zap));
+		Assert.assertTrue(e.getMessage().contains("403"), e.getMessage());
 	}
 }

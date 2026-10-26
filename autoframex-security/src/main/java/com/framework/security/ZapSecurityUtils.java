@@ -27,8 +27,10 @@ import io.restassured.specification.RequestSpecification;
 /**
  * Calls the OWASP ZAP REST API to run passive and active security scans.
  *
- * ZAP must be running externally before any method is called. Start ZAP with:
- * {@code zap.sh -daemon -port 8080 -config api.disablekey=true}
+ * ZAP must be running externally before any method is called. Start ZAP with an API key and give the same
+ * key to the tests ({@code -Dzap.api.key=...} or the {@code ZAP_API_KEY} environment variable):
+ * {@code zap.sh -daemon -port 8080 -config api.key=<key>}
+ * ({@code -config api.disablekey=true} also works, but lets anyone who can reach the port control ZAP).
  *
  * All HTTP calls use RestAssured directly (no RequestSpecification wrapper)
  * so the RestAssuredListener does not pollute test logs with ZAP API traffic.
@@ -65,6 +67,9 @@ public final class ZapSecurityUtils {
     /** Report generation on a big session can be slow; ordinary calls answer in milliseconds. */
     private static final int READ_TIMEOUT_MS = 120_000;
     private static final int BODY_PREVIEW_CHARS = 200;
+    private static final String API_KEY_PROPERTY = "zap.api.key";
+    private static final String API_KEY_ENV = "ZAP_API_KEY";
+    private static final String API_KEY_HEADER = "X-ZAP-API-Key";
 
     private ZapSecurityUtils() {}
 
@@ -350,11 +355,51 @@ public final class ZapSecurityUtils {
     }
 
     private static RequestSpecification zap(String zapBaseUrl) {
-        return RestAssured.given()
+        RequestSpecification request = RestAssured.given()
                 .config(RestAssuredConfig.config().httpClient(HttpClientConfig.httpClientConfig()
                         .setParam("http.connection.timeout", CONNECT_TIMEOUT_MS)
                         .setParam("http.socket.timeout", READ_TIMEOUT_MS)))
                 .baseUri(zapBaseUrl);
+        String apiKey = apiKey();
+        if (apiKey != null) {
+            request = request.header(API_KEY_HEADER, apiKey);   // a header, so it never lands in a URL or a log
+        }
+        return request;
+    }
+
+    /**
+     * The ZAP API key: the {@code zap.api.key} system property, else the {@code ZAP_API_KEY} environment variable,
+     * else none. ZAP started with {@code -config api.disablekey=true} (the setup this module used to document)
+     * lets anyone who can reach its port run scans and shut it down; a ZAP with a key rejects every call that
+     * does not carry it, which these utilities could not send before.
+     */
+    static String apiKey() {
+        String key = System.getProperty(API_KEY_PROPERTY);
+        if (key == null || key.isBlank()) {
+            key = System.getenv(API_KEY_ENV);
+        }
+        return key == null || key.isBlank() ? null : key.trim();
+    }
+
+    /**
+     * Asks ZAP for its version, with the same timeouts, API key and error handling as every other call.
+     *
+     * @return the version ZAP reports
+     * @throws IllegalStateException if ZAP is unreachable, answers with an error, or does not report a version
+     */
+    public static String verifyReachable(String zapBaseUrl) {
+        String version;
+        try {
+            version = zapGet(zapBaseUrl, "/JSON/core/view/version/").getString("version");
+        } catch (IllegalStateException e) {
+            throw e;
+        } catch (Exception e) {   // includes the checked ConnectException REST Assured throws without declaring it
+            throw new IllegalStateException("ZAP is not reachable at " + zapBaseUrl + ": " + e.getMessage(), e);
+        }
+        if (version == null || version.isBlank()) {
+            throw new IllegalStateException("ZAP at " + zapBaseUrl + " did not report a version");
+        }
+        return version;
     }
 
     /**

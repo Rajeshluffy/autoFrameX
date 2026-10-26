@@ -48,11 +48,13 @@ public final class SecretDetector {
 
     // JDBC / connection string with embedded user:pass@host
     private static final Pattern CONNECTION_STRING_PATTERN = Pattern.compile(
-        "(?i)(jdbc:|mongodb(\\+srv)?://|redis://|amqp://|postgresql://)[^:]+:[^@]{4,}@");
+        // Lengths are bounded: with "[^:]+" and "[^@]{4,}" a long string of "jdbc:jdbc:..." (no '@') made every
+        // start position scan to the end, which took 12 s on 50,000 characters.
+        "(?i)(jdbc:|mongodb(\\+srv)?://|redis://|amqp://|postgresql://)[^:\\s]{1,200}:[^@\\s]{4,200}@");
 
     // jdbc:...?user=a&password=b — the password as a URL parameter instead of user:pass@host
     private static final Pattern JDBC_PARAMETER_PATTERN = Pattern.compile(
-        "(?i)jdbc:[^\\s]*[?&;](password|pwd)=" + NOT_A_LITERAL + "[^&;\\s]+");
+        "(?i)jdbc:[^\\s]{0,500}[?&;](password|pwd)=" + NOT_A_LITERAL + "[^&;\\s]+");
 
     // Long base64 string that could be an encoded credential (40+ chars)
     private static final Pattern BASE64_CREDENTIAL_PATTERN = Pattern.compile(
