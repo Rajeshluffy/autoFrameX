@@ -78,7 +78,7 @@
 		<logback.version>1.5.18</logback.version>
 		<logstash.encoder.version>8.1</logstash.encoder.version>
 		<archunit.version>1.3.0</archunit.version>
-		<wiremock.version>3.9.1</wiremock.version>
+		<wiremock.version>3.13.2</wiremock.version>
 		<h2.version>2.3.232</h2.version>
 		<sonar.projectKey>autoFrameX</sonar.projectKey>
 		<sonar.projectName>autoFrameX</sonar.projectName>
