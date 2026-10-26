@@ -81,7 +81,7 @@
 		<wiremock.version>3.13.2</wiremock.version>
 		<h2.version>2.3.232</h2.version>
 		<!-- Cucumber 8 writes its JSON and HTML reports with Jackson 3 (tools.jackson) and does not bring it: pinned to the version it is built against. -->
-		<jackson3.version>3.2.3</jackson3.version>
+		<jackson3.version>3.2.4</jackson3.version>
 		<sonar.projectKey>autoFrameX</sonar.projectKey>
 		<sonar.projectName>autoFrameX</sonar.projectName>
 		<sonar.java.source>17</sonar.java.source>
