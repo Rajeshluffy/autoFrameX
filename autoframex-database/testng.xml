@@ -6,6 +6,7 @@
 <suite name="autoframex-database Unit Tests" verbose="1" parallel="none">
     <test name="DBManager">
         <classes>
+            <class name="design.patterns.database.core.AbstractDatabaseConnectionTest"/>
             <class name="design.patterns.database.manager.DBManagerTest"/>
         </classes>
     </test>

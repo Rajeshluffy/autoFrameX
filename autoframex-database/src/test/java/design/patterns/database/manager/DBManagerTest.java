@@ -205,6 +205,26 @@ public class DBManagerTest {
 		}
 	}
 
+	@Test
+	public void aCredentialInTheJdbcUrlIsNotInTheFailureMessage() {
+		FakeDatabase db = new FakeDatabase();
+		db.connectFailure = new SQLException("Access denied for user");
+		DBManager manager = db.manager("jdbc:mysql://host/app?user=bob&password=" + FakeDatabase.PASSWORD, "bob");
+
+		FrameworkException failure = Assert.expectThrows(FrameworkException.class, manager::getConnection);
+
+		Assert.assertFalse(failure.getMessage().contains(FakeDatabase.PASSWORD), "the URL's password must be hidden: " + failure.getMessage());
+		Assert.assertTrue(failure.getMessage().contains("host/app"), "the rest of the URL stays, it is what finds the problem");
+	}
+
+	@Test
+	public void parameterisedStatementsReachTheConnectionWithTheirValues() {
+		FakeDatabase db = new FakeDatabase();
+		DBManager manager = db.manager("jdbc:mysql://host/params", "user");
+
+		Assert.assertEquals(manager.executeUpdate("INSERT INTO t VALUES (?, ?)", 1, "O'Brien"), 2, "the connection saw both parameters");
+	}
+
 	/** Hands out {@link FakeConnection}s and can be told to fail at each step. */
 	private static final class FakeDatabase {
 		static final String PASSWORD = "s3cr3t-pw";
@@ -264,6 +284,11 @@ public class DBManagerTest {
 				throw db.updateFailure;
 			}
 			return 3;
+		}
+
+		@Override
+		public int executeUpdate(String query, Object... parameters) {
+			return parameters.length;
 		}
 
 		@Override

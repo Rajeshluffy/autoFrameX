@@ -15,6 +15,7 @@ import com.framework.config.data.DatabaseConfiguration;
 import com.framework.exception.FrameworkException;
 
 import design.patterns.database.core.DatabaseConnection;
+import design.patterns.database.core.JdbcUrls;
 import design.patterns.database.factory.DatabaseConnectionFactory;
 
 /**
@@ -112,7 +113,7 @@ public class DBManager {
             return fresh;
         } catch (SQLException | RuntimeException e) {
             // The password is never part of this message; the URL is, because it is what you need to find the problem.
-            throw new FrameworkException("Could not connect to the database at " + dbUrl, e);
+            throw new FrameworkException("Could not connect to the database at " + JdbcUrls.redact(dbUrl), e);
         }
     }
 
@@ -155,6 +156,34 @@ public class DBManager {
             return getConnection().executeQuery(query);
         } catch (SQLException e) {
             throw new FrameworkException("Database query failed: " + query, e);
+        }
+    }
+
+    /**
+     * Executes a query with {@code ?} placeholders on the calling thread's connection. Pass values as
+     * parameters rather than building them into the SQL text.
+     *
+     * @throws FrameworkException if the query fails (the {@link SQLException} is the cause)
+     */
+    public ResultSet executeQuery(String query, Object... parameters) {
+        try {
+            return getConnection().executeQuery(query, parameters);
+        } catch (SQLException e) {
+            throw new FrameworkException("Database query failed: " + query, e);
+        }
+    }
+
+    /**
+     * Executes an INSERT, UPDATE or DELETE with {@code ?} placeholders on the calling thread's connection.
+     *
+     * @return the number of rows affected
+     * @throws FrameworkException if the statement fails (the {@link SQLException} is the cause)
+     */
+    public int executeUpdate(String statement, Object... parameters) {
+        try {
+            return getConnection().executeUpdate(statement, parameters);
+        } catch (SQLException e) {
+            throw new FrameworkException("Database update failed: " + statement, e);
         }
     }
 

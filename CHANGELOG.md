@@ -124,6 +124,24 @@ differently); read those before you upgrade. See [RELEASING.md](RELEASING.md) fo
 - A load test keeps up to five distinct failure reasons, so "100% failed" says why (`LoadTestResult.getFailureSamples()`).
 - CI runs a performance browser smoke (`autoframex-performance/testng-smoke.xml`), with `-DfailIfNoTests=true`.
 
+### Database
+
+- **Parameterised statements.** `executeQuery(sql, params...)` and `executeUpdate(sql, params...)` (on `DatabaseConnection`
+  and `DBManager`) bind values with prepared statements. The module took only raw SQL text, so a value with a quote in
+  it (`O'Brien`) broke the statement and a value from outside could change it. A parameter count that does not match the
+  placeholders fails.
+- **A statement that never answers no longer hangs the test**: it is cancelled after `db.query.timeout.seconds`
+  (default 60; `0` disables; a non-numeric value fails loudly). MySQL connections get a 10 s connect timeout (the
+  driver's own default is none) unless the URL sets `connectTimeout`.
+- **Behaviour change:** `connect(url, ...)` on a connection that is already open to a *different* URL throws instead of
+  silently answering with the first connection (the caller would have run statements against the wrong database).
+- Every query paid two extra `isValid` round trips (the staleness check ran in `DBManager.getConnection` and again inside
+  the connection); the execute paths now check locally.
+- A password in a JDBC URL (`?password=...`, `user:password@host`) is shown as `***` in logs and in the
+  "Could not connect" message (`JdbcUrls.redact`).
+- The JDBC layer is now tested against an in-memory H2 database (new test-scope dependency, 2.3.232); before, only
+  `DBManager` was tested, with fake connections.
+
 ### API module
 
 - Shared token cache, `ApiRequest`, typed responses, `ApiAssertions`, safe-call retries, cURL repro, cleanup
