@@ -370,7 +370,7 @@
 				<!-- Stay below 3.6: from 3.6.0 Surefire runs TestNG on the JUnit Platform and rejects suiteXmlFiles
 				     ("Parameter suiteXmlFiles is not supported since 3.6.0"), and every module here is run from a TestNG
 				     suite XML. 3.5.x is the last line that reads them. -->
-				<version>3.5.4</version>
+				<version>3.5.6</version>
 				<configuration>
 					<suiteXmlFiles>
 						<suiteXmlFile>${testng.suite.file}</suiteXmlFile>
