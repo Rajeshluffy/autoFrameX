@@ -62,9 +62,9 @@
 		<rest.assured.version>5.5.0</rest.assured.version>
 		<gson.version>2.11.0</gson.version>
 		<commons.io.version>2.19.0</commons.io.version>
-		<cucumber.jvm.version>7.21.1</cucumber.jvm.version>
-		<cucumber.jvm.testng.version>7.21.1</cucumber.jvm.testng.version>
-		<cucumber.picocontainer.version>7.21.1</cucumber.picocontainer.version>
+		<cucumber.jvm.version>8.0.4</cucumber.jvm.version>
+		<cucumber.jvm.testng.version>8.0.4</cucumber.jvm.testng.version>
+		<cucumber.picocontainer.version>8.0.4</cucumber.picocontainer.version>
 		<jackson.databind.version>2.18.0</jackson.databind.version>
 		<owner.version>1.0.12</owner.version>
 		<commons.lang3.version>3.20.0</commons.lang3.version>
