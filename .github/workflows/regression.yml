@@ -73,7 +73,7 @@ jobs:
 
       - name: Upload HTML reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: regression-reports-${{ inputs.browser }}-${{ inputs.environment }}
           path: |
@@ -84,7 +84,7 @@ jobs:
 
       - name: Upload observability events (NDJSON)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-events-${{ inputs.browser }}-${{ inputs.environment }}
           path: '**/logs/test-events.json'
@@ -93,7 +93,7 @@ jobs:
 
       - name: Upload Surefire XML results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: surefire-results-regression
           path: '**/target/surefire-reports/'

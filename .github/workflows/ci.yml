@@ -112,7 +112,7 @@ jobs:
 
       - name: Upload Surefire test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: surefire-results-ci
           path: '**/target/surefire-reports/'
@@ -120,7 +120,7 @@ jobs:
 
       - name: Upload coverage reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: jacoco-reports-ci
           path: '**/target/site/jacoco/'
@@ -129,7 +129,7 @@ jobs:
 
       - name: Upload observability events
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-events-ci
           # Written relative to whichever module's working directory Surefire
