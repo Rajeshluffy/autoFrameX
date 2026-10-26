@@ -120,6 +120,7 @@
             <class name="design.patterns.factory.browser.DriverCreationCleanupTest"/>
             <class name="design.patterns.object.pool.PoolHealthCheckThreadsTest"/>
             <class name="design.patterns.object.pool.PoolScenarioWithoutMethodTest"/>
+            <class name="com.framework.testng.api.base.ProjectSpecificMethodsSettingsTest"/>
             <class name="com.framework.selenium.api.actions.FileUploadRemoteSessionTest"/>
             <class name="com.framework.utils.VideoRecorderAlertTest"/>
             <class name="design.patterns.factory.browser.BrowserHeadlessConfigTest"/>

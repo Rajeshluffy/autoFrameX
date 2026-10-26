@@ -21,6 +21,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 
 import com.framework.config.data.ConfigManager;
+import com.framework.config.data.ConfigResolver;
 import com.framework.config.data.ExecutionMode;
 import com.framework.selenium.api.base.SeleniumBase;
 import com.framework.utils.AccountData;
@@ -73,6 +74,35 @@ public class ProjectSpecificMethods extends SeleniumBase {
 	private static final ThreadLocal<AccountData> currentAccount = new ThreadLocal<>();
 
 	// =========================================================================
+	// SETTINGS
+	// =========================================================================
+
+	/**
+	 * Whether to record video of each UI test ({@code video.enabled}, env {@code VIDEO_ENABLED}; default on).
+	 * Recording is a screenshot twice a second for the whole test, kept only when the test fails, so a fast CI run
+	 * that has no use for failure videos can switch it off.
+	 */
+	static boolean videoEnabled(java.util.Map<String, String> suiteParams) {
+		return ConfigResolver.resolveBoolean("video.enabled", "VIDEO_ENABLED", suiteParams, true);
+	}
+
+	/**
+	 * A warning when the DataProvider can run more rows at once than the browser pool has browsers, or
+	 * {@code null} when it fits. The pool makes a thread wait only its borrow timeout (30 s by default) for a
+	 * browser, so with long UI tests the extra rows fail with "Cannot acquire driver".
+	 */
+	static String dataProviderOversubscription(int providerThreads, int poolMaxSize) {
+		if (providerThreads <= poolMaxSize) {
+			return null;
+		}
+		return "The data provider runs up to " + providerThreads + " rows at once (TestNG's data-provider-thread-count) "
+				+ "but the browser pool holds " + poolMaxSize + " (autoFrameX.pool.max.size). Rows beyond " + poolMaxSize
+				+ " wait for a browser only as long as the pool's borrow timeout and then fail with \"Cannot acquire "
+				+ "driver\" when the tests are long. Set data-provider-thread-count=\"" + poolMaxSize
+				+ "\" (or lower) on the <suite>, or raise the pool size.";
+	}
+
+	// =========================================================================
 	// DATA PROVIDER
 	// =========================================================================
 
@@ -123,7 +153,9 @@ public class ProjectSpecificMethods extends SeleniumBase {
 						+ " Set 'excel.data.file' in your testng.xml.");
 			}
 			logger.info("DATA_PROVIDER mode — loading accounts from: " + dataFile);
-			return DataLibrary.readExcelAsAccounts(dataFile);
+			Object[][] rows = DataLibrary.readExcelAsAccounts(dataFile);
+			warnIfProviderOutrunsThePool(context, rows.length);
+			return rows;
 		}
 
 		// TARGETED mode: single account from config
@@ -135,6 +167,20 @@ public class ProjectSpecificMethods extends SeleniumBase {
 				cfg.getPassword(),
 				cfg.getAppUrl());
 		return new AccountData[][]{{account}};
+	}
+
+	private static void warnIfProviderOutrunsThePool(ITestContext context, int rows) {
+		try {
+			int threads = context.getSuite().getXmlSuite().getDataProviderThreadCount();
+			int concurrent = Math.min(threads, rows);
+			String warning = dataProviderOversubscription(concurrent,
+					ConfigManager.getInstance().getConfig().getPoolMaxSize());
+			if (warning != null) {
+				logger.warn(warning);
+			}
+		} catch (RuntimeException e) {
+			logger.debug("Could not compare the data provider's threads with the pool: {}", e.getMessage());
+		}
 	}
 
 	// =========================================================================
@@ -208,13 +254,18 @@ public class ProjectSpecificMethods extends SeleniumBase {
 			logger.warn("Could not read current URL after driver setup: " + e.getMessage());
 		}
 
-		// 5. Start video recording — WebDriver screenshot based, works in headless CI
-		try {
-			VideoRecorder vr = new VideoRecorder();
-			vr.start(method.getName(), getDriver());
-			videoRecorder.set(vr);
-		} catch (Exception e) {
-			logger.warn("Video recording could not start for {}: {}", method.getName(), e.getMessage());
+		// 5. Start video recording — WebDriver screenshot based, works in headless CI. -Dvideo.enabled=false
+		//    skips it (nothing is then kept for a failed test, and no screenshot is taken twice a second).
+		if (videoEnabled(suiteParams)) {
+			try {
+				VideoRecorder vr = new VideoRecorder();
+				vr.start(method.getName(), getDriver());
+				videoRecorder.set(vr);
+			} catch (Exception e) {
+				logger.warn("Video recording could not start for {}: {}", method.getName(), e.getMessage());
+			}
+		} else {
+			logger.debug("Video recording is off (video.enabled=false) for {}", method.getName());
 		}
 
 		logger.info("Driver ready for: " + method.getName());

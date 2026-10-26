@@ -16,6 +16,18 @@ String sysId = created.path("result.sys_id", String.class);
 ApiCleanup.register("delete incident " + sysId, () -> client.send(base, ApiRequest.delete("incident/{id}").pathParam("id", sysId)));
 ```
 
+## Running it under TestNG
+
+Extend `com.api.testng.ApiTestBase` (it needs only `autoframex-core` and `autoframex-api`). You get the framework's
+report (a node per class and method, every call's timing as a step, `@TestMetadata` for the names) and your
+`ApiCleanup` undos run after every test, pass or fail, newest first. A failing undo is a warning in the report and
+never fails the hook (a failing `@AfterMethod` would make TestNG skip the tests after it).
+
+```java
+@TestMetadata(name = "Incident API", authors = "qa", category = "api")
+public class IncidentApiTest extends ApiTestBase { ... }
+```
+
 ## The pieces
 
 | Class | What it is for |

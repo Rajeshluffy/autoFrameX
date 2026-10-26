@@ -142,6 +142,20 @@ differently); read those before you upgrade. See [RELEASING.md](RELEASING.md) fo
 - The JDBC layer is now tested against an in-memory H2 database (new test-scope dependency, 2.3.232); before, only
   `DBManager` was tested, with fake connections.
 
+### TestNG base class (`ProjectSpecificMethods`) and the API module
+
+- **`ApiTestBase` (new, `autoframex-api`).** An API-only project has no Selenium and so no `ProjectSpecificMethods`;
+  it had to subclass the abstract `Reporter` itself, implement its screenshot method and remember to write the cleanup
+  hook (nothing said so). `ApiTestBase` provides the report and runs `ApiCleanup` after every test
+  (`ApiTestBaseLifecycleTest` is the first API test to run inside the lifecycle with only core and api on the classpath).
+- **Video recording can be switched off:** `-Dvideo.enabled=false` (env `VIDEO_ENABLED`, suite parameter
+  `video.enabled`). It is on by default, as before. Every UI test used to take a screenshot twice a second whether or not
+  anything would be kept (only a failed test keeps its video).
+- **The data provider names an oversubscribed pool.** `fetchData` is `parallel = true`, TestNG runs it on 10 threads, the
+  pool holds 5 browsers and a thread waits only the borrow timeout (30 s) for one, so with long UI tests rows 6 to 10
+  failed with "Cannot acquire driver" and nothing said why. The run now logs a warning with both numbers and the setting
+  to change (`data-provider-thread-count`).
+
 ### API module
 
 - Shared token cache, `ApiRequest`, typed responses, `ApiAssertions`, safe-call retries, cURL repro, cleanup
