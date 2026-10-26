@@ -16,12 +16,33 @@ jobs:
     timeout-minutes: 45
 
     steps:
+      - name: Check that Sonar is configured
+        # SONAR_TOKEN and SONAR_HOST_URL are repository secrets. Where they are not set (a repository that
+        # has no Sonar server, a pull request from a fork, which GitHub gives no secrets) the analysis step
+        # can only fail, on every run, for a reason that says nothing about the code; a workflow that is
+        # always red hides the day it is red for a real finding. Skip it and say so instead. The build and
+        # tests already run in ci.yml.
+        id: sonar
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          if [ -n "$SONAR_TOKEN" ] && [ -n "$SONAR_HOST_URL" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=SonarQube skipped::SONAR_TOKEN and SONAR_HOST_URL are not both set for this run, so no analysis was done. Add both as repository secrets to enable it."
+            echo "SonarQube analysis skipped: SONAR_TOKEN / SONAR_HOST_URL are not set for this run." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Checkout source
+        if: steps.sonar.outputs.configured == 'true'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # full history required for blame/new-code detection
 
       - name: Set up Java 17 (Temurin)
+        if: steps.sonar.outputs.configured == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -29,6 +50,7 @@ jobs:
           cache: maven
 
       - name: Build and test every module, collect coverage
+        if: steps.sonar.outputs.configured == 'true'
         # JaCoCo prepare-agent/report run via pom.xml, so every module's own tests produce a
         # coverage report for Sonar. This used to test only autoframex-selenium, so Sonar
         # showed 0% coverage for the other seven modules. The suites run here are the
@@ -36,6 +58,7 @@ jobs:
         run: mvn -B -ntp clean verify -Denv=qa -Dheadless=true -Dsurefire.reportNameSuffix=sonar
 
       - name: Run SonarQube analysis
+        if: steps.sonar.outputs.configured == 'true'
         # Runs at the reactor root so Sonar analyzes every module's source. The token and
         # host come from the environment (SONAR_TOKEN / SONAR_HOST_URL, which the scanner
         # reads itself), not the command line, where they would show in the process list.
@@ -51,7 +74,7 @@ jobs:
             -Dsonar.qualitygate.wait=true
 
       - name: Upload Surefire XML results
-        if: always()
+        if: always() && steps.sonar.outputs.configured == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: surefire-results-sonar

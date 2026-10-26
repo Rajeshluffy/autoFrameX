@@ -61,6 +61,12 @@ differently); read those before you upgrade. See [RELEASING.md](RELEASING.md) fo
 - Dependency upgrades for known vulnerabilities, SnakeYAML override fixed, Dependabot added.
 - `gitleaks` scans every push and pull request.
 
+### CI
+
+- `sonar.yml` is skipped, with a notice and a job summary, when the `SONAR_TOKEN` and `SONAR_HOST_URL` secrets are not both
+  set (previously it ran the whole build and then failed on every push, and on every fork's pull request, because the
+  analysis step had no token). Add both secrets to enable the analysis.
+
 ### Security and secrets
 
 - Log lines, exception messages and test events mask credentials (JSON, `key=value`, `Authorization` headers);

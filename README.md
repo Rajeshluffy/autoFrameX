@@ -450,7 +450,7 @@ GitHub Actions workflows are in `.github/workflows/`:
 |---|---|---|
 | `ci.yml` | Push / PR to any branch | **Every module**: `mvn clean install` runs each module's own default suite, then the quality gates (below). Then the parallel smoke suite and the retry-engine check on `autoframex-selenium`, and a Cucumber lifecycle smoke (`autoframex-cucumber/testng-smoke.xml`: the hooks, a step class and the pool with a real headless Chrome, no network). This is the merge gate. |
 | `regression.yml` | Manual dispatch | Chosen via the `module` input (default `autoframex-testkit`) |
-| `sonar.yml` | Push / PR to main | Every module's tests with coverage, then Sonar analysis at the reactor root; fails if the Sonar quality gate fails |
+| `sonar.yml` | Push / PR to main | Every module's tests with coverage, then Sonar analysis at the reactor root; fails if the Sonar quality gate fails. Skipped, with a notice, when the `SONAR_TOKEN` / `SONAR_HOST_URL` secrets are not set (or on a fork's pull request) |
 | `dependency-check.yml` | Weekly + manual dispatch | Reactor root (scans every module) |
 | `secret-scan.yml` | Push / PR | gitleaks over the pushed commits (`.gitleaks.toml`) |
 | `Jenkinsfile.api` (Jenkins) | Per job | One module's suite with Maven, no Docker; see `autoframex-api/README.md` |
