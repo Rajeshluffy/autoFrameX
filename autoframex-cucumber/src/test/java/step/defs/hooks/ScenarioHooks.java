@@ -1,8 +1,7 @@
 package step.defs.hooks;
 
-import java.lang.reflect.Method;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
-import com.framework.config.data.ConfigManager;
 import com.framework.utils.ExtentReportManager;
 import com.framework.utils.LogUtils;
 import com.framework.utils.ScreenshotUtils;
@@ -12,67 +11,32 @@ import design.patterns.object.pool.DriverPoolManager;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
-import step.defs.api.ApiScenarioContext;
-import step.defs.ui.UiScenarioContext;
 
 /**
- * Lifecycle hooks for every scenario.
- *
- * DriverPoolManager was designed for TestNG's Method-based lifecycle.
- * SCENARIO_METHOD is a package-private no-op method on this class used as a
- * Method handle so the pool has a valid reflection object for logging and
- * browser/URL resolution — all resolution falls through to system properties
- * and frameworkConfig.properties, which is the correct behaviour for Cucumber.
+ * An example of project hooks that sit on top of the framework's: video recording and failure evidence for a UI
+ * scenario. They do not acquire or return the browser; {@code CucumberHooks} (order 100) does, so these use
+ * order 200: Cucumber runs {@code @Before} hooks in ascending order and {@code @After} hooks in descending
+ * order, which puts them inside the browser's lifetime on both sides. Like the framework's hooks they skip
+ * scenarios tagged {@code @api}.
  */
 public class ScenarioHooks {
 
     private static final ThreadLocal<VideoRecorder> videoRecorder = new ThreadLocal<>();
 
-    private static final Method SCENARIO_METHOD;
-
-    static {
-        try {
-            SCENARIO_METHOD = ScenarioHooks.class.getDeclaredMethod("scenarioPlaceholder");
-        } catch (NoSuchMethodException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
-
-    private final ApiScenarioContext apiCtx;
-    private final UiScenarioContext uiCtx;
-
-    public ScenarioHooks(ApiScenarioContext apiCtx, UiScenarioContext uiCtx) {
-        this.apiCtx = apiCtx;
-        this.uiCtx = uiCtx;
-    }
-
-    @Before(order = 1)
-    public void setUp(Scenario scenario) {
+    @Before(value = "not @api", order = 200)
+    public void startVideo(Scenario scenario) {
         LogUtils.step("Scenario started: " + scenario.getName());
-
-        // Bind this thread to its config/pool context. No ITestContext is available
-        // in a pure Cucumber hook, so resolution falls through to env var/system
-        // property/default — matching the null-params resolution already used below.
-        String contextId = ConfigManager.resolveContextId(null);
-        ConfigManager.bindContext(contextId);
-        DriverPoolManager.bindContext(contextId);
-
-        DriverPoolManager pool = DriverPoolManager.getInstance();
-        pool.initializePool(null);
-        pool.setupDriver(SCENARIO_METHOD, null);
-        uiCtx.driver = pool.getDriver();
-
         try {
             VideoRecorder vr = new VideoRecorder();
-            vr.start(scenario.getName(), uiCtx.driver);
+            vr.start(scenario.getName(), driver());
             videoRecorder.set(vr);
         } catch (Exception e) {
             LogUtils.error("Video recording could not start for " + scenario.getName() + ": " + e.getMessage(), e);
         }
     }
 
-    @After(order = 1)
-    public void tearDown(Scenario scenario) {
+    @After(value = "not @api", order = 200)
+    public void stopVideoAndKeepEvidence(Scenario scenario) {
         VideoRecorder vr = videoRecorder.get();
         if (vr != null) {
             try {
@@ -87,17 +51,14 @@ public class ScenarioHooks {
             }
         }
 
-        if (scenario.isFailed() && uiCtx.driver != null) {
-            ScreenshotUtils.captureFailureEvidence(uiCtx.driver, "./" + ExtentReportManager.getFolderName() + "/images");
-        }
-        try {
-            DriverPoolManager.getInstance().teardownDriver(SCENARIO_METHOD, !scenario.isFailed());
-        } catch (Exception e) {
-            LogUtils.error("Driver teardown error: " + e.getMessage(), e);
+        RemoteWebDriver driver = driver();
+        if (scenario.isFailed() && driver != null) {
+            ScreenshotUtils.captureFailureEvidence(driver, "./" + ExtentReportManager.getFolderName() + "/images");
         }
         LogUtils.step("Scenario ended: " + scenario.getStatus());
     }
 
-    // Package-private — exists solely to provide a Method handle for DriverPoolManager.
-    void scenarioPlaceholder() {}
+    private static RemoteWebDriver driver() {
+        return DriverPoolManager.getInstance().getDriver();
+    }
 }

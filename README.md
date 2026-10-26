@@ -296,7 +296,7 @@ Step classes that drive the browser extend `CucumberProjectBase` (it gives them 
 @CucumberOptions(glue = {"my.step.defs", "com.framework.cucumber.api.base"})
 ```
 
-The hooks acquire a driver from the pool and open the app URL before each scenario (they fail the scenario if the URL cannot be opened), and take a failure screenshot, write the API capture and return the driver after it. They run for every scenario, so exclude API-only ones in the runner (`tags = "not @api"`). They include [API capture](#automatic-api-capture): with `apiCaptureEnabled` on, each scenario's browser calls are recorded from the very first page load into `reports/<run>/apicapture/<feature>/<scenario>_line<N>_<NN>/` (the scenario's line number tells the rows of a Scenario Outline apart). `CucumberScenarioContext` is a PicoContainer-injected shared state object — step definition classes receive it via constructor injection, eliminating static fields.
+The hooks acquire a driver from the pool and open the app URL before each scenario (they fail the scenario if the URL cannot be opened), and take a failure screenshot, write the API capture and return the driver after it. They run for every scenario except those tagged `@api`: tag an API-only scenario `@api` and no browser is acquired for it (a tag expression on the hooks themselves; `tags` on the runner would drop those scenarios from the run instead). They include [API capture](#automatic-api-capture): with `apiCaptureEnabled` on, each scenario's browser calls are recorded from the very first page load into `reports/<run>/apicapture/<feature>/<scenario>_line<N>_<NN>/` (the scenario's line number tells the rows of a Scenario Outline apart). `CucumberScenarioContext` is a PicoContainer-injected shared state object — step definition classes receive it via constructor injection, eliminating static fields.
 
 ### REST Assured API Layer
 
@@ -443,7 +443,7 @@ GitHub Actions workflows are in `.github/workflows/`:
 
 | Workflow | Trigger | What it runs |
 |---|---|---|
-| `ci.yml` | Push / PR to any branch | **Every module**: `mvn clean install` runs each module's own default suite, then the quality gates (below). Then the parallel smoke suite and the retry-engine check on `autoframex-selenium`. This is the merge gate. |
+| `ci.yml` | Push / PR to any branch | **Every module**: `mvn clean install` runs each module's own default suite, then the quality gates (below). Then the parallel smoke suite and the retry-engine check on `autoframex-selenium`, and a Cucumber lifecycle smoke (`autoframex-cucumber/testng-smoke.xml`: the hooks, a step class and the pool with a real headless Chrome, no network). This is the merge gate. |
 | `regression.yml` | Manual dispatch | Chosen via the `module` input (default `autoframex-testkit`) |
 | `sonar.yml` | Push / PR to main | Every module's tests with coverage, then Sonar analysis at the reactor root; fails if the Sonar quality gate fails |
 | `dependency-check.yml` | Weekly + manual dispatch | Reactor root (scans every module) |

@@ -68,6 +68,22 @@ jobs:
             -Djacoco.skip=true \
             -Dsurefire.reportNameSuffix=parallel-smoke
 
+      - name: Run Cucumber lifecycle smoke suite
+        # The Cucumber hooks, a step class extending CucumberProjectBase and the driver pool, with a
+        # real headless Chrome and no network: BASE_URL is a data: page the scenario reads the title of.
+        # -DfailIfNoTests=true because Cucumber merges the options of runner superclasses and a wrong
+        # feature path or tag filter selects nothing, which otherwise ends as a green run of zero tests.
+        env:
+          BASE_URL: 'data:text/html,<title>autoFrameX smoke</title>'
+        run: |
+          mvn -B -ntp test \
+            -pl autoframex-cucumber \
+            -Dtestng.suite.file=testng-smoke.xml \
+            -Dheadless=true \
+            -DfailIfNoTests=true \
+            -Djacoco.skip=true \
+            -Dsurefire.reportNameSuffix=cucumber-smoke
+
       - name: Verify retry engine (expected failures — does not gate merges)
         # RetryTest's methods are intentionally always-failing; they test the
         # RetryEngine's own retry/backoff behavior, not application regressions.

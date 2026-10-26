@@ -1,6 +1,7 @@
 package step.defs.combined;
 
 import com.api.rest.assured.base.RequestSpecBuilder;
+import com.framework.cucumber.api.base.CucumberProjectBase;
 import com.framework.utils.LogUtils;
 import com.framework.utils.ValidationUtils;
 
@@ -14,10 +15,10 @@ import step.defs.ui.UiScenarioContext;
 
 /**
  * Demonstrates multi-context PicoContainer injection.
- * Both contexts are the same instances shared with ApiSteps, UiSteps, and ScenarioHooks
- * within the same scenario.
+ * Both contexts are the same instances shared with ApiSteps and UiSteps within the same scenario;
+ * the browser comes from CucumberProjectBase.getDriver() (acquired by CucumberHooks).
  */
-public class CombinedSteps {
+public class CombinedSteps extends CucumberProjectBase {
 
     private final ApiScenarioContext apiCtx;
     private final UiScenarioContext uiCtx;
@@ -30,7 +31,7 @@ public class CombinedSteps {
     @Given("I have a valid API response and an open browser")
     public void iHaveAValidApiResponseAndAnOpenBrowser() {
         LogUtils.step("Contexts ready — API base: " + apiCtx.baseUrl
-                + " | browser: " + uiCtx.driver.getClass().getSimpleName());
+                + " | browser: " + getDriver().getClass().getSimpleName());
     }
 
     @When("I fetch post {int} from the API and navigate to its source")
@@ -42,8 +43,8 @@ public class CombinedSteps {
         apiCtx.lastResponse = apiCtx.apiClient.get(spec, "/posts/" + id);
         LogUtils.step("API GET /posts/" + id + " → HTTP " + apiCtx.lastResponse.getStatusCode());
 
-        uiCtx.driver.get(apiCtx.baseUrl);
-        uiCtx.currentPageTitle = uiCtx.driver.getTitle();
+        getDriver().get(apiCtx.baseUrl);
+        uiCtx.currentPageTitle = getDriver().getTitle();
         LogUtils.step("Browser navigated to: " + apiCtx.baseUrl
                 + " | title: " + uiCtx.currentPageTitle);
     }

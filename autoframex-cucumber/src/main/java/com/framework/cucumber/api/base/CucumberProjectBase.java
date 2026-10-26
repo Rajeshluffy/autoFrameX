@@ -42,8 +42,8 @@ import design.patterns.object.pool.DriverPoolManager;
  *
  * <h3>API-only scenarios</h3>
  * <p>Step classes that only call REST APIs and never touch the browser do not need to extend this class. Use
- * {@link CucumberScenarioContext} and let PicoContainer inject it. The hooks acquire a browser for every scenario
- * unless the scenario's tags are excluded from them in the runner ({@code tags = "not @api"}).
+ * {@link CucumberScenarioContext} and let PicoContainer inject it, and tag the scenario {@code @api}: the hooks
+ * acquire a browser for every scenario that is not tagged {@code @api}.
  *
  * @see CucumberHooks
  * @see CucumberScenarioContext

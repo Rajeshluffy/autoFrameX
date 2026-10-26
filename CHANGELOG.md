@@ -78,6 +78,14 @@ differently); read those before you upgrade. See [RELEASING.md](RELEASING.md) fo
 - The hooks now initialize the driver pool (a plain Cucumber run has no `@BeforeTest` to do it), and the pool
   accepts a null `Method` (a scenario has none): `setupDriver(null, ...)` used to throw
   `NullPointerException`. New `DriverPoolManager.isPoolInitialized()`.
+- Scenarios tagged `@api` get no browser: both hooks carry the tag expression `not @api`. The example
+  `ScenarioHooks` (video and failure evidence) now sits on top of `CucumberHooks` (order 200) instead of
+  acquiring a second browser, the example step classes extend `CucumberProjectBase`, and its contexts extend
+  `CucumberScenarioContext`.
+- CI runs a Cucumber lifecycle smoke (`autoframex-cucumber/testng-smoke.xml`, `CucumberSmokeRunner`): one
+  scenario with a real headless Chrome and a `data:` page, no network, with `-DfailIfNoTests=true` so a runner
+  that selects no scenario fails instead of passing with zero tests. A runner must not extend another runner:
+  Cucumber merges the options of superclasses.
 
 ### API module
 

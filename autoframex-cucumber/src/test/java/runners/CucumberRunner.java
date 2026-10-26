@@ -16,7 +16,9 @@ import io.cucumber.testng.CucumberOptions;
     // Surefire's cwd happened to be this module's own directory (TD-20 Stage 2,
     // 2026-07-15 — found via testng.xml failing from autoframex-testkit).
     features   = {"classpath:features"},
-    glue       = {"step.defs"},
+    // com.framework.cucumber.api.base is where CucumberHooks (the browser lifecycle) lives.
+    glue       = {"step.defs", "com.framework.cucumber.api.base"},
+    tags       = "not @smoke",
     plugin     = {"pretty"},
     monochrome = true
 )
@@ -35,6 +37,11 @@ public class CucumberRunner extends AbstractTestNGCucumberTests {
      */
     @BeforeTest(alwaysRun = true)
     public void initReportFolder(ITestContext context) {
+        configureReports(context);
+    }
+
+    /** Shared with {@link CucumberSmokeRunner}, which cannot extend this class (see there). */
+    static void configureReports(ITestContext context) {
         String suiteName = (context != null && context.getSuite() != null)
                 ? context.getSuite().getName() : null;
         ExtentReportManager.initReportInfrastructure(suiteName);

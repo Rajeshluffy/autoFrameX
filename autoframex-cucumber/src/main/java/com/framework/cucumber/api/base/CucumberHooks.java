@@ -28,6 +28,10 @@ import io.cucumber.java.Scenario;
  * {@literal @}CucumberOptions(glue = {"my.step.defs", "com.framework.cucumber.api.base"})
  * </pre>
  *
+ * <p>Both hooks skip a scenario tagged {@code @api}: an API-only scenario has no use for a browser, and acquiring
+ * one costs seconds and needs Chrome installed. (A tag expression on the hook, not {@code tags} on the runner,
+ * which would drop those scenarios from the run altogether.)
+ *
  * <p>It extends {@link CucumberProjectBase} only to reach the API-capture methods; the capture state is held per
  * thread, so the step classes' own {@code captureApis(...)} calls and these hooks see the same capture.
  */
@@ -41,7 +45,7 @@ public class CucumberHooks extends CucumberProjectBase {
      *
      * @param scenario the current Cucumber scenario (auto-injected)
      */
-    @Before(order = 100)
+    @Before(value = "not @api", order = 100)
     public void setUp(Scenario scenario) {
         logger.info("▶ @Before [Cucumber]: {}", scenario.getName());
 
@@ -96,7 +100,7 @@ public class CucumberHooks extends CucumberProjectBase {
      *
      * @param scenario the current Cucumber scenario (auto-injected)
      */
-    @After(order = 100)
+    @After(value = "not @api", order = 100)
     public void tearDown(Scenario scenario) {
         logger.info("@After [Cucumber]: {} [{}]", scenario.getName(),
                 scenario.isFailed() ? "FAILED" : "PASSED");

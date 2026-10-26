@@ -6,6 +6,7 @@ import java.util.Arrays;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import design.patterns.object.pool.DriverPoolManager;
 import io.cucumber.core.cli.Main;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -31,6 +32,32 @@ public class CucumberGlueTest {
 				"classpath:glueprobe/probe.feature" }, Thread.currentThread().getContextClassLoader());
 
 		Assert.assertEquals(status, 0, "Cucumber loaded a step class that extends CucumberProjectBase");
+	}
+
+	@Test
+	public void anApiTaggedScenarioRunsWithoutAcquiringABrowser() {
+		DriverPoolManager.bindContext(null);
+		byte status = Main.run(new String[] {
+				"--glue", "glueprobe",
+				"--glue", "com.framework.cucumber.api.base",
+				"--plugin", "null_summary",
+				"classpath:glueprobe/api_probe.feature" }, Thread.currentThread().getContextClassLoader());
+
+		Assert.assertEquals(status, 0, "the scenario ran and passed with no Chrome");
+		Assert.assertFalse(DriverPoolManager.getInstance().isPoolInitialized(),
+				"the hooks must not touch the driver pool for a scenario tagged @api");
+	}
+
+	@Test
+	public void bothHooksAreSkippedForApiScenarios() {
+		for (Method method : CucumberHooks.class.getDeclaredMethods()) {
+			if (method.isAnnotationPresent(Before.class)) {
+				Assert.assertEquals(method.getAnnotation(Before.class).value(), "not @api");
+			}
+			if (method.isAnnotationPresent(After.class)) {
+				Assert.assertEquals(method.getAnnotation(After.class).value(), "not @api");
+			}
+		}
 	}
 
 	@Test

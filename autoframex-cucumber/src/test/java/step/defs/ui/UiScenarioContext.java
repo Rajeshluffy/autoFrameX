@@ -1,14 +1,12 @@
 package step.defs.ui;
 
-import org.openqa.selenium.remote.RemoteWebDriver;
+import com.framework.cucumber.api.base.CucumberScenarioContext;
 
 /**
- * Scenario-scoped state for UI tests.
- * {@code driver} is null at construction time — ScenarioHooks @Before sets it
- * after acquiring from the pool.
+ * Scenario-scoped state for UI tests. The browser itself is not kept here: step classes extend
+ * {@code CucumberProjectBase} and ask it for {@code getDriver()}.
  */
-public class UiScenarioContext {
+public class UiScenarioContext extends CucumberScenarioContext {
 
-    public RemoteWebDriver driver;
     public String currentPageTitle;
 }
