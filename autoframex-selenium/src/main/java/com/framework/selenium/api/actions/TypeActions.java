@@ -8,7 +8,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WebDriverException;
 
 import com.framework.utils.PerfClock;
-import com.framework.utils.Reporter;
 import com.framework.utils.WaitUtils;
 
 /** Text-entry operations — extracted from {@code SeleniumBase} as part of the TD-07 composition refactor. */

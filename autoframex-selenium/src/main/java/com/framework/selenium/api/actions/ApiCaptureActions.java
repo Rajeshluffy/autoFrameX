@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import com.framework.utils.EncryptionUtils;
 import com.framework.utils.ExtentReportManager;
-import com.framework.utils.Reporter;
 
 /**
  * Records every API request the browser sends during one test invocation

@@ -8,7 +8,6 @@ import java.awt.event.KeyEvent;
 
 import org.openqa.selenium.WebElement;
 
-import com.framework.utils.Reporter;
 
 /**
  * File-upload operations — extracted from {@code SeleniumBase} as part of the

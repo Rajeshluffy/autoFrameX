@@ -5,7 +5,6 @@ import java.util.function.Supplier;
 
 import org.openqa.selenium.remote.RemoteWebDriver;
 
-import com.framework.utils.Reporter;
 
 /** Page navigation and URL/title verification — extracted from {@code SeleniumBase} as part of the TD-07 composition refactor. */
 public class NavigationActions {

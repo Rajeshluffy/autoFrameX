@@ -61,6 +61,12 @@ differently); read those before you upgrade. See [RELEASING.md](RELEASING.md) fo
 - Dependency upgrades for known vulnerabilities, SnakeYAML override fixed, Dependabot added.
 - `gitleaks` scans every push and pull request.
 
+### Environment, layering and code hygiene
+
+- **PMD gate raised from priority 2 to 4.** The 49 findings of priority 3 and 4 are fixed: unused imports, fields and parameters
+  (including five write-only fields in `RequestSpecBuilder`; its `setOauthBasePath` stored its argument in a field nothing read and
+  is now a documented, deprecated no-op), redundant `public` on interface methods, empty catch blocks, a stray semicolon.
+
 ### Dependency and plugin updates
 
 Taken from the open Dependabot pull requests, each batch built with the whole reactor and the three real-Chrome smoke

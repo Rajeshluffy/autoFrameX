@@ -246,8 +246,7 @@ public class DriverPoolManager {
 			contextThreadLocal.set(context);
 
 			// Track metadata for reporting
-			testMetadata.put(testName, new TestMetadata(browserType, url,
-					System.currentTimeMillis()));
+			testMetadata.put(testName, new TestMetadata(browserType, System.currentTimeMillis()));
 
 			logger.info(String.format("Driver ready: %s [Browser: %s, Thread: %d, ID: %d]",
 					testName, browserType, threadId,
@@ -304,7 +303,7 @@ public class DriverPoolManager {
 			RemoteWebDriver driver = context.getDriver();
 
 			// Log test result with duration
-			logTestResult(testName, passed, context);
+			logTestResult(testName, passed);
 
 			switch (teardownFor(passed, poolConfig.isCloseAfterEach())) {
 				case DISCARD_FAILED:
@@ -700,7 +699,7 @@ public class DriverPoolManager {
 		}
 	}
 
-	private void logTestResult(String testName, boolean passed, DriverContext context) {
+	private void logTestResult(String testName, boolean passed) {
 		TestMetadata metadata = testMetadata.get(testName);
 
 		if (metadata != null) {
@@ -777,12 +776,10 @@ public class DriverPoolManager {
 	 */
 	private static class TestMetadata {
 		private final String browserType;
-		private final String url;
 		private final long startTime;
 
-		TestMetadata(String browserType, String url, long startTime) {
+		TestMetadata(String browserType, long startTime) {
 			this.browserType = browserType;
-			this.url = url;
 			this.startTime = startTime;
 		}
 

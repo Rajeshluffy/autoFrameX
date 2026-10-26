@@ -91,7 +91,7 @@ public class ConfigManager {
      *               Cucumber hooks that have no TestNG XML params available)
      * @return a non-null context id
      */
-    public static String resolveContextId(java.util.Map<String, String> params) {
+    public static String resolveContextId(Map<String, String> params) {
         if (params != null) {
             String explicit = params.get("contextId");
             if (explicit != null && !explicit.isBlank()) return explicit;

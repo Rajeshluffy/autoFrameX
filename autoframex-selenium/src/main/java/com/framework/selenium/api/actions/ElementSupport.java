@@ -6,7 +6,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.framework.selenium.api.design.Locators;
-import com.framework.utils.Reporter;
 
 /**
  * Stateless helpers shared by several action classes (locator translation,

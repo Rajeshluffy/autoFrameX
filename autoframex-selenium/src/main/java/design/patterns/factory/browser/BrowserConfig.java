@@ -30,7 +30,6 @@ public @interface BrowserConfig {
 	 * @return browser type
 	 */
 	BrowserType browser() default BrowserType.CHROME;
-	;
 
 	/**
 	 * Optional URL to navigate to.

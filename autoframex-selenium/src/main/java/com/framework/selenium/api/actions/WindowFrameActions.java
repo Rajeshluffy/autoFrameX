@@ -15,7 +15,6 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.framework.selenium.api.design.Locators;
-import com.framework.utils.Reporter;
 import com.framework.utils.WaitUtils;
 
 import design.patterns.object.pool.DriverPoolManager;
@@ -143,7 +142,7 @@ public class WindowFrameActions {
 		}
 		try {
 			driver().switchTo().window(handle);
-		} catch (NoSuchWindowException e) {
+		} catch (NoSuchWindowException ignored) {
 			// closed in the meantime: nothing to go back to
 		}
 	}

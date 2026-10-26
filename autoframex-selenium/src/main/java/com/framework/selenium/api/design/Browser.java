@@ -3,7 +3,6 @@ package com.framework.selenium.api.design;
 import java.util.List;
 
 import org.openqa.selenium.NoAlertPresentException;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.NoSuchFrameException;
 import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.WebElement;
@@ -29,7 +28,7 @@ public interface Browser {
 	 * @throws com.framework.selenium.exception.ElementNotFoundException If no element is found
 	 *                                                                    or locator type is invalid.
 	 */
-	public WebElement locateElement(Locators locatorType, String value);
+	WebElement locateElement(Locators locatorType, String value);
 
 	/**
 	 * Locates an element by its ID attribute.
@@ -38,7 +37,7 @@ public interface Browser {
 	 * @throws com.framework.selenium.exception.ElementNotFoundException If no element
 	 *                                                                    with the given ID is found.
 	 */
-	public WebElement locateElement(String value);
+	WebElement locateElement(String value);
 
 	/**
 	 * Locates a single element based on a primary locator OR a secondary locator (fallback pattern).
@@ -51,7 +50,7 @@ public interface Browser {
 	 * @throws com.framework.selenium.exception.ElementNotFoundException If no element is found
 	 *                                                                    using either locator.
 	 */
-	public WebElement locateElement(Locators locatorType1, String value1, Locators locatorType2, String value2);
+	WebElement locateElement(Locators locatorType1, String value1, Locators locatorType2, String value2);
 
 
 	/**
@@ -69,13 +68,13 @@ public interface Browser {
 	 * @param element The WebElement to wait for.
 	 * @return 
 	 */
-	public  WebElement waitForClickable(WebElement element);
+	 WebElement waitForClickable(WebElement element);
 
 	/**
 	 * Wait for an element to become visible in the DOM.
 	 * @param element The WebElement to wait for.
 	 */
-	public WebElement waitForVisibility(WebElement element);
+	WebElement waitForVisibility(WebElement element);
 
 	/**
 	 * Wait for an element to appear in the DOM.
@@ -144,7 +143,7 @@ public interface Browser {
 	 * @param data- the data to be entered in alert
 	 * @throws NoAlertPresentException
 	 */
-	public void typeAlert(String data);
+	void typeAlert(String data);
 
 	// --- Window and Frame Management ---
 
@@ -160,7 +159,7 @@ public interface Browser {
 	 * @return 
 	 * @throws NoSuchWindowException
 	 */
-	public boolean switchToWindowByTitle(String title);
+	boolean switchToWindowByTitle(String title);
 
 	/**
 	 * This method will switch to the Window of interest using its url
@@ -168,13 +167,13 @@ public interface Browser {
 	 * @return 
 	 * @throws NoSuchWindowException
 	 */
-	public boolean switchToWindowByUrl(String url);
+	boolean switchToWindowByUrl(String url);
 	/**
 	 * This method will switch to the specific frame using index
 	 * @param index   - The int (frame) to be switched
 	 * @throws NoSuchFrameException 
 	 */
-	public void switchToFrame(int index);	
+	void switchToFrame(int index);	
 
 	/**
 	 * Switches to a frame using a WebElement (e.g., an iframe element).
@@ -187,7 +186,7 @@ public interface Browser {
 	 * @param idOrName   - The String (frame) to be switched
 	 * @throws NoSuchFrameException 
 	 */
-	public void switchToFrame(String idOrName);
+	void switchToFrame(String idOrName);
 
 	/**
 	 * Switches focus to a frame using the specified XPath.
@@ -221,7 +220,7 @@ public interface Browser {
 	 * @param title - The expected title of the browser
 	 * @return true if the given object represents a String equivalent to this title, false otherwise
 	 */
-	public boolean verifyTitle(String title);
+	boolean verifyTitle(String title);
 
 	/**
 	 * Captures a screenshot of the current browser state.

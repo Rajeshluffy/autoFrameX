@@ -9,7 +9,6 @@ import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
-import com.framework.utils.Reporter;
 import com.framework.utils.WaitUtils;
 
 /** Alert-handling operations — extracted from {@code SeleniumBase} as part of the TD-07 composition refactor. */

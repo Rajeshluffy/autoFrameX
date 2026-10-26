@@ -636,7 +636,7 @@ public final class WebDriverPoolFactory implements AutoCloseable {
     private void dismissAlerts(RemoteWebDriver driver) {
         try {
             driver.switchTo().alert().dismiss();
-        } catch (org.openqa.selenium.NoAlertPresentException e) {
+        } catch (org.openqa.selenium.NoAlertPresentException expected) {
             // no alert open: nothing to dismiss
         } catch (Exception e) {
             logger.debug("Alert dismissal failed: " + e.getMessage());
@@ -651,7 +651,11 @@ public final class WebDriverPoolFactory implements AutoCloseable {
             String primary = handles.iterator().next();
             for (String h : handles) {
                 if (!h.equals(primary)) {
-                    try { driver.switchTo().window(h).close(); } catch (Exception e) { /* best-effort */ }
+                    try {
+                        driver.switchTo().window(h).close();
+                    } catch (Exception e) {
+                        logger.debug("Could not close extra window {}: {}", h, e.getMessage());
+                    }
                 }
             }
             driver.switchTo().window(primary);

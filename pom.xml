@@ -51,7 +51,7 @@
 		<!-- SpotBugs gate: findings at this priority or worse fail the build (High, Medium, Low). -->
 		<spotbugs.gate.threshold>High</spotbugs.gate.threshold>
 		<!-- PMD gate: violations of this priority number or lower fail the build (1 = most serious, 5 = least). -->
-		<pmd.gate.priority>2</pmd.gate.priority>
+		<pmd.gate.priority>4</pmd.gate.priority>
 		<browser>chrome</browser>
 		<env>qa</env>
 		<headless>false</headless>
@@ -453,10 +453,10 @@
 				</executions>
 			</plugin>
 
-			<!-- PMD — a gate for serious findings: a priority 1 or 2 violation fails the build.
-			     Priority 3 to 5 (unused fields, unnecessary qualified names, ...) are still
-			     reported in the log and in target/pmd.xml but do not fail it; raise
-			     pmd.gate.priority to 3 once those are cleared. -->
+			<!-- PMD — a violation of priority 1 to 4 fails the build (priority 3 and 4 are things like unused
+			     fields, parameters and imports, empty catch blocks, unnecessary modifiers and qualified names;
+			     all were cleared and are now kept at zero). Priority 5, the lowest, is reported in the log and in
+			     target/pmd.xml but does not fail it; there is none today, and -Dpmd.gate.priority=5 gates on it too. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pmd-plugin</artifactId>

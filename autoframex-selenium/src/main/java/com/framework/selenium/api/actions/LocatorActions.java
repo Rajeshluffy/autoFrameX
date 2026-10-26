@@ -13,7 +13,6 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import com.framework.selenium.api.design.Locators;
 import com.framework.selenium.exception.ElementNotFoundException;
 import com.framework.utils.ImplicitWait;
-import com.framework.utils.Reporter;
 
 /** Element-location strategies — extracted from {@code SeleniumBase} as part of the TD-07 composition refactor. */
 public class LocatorActions implements ElementLocator {

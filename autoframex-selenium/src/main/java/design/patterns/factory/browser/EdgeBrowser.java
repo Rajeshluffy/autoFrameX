@@ -1,7 +1,5 @@
 package design.patterns.factory.browser;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.edge.EdgeDriver;
@@ -23,8 +21,6 @@ import org.openqa.selenium.remote.RemoteWebDriver;
  * @version 1.0
  */
 public class EdgeBrowser implements Browser {
-
-    private static final Logger logger = LoggerFactory.getLogger(EdgeBrowser.class);
 
     private static final EdgeBrowser INSTANCE = new EdgeBrowser(null);
 

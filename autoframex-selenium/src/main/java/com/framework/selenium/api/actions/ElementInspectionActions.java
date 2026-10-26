@@ -7,7 +7,6 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 
 import com.framework.utils.PerfClock;
-import com.framework.utils.Reporter;
 import com.framework.utils.WaitUtils;
 
 /**

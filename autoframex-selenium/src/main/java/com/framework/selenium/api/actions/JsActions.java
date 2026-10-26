@@ -6,7 +6,6 @@ import java.util.function.Supplier;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
-import com.framework.utils.Reporter;
 
 /** JavaScript-driven element operations — extracted from {@code SeleniumBase} as part of the TD-07 composition refactor. */
 public class JsActions {

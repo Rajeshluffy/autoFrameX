@@ -83,7 +83,7 @@ public abstract class CucumberProjectBase extends SeleniumBase {
      * Returns the {@link org.openqa.selenium.remote.RemoteWebDriver} bound to
      * the current thread. Safe to call from any step method.
      */
-    protected org.openqa.selenium.remote.RemoteWebDriver getDriver() {
+    protected RemoteWebDriver getDriver() {
         return getDriverManager().getDriver();
     }
 

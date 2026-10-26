@@ -5,12 +5,8 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class FireFoxBrowser implements Browser {
-
-	private static final Logger logger = LoggerFactory.getLogger(FireFoxBrowser.class);
 
 	private static final FireFoxBrowser INSTANCE = new FireFoxBrowser(null);
 

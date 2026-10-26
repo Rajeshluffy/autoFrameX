@@ -12,7 +12,6 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 
 import com.framework.selenium.api.design.Locators;
 import com.framework.utils.PerfClock;
-import com.framework.utils.Reporter;
 import com.framework.utils.WaitUtils;
 
 /**

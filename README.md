@@ -487,7 +487,7 @@ These fail the build; they are not reports:
 | Build environment | Maven older than 3.8.8, JDK older than 17, or any plugin without a pinned version | `maven-enforcer-plugin` in the root pom, runs in `validate`; compiles with `--release 17` |
 | Tests | any test of any module fails | each module runs its own default suite |
 | JaCoCo line coverage | a module drops below its floor, `jacoco.minimum.line` in that module's pom | floors sit a few points under today's coverage (api 88%, core 67%, performance 70%, security 60%, database 43%, selenium 40%, cucumber 27%). Raise a floor when coverage rises. |
-| PMD | a priority 1 or 2 violation | priority 3 to 5 are listed but do not fail; raise `pmd.gate.priority` to 3 once they are cleared (`-Dpmd.gate.priority=3` shows what that would fail on) |
+| PMD | a priority 1 to 4 violation | unused fields, parameters and imports, empty catch blocks, unnecessary modifiers: all cleared and kept at zero. Priority 5 is listed but does not fail (none today; `-Dpmd.gate.priority=5` gates on it too) |
 | SpotBugs | a High-priority finding | `-Dspotbugs.gate.threshold=Medium` also gates Medium findings (one is known: `AbstractDatabaseConnection.connect()`) |
 
 Not gates: Checkstyle (its Google config does not match this code's tabs/4-space style, so it

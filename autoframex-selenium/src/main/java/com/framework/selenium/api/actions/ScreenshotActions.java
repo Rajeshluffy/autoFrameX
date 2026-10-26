@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.function.Supplier;
 
-import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.WebDriverException;
@@ -13,7 +12,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 import com.framework.utils.ExtentReportManager;
-import com.framework.utils.Reporter;
 
 /**
  * Screenshot capture — extracted from {@code SeleniumBase} as part of the

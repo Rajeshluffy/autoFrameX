@@ -17,7 +17,6 @@ public class RequestSpecBuilder {
 
 	private String baseUri;
 	private String basePath;
-	private String oAuthBasePath;
 	private ContentType contentType;
 	private ContentType accept;
 	private Map<String, String> queryParams = new HashMap<>();
@@ -30,12 +29,8 @@ public class RequestSpecBuilder {
 	private String headerValue;
 	private String username;
 
-	private String grantType;
-	private String clientId;
-	private String clientSecret;
 	private String token;
 	private String bearerToken;
-	private String refreshToken;
 
 	private String password;
 	private RequestSpecification specification;
@@ -67,12 +62,13 @@ public class RequestSpecBuilder {
 		return this;
 	}
 	/**
-	 * 
-	 * @param oAuthBasePath
-	 * @return
+	 * Has no effect and never had: the token endpoint's path is the second argument of
+	 * {@link #setOAuth}, which is where it is used. The value was stored in a field nothing read.
+	 *
+	 * @deprecated pass the path to {@link #setOAuth} instead
 	 */
+	@Deprecated
 	public RequestSpecBuilder setOauthBasePath(String oAuthBasePath) {
-		this.oAuthBasePath = oAuthBasePath;
 		return this;
 	}
 
@@ -248,10 +244,6 @@ public class RequestSpecBuilder {
 	 */
 	public RequestSpecBuilder setOAuth(String baseUri,String oAuthBasePath,String grantType, String clientId, String clientSecret, String username, String password) {
 		this.baseUri =baseUri;
-		this.oAuthBasePath =oAuthBasePath;
-		this.grantType = grantType;
-		this.clientId = clientId;
-		this.clientSecret = clientSecret;
 		// username/password are the resource owner's credentials for the token request only. They
 		// used to be stored in the Basic-auth fields too, so build() also configured Basic auth
 		// with them next to the OAuth token.
@@ -294,10 +286,6 @@ public class RequestSpecBuilder {
 	}
 
 	public RequestSpecBuilder setBearerToken(String grantType, String clientId, String clientSecret, String refreshToken) {
-		this.grantType = grantType;
-		this.clientId = clientId;
-		this.clientSecret = clientSecret;
-		this.refreshToken= refreshToken;
 		token =	auth.refreshOAuthToken(grantType, clientId, clientSecret, refreshToken);
 		return this;
 	}
@@ -351,8 +339,6 @@ public class RequestSpecBuilder {
 		if (basePath != null) {
 			requestSpecification.basePath(basePath);
 		}
-		// oAuthBasePath is only used during token acquisition (see setOAuth()).
-		// It must NOT overwrite basePath on the main request spec.
 
 		if (contentType != null) {
 			requestSpecification.contentType(contentType);

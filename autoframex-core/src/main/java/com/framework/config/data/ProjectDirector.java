@@ -87,9 +87,9 @@ public class ProjectDirector {
 
         // ── Browser ──────────────────────────────────────────────────────────
         builder.setBrowserName(
-                resolve("browser",           testngParams, "BROWSER",          "browser",          cfg.browserType()));
+                resolve("browser",           testngParams, "BROWSER", cfg.browserType()));
         builder.setHeadless(
-                resolveBoolean("headless",   testngParams, "HEADLESS",         "headless",         cfg.headless()));
+                resolveBoolean("headless",   testngParams, "HEADLESS", cfg.headless()));
 
         // ── Application URL ───────────────────────────────────────────────────
         String appUrl = resolveUrl(testngParams, cfg);
@@ -100,73 +100,73 @@ public class ProjectDirector {
 
         // ── Timeouts ─────────────────────────────────────────────────────────
         builder.setImplicit(
-                resolveShort("implicitWait",        testngParams, "IMPLICIT_WAIT",    "implicitWait",        cfg.implicit()));
+                resolveShort("implicitWait",        testngParams, "IMPLICIT_WAIT", cfg.implicit()));
         builder.setExplicit(
-                resolveShort("explicitWait",        testngParams, "EXPLICIT_WAIT",    "explicitWait",        cfg.explicit()));
+                resolveShort("explicitWait",        testngParams, "EXPLICIT_WAIT", cfg.explicit()));
         builder.setShortWait(
-                resolveShort("shortWait",           testngParams, "SHORT_WAIT",       "shortWait",           cfg.shortWait()));
+                resolveShort("shortWait",           testngParams, "SHORT_WAIT", cfg.shortWait()));
         builder.setPollingIntervalMs(
-                resolveInt("pollingIntervalMs",     testngParams, "POLLING_INTERVAL", "pollingIntervalMs",   cfg.pollingIntervalMs()));
+                resolveInt("pollingIntervalMs",     testngParams, "POLLING_INTERVAL", cfg.pollingIntervalMs()));
         builder.setDefaultWaitTimeout(
-                resolveInt("defaultWaitTimeout",    testngParams, "DEFAULT_TIMEOUT",  "defaultWaitTimeout",  cfg.defaultWaitTimeout()));
+                resolveInt("defaultWaitTimeout",    testngParams, "DEFAULT_TIMEOUT", cfg.defaultWaitTimeout()));
         builder.setPageLoadTimeout(
-                resolveInt("pageLoadTimeout",       testngParams, "PAGE_LOAD_TIMEOUT","pageLoadTimeout",     cfg.pageLoadTimeout()));
+                resolveInt("pageLoadTimeout",       testngParams, "PAGE_LOAD_TIMEOUT", cfg.pageLoadTimeout()));
         builder.setScriptTimeout(
-                resolveInt("scriptTimeout",         testngParams, "SCRIPT_TIMEOUT",   "scriptTimeout",       cfg.scriptTimeout()));
+                resolveInt("scriptTimeout",         testngParams, "SCRIPT_TIMEOUT", cfg.scriptTimeout()));
 
         // ── Retry ─────────────────────────────────────────────────────────────
         builder.setRetryLimit(
-                resolveShort("retryLimit",          testngParams, "RETRY_LIMIT",      "retryLimit",          cfg.retry()));
+                resolveShort("retryLimit",          testngParams, "RETRY_LIMIT", cfg.retry()));
         builder.setRetryApiLimit(
-                resolveShort("retryApiLimit",      testngParams, "RETRY_API_LIMIT",  "retryApiLimit",      cfg.retryApiLimit()));
+                resolveShort("retryApiLimit",      testngParams, "RETRY_API_LIMIT", cfg.retryApiLimit()));
         builder.setRetryApiGroups(
-                resolve("retryApiGroups",          testngParams, "RETRY_API_GROUPS", "retryApiGroups",     cfg.retryApiGroups()));
+                resolve("retryApiGroups",          testngParams, "RETRY_API_GROUPS", cfg.retryApiGroups()));
         builder.setElementMaxRetryAttempts(
-                resolveInt("elementMaxRetryAttempts",testngParams,"ELEMENT_MAX_RETRY","elementMaxRetryAttempts",cfg.elementMaxRetryAttempts()));
+                resolveInt("elementMaxRetryAttempts",testngParams,"ELEMENT_MAX_RETRY", cfg.elementMaxRetryAttempts()));
 
         // ── Pool ──────────────────────────────────────────────────────────────
         builder.setPoolMaxSize(
-                resolveInt("poolMaxSize",             testngParams, "MAX_POOL_SIZE",    "poolMaxSize",             cfg.poolMaxSize()));
+                resolveInt("poolMaxSize",             testngParams, "MAX_POOL_SIZE", cfg.poolMaxSize()));
         builder.setPoolMaxIdleMinutes(
-                resolveInt("poolMaxIdleMinutes",      testngParams, "MAX_IDLE_MINUTES", "poolMaxIdleMinutes",      cfg.poolMaxIdleMinutes()));
+                resolveInt("poolMaxIdleMinutes",      testngParams, "MAX_IDLE_MINUTES", cfg.poolMaxIdleMinutes()));
         builder.setPoolMinSize(
-                resolveInt("poolMinSize",             testngParams, "MIN_POOL_SIZE",    "poolMinSize",             cfg.poolMinSize()));
+                resolveInt("poolMinSize",             testngParams, "MIN_POOL_SIZE", cfg.poolMinSize()));
         builder.setPoolBorrowTimeoutSeconds(
-                resolveInt("borrowTimeoutSeconds",    testngParams, "BORROW_TIMEOUT",   "borrowTimeoutSeconds",    cfg.poolBorrowTimeoutSeconds()));
+                resolveInt("borrowTimeoutSeconds",    testngParams, "BORROW_TIMEOUT", cfg.poolBorrowTimeoutSeconds()));
         builder.setPoolMaxReuseCount(
-                resolveInt("maxReuseCount",           testngParams, "MAX_REUSE_COUNT",  "maxReuseCount",           cfg.poolMaxReuseCount()));
+                resolveInt("maxReuseCount",           testngParams, "MAX_REUSE_COUNT", cfg.poolMaxReuseCount()));
         builder.setCloseAfterEach(
-                resolveBoolean("closeAfterEach",      testngParams, "CLOSE_AFTER_EACH", "closeAfterEach",          cfg.closeAfterEach()));
+                resolveBoolean("closeAfterEach",      testngParams, "CLOSE_AFTER_EACH", cfg.closeAfterEach()));
 
         // ── Selenium Grid ─────────────────────────────────────────────────────
         builder.setGridEnabled(
-                resolveBoolean("gridEnabled",  testngParams, "GRID_ENABLED",  "gridEnabled",  cfg.gridEnabled()));
+                resolveBoolean("gridEnabled",  testngParams, "GRID_ENABLED", cfg.gridEnabled()));
         builder.setGridHubUrl(
-                resolve("gridHubUrl",          testngParams, "GRID_HUB_URL",  "gridHubUrl",   cfg.gridHubUrl()));
+                resolve("gridHubUrl",          testngParams, "GRID_HUB_URL", cfg.gridHubUrl()));
 
         // ── Execution Mode ────────────────────────────────────────────────────
         builder.setExecutionMode(ExecutionMode.from(
-                resolve("execution.mode", testngParams, "EXECUTION_MODE", "execution.mode", "targeted")));
+                resolve("execution.mode", testngParams, "EXECUTION_MODE", "targeted")));
         builder.setExcelDataFile(
-                resolve("excel.data.file", testngParams, "EXCEL_DATA_FILE", "excel.data.file", ""));
+                resolve("excel.data.file", testngParams, "EXCEL_DATA_FILE", ""));
 
         // ── API capture (Chrome DevTools Network → Postman cURL files) ────────
         builder.setApiCaptureEnabled(
-                resolveBoolean("apiCaptureEnabled",     testngParams, "API_CAPTURE_ENABLED",      "apiCaptureEnabled",     cfg.apiCaptureEnabled()));
+                resolveBoolean("apiCaptureEnabled",     testngParams, "API_CAPTURE_ENABLED", cfg.apiCaptureEnabled()));
         builder.setApiCaptureMaskSecrets(
-                resolveBoolean("apiCaptureMaskSecrets", testngParams, "API_CAPTURE_MASK_SECRETS", "apiCaptureMaskSecrets", cfg.apiCaptureMaskSecrets()));
+                resolveBoolean("apiCaptureMaskSecrets", testngParams, "API_CAPTURE_MASK_SECRETS", cfg.apiCaptureMaskSecrets()));
 
         // ── Credentials ───────────────────────────────────────────────────────
         builder.setCredentials(
-                resolve("username",  testngParams, "APP_USERNAME", "username",  cfg.primaryUserName()),
-                resolve("password",  testngParams, "APP_PASSWORD", "password",  cfg.primaryPassword()));
+                resolve("username",  testngParams, "APP_USERNAME", cfg.primaryUserName()),
+                resolve("password",  testngParams, "APP_PASSWORD", cfg.primaryPassword()));
 
         // ── Database ──────────────────────────────────────────────────────────
         builder.setDbConfig(
-                resolve("dbUrl",      testngParams, "DB_URL",      "dbUrl",      cfg.dbUrl()),
-                resolve("dbUser",     testngParams, "DB_USERNAME", "dbUser",     cfg.dbUserName()),
-                resolve("dbPassword", testngParams, "DB_PASSWORD", "dbPassword", cfg.dbPassword()),
-                resolve("dbQuery",    testngParams, "DB_QUERY",    "dbQuery",    cfg.dbQuery()));
+                resolve("dbUrl",      testngParams, "DB_URL", cfg.dbUrl()),
+                resolve("dbUser",     testngParams, "DB_USERNAME", cfg.dbUserName()),
+                resolve("dbPassword", testngParams, "DB_PASSWORD", cfg.dbPassword()),
+                resolve("dbQuery",    testngParams, "DB_QUERY", cfg.dbQuery()));
 
         ProjectConfig config = builder.build();
         logger.info("ProjectConfig built: " + summarise(config));
@@ -195,7 +195,7 @@ public class ProjectDirector {
             ConcurrentMap<String, String> testngParams) {
 
         String className = resolve("configClass", testngParams,
-                "CONFIG_CLASS", "configClass", DEFAULT_CONFIG_CLASS);
+                "CONFIG_CLASS", DEFAULT_CONFIG_CLASS);
 
         if (DEFAULT_CONFIG_CLASS.equals(className)) {
             logger.info("No 'configClass' TestNG parameter found — using built-in AutoFrameXConfiguration. "
@@ -235,10 +235,10 @@ public class ProjectDirector {
             ProjectAppConfiguration cfg) {
 
         // Explicit URL overrides (highest priority)
-        String explicit = resolve("url", testngParams, "BASE_URL", "baseUrl", null);
+        String explicit = resolve("url", testngParams, "BASE_URL", null);
         if (explicit != null && !explicit.isEmpty()) return explicit;
 
-        String baseUrl = resolve("baseUrl", testngParams, "BASE_URL", "baseUrl", null);
+        String baseUrl = resolve("baseUrl", testngParams, "BASE_URL", null);
         if (baseUrl != null && !baseUrl.isEmpty()) return baseUrl;
 
         // Environment-based routing
@@ -315,27 +315,25 @@ public class ProjectDirector {
     // Delegate to the shared ConfigResolver (see its Javadoc) so this priority
     // chain has exactly one implementation, shared with DriverPoolManager's
     // pool-sizing resolution instead of being copy-pasted and drifting.
-    // sysPropKey is accepted for call-site compatibility but always equals
-    // testngKey in every real call in this class — ConfigResolver reuses one
-    // key for both, matching the only way this was ever actually called.
+    // ConfigResolver reuses one key for the TestNG parameter and the system property.
 
     private static String resolve(String testngKey, ConcurrentMap<String, String> params,
-            String envKey, String sysPropKey, String defaultValue) {
+            String envKey, String defaultValue) {
         return ConfigResolver.resolveString(testngKey, envKey, params, defaultValue);
     }
 
     private static boolean resolveBoolean(String testngKey, ConcurrentMap<String, String> params,
-            String envKey, String sysPropKey, boolean defaultValue) {
+            String envKey, boolean defaultValue) {
         return ConfigResolver.resolveBoolean(testngKey, envKey, params, defaultValue);
     }
 
     private static short resolveShort(String testngKey, ConcurrentMap<String, String> params,
-            String envKey, String sysPropKey, short defaultValue) {
+            String envKey, short defaultValue) {
         return ConfigResolver.resolveShort(testngKey, envKey, params, defaultValue);
     }
 
     private static int resolveInt(String testngKey, ConcurrentMap<String, String> params,
-            String envKey, String sysPropKey, int defaultValue) {
+            String envKey, int defaultValue) {
         return ConfigResolver.resolveInt(testngKey, envKey, params, defaultValue);
     }
 
