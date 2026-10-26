@@ -85,6 +85,30 @@ public class ArchitectureRulesTest {
     }
 
     /**
+     * {@code design.patterns..} (the browser factories and the driver pool) is meant to be generic infrastructure that
+     * knows nothing of any project's configuration, but its classes used to read {@code ConfigManager} directly:
+     * {@code BrowserSecurityPolicy} for the suite parameters, {@code RemoteGridBrowser} for the hub URL. Both now get
+     * what they need as data ({@code PoolConfig}, the hub URL) or through a source installed by the one class that is
+     * allowed to know both worlds, the pool's adapter {@code DriverPoolManager}. {@code ConfigResolver}, the stateless
+     * parameter / environment / system-property chain, is a utility and may be used anywhere.
+     */
+    @Test
+    public void onlyTheDriverPoolManagerAdapterMayReadTheProjectConfiguration() {
+        ArchRule rule = noClasses()
+                .that().resideInAPackage("design.patterns..")
+                .and().haveNameNotMatching("design\\.patterns\\.object\\.pool\\.DriverPoolManager.*")
+                .should().dependOnClassesThat(
+                        com.tngtech.archunit.base.DescribedPredicate.and(
+                                com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage("com.framework.config.data.."),
+                                com.tngtech.archunit.base.DescribedPredicate.not(
+                                        com.tngtech.archunit.core.domain.JavaClass.Predicates.simpleName("ConfigResolver"))))
+                .because("the browser factories and the pool are generic infrastructure; the project's configuration "
+                        + "reaches them as data or through DriverPoolManager, the single adapter between the two");
+
+        rule.check(IMPORTED_CLASSES);
+    }
+
+    /**
      * Page objects are exactly the layer where a downstream team is most likely to
      * accidentally reintroduce shared mutable state (a memoized selector, a shared
      * counter) — the same class of bug the {@code ConfigManager}/{@code DriverPoolManager}

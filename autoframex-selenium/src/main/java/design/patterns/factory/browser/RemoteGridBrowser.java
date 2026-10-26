@@ -12,7 +12,7 @@ import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
-import com.framework.config.data.ConfigManager;
+import com.framework.config.data.ConfigResolver;
 
 /**
  * Routes driver creation through a Selenium Grid hub.
@@ -27,9 +27,11 @@ import com.framework.config.data.ConfigManager;
  *       (used by {@link BrowserRegistry}'s providers, which receive it from
  *       {@code PoolConfig.getGridHubUrl()} at driver-creation time). This is
  *       the path every real test suite in this repo goes through, and it
- *       never touches {@code ConfigManager}.</li>
- *   <li>{@link #RemoteGridBrowser(String)} — no URL supplied; falls back to
- *       reading {@code ConfigManager} lazily inside {@link #launchBrowser(Capabilities)}.
+ *       never reads any configuration.</li>
+ *   <li>{@link #RemoteGridBrowser(String)} — no URL supplied; resolved inside
+ *       {@link #launchBrowser(Capabilities)} from the {@code gridHubUrl} parameter / {@code GRID_HUB_URL} /
+ *       {@code -DgridHubUrl}, else {@value #DEFAULT_HUB_URL}. Not the project's properties file: the generic
+ *       browser layer no longer reads the project configuration (that is {@code DriverPoolManager}'s job).
  *       Kept only for backward compatibility with a caller holding a raw
  *       {@code BrowserType} enum constant (whose {@code GRID_*} constants are
  *       still bound with this 1-arg constructor) and calling
@@ -52,7 +54,10 @@ public class RemoteGridBrowser implements Browser {
     /** Lower-case browser name used to select the right capability options. */
     private final String browserName;
 
-    /** Hub URL supplied at construction time; {@code null} means "resolve lazily via ConfigManager." */
+    /** The hub URL when nothing is configured (the default of {@code autoFrameX.grid.hub.url}). */
+    static final String DEFAULT_HUB_URL = "http://localhost:4444/wd/hub";
+
+    /** Hub URL supplied at construction time; {@code null} means "resolve from {@code gridHubUrl} / {@code GRID_HUB_URL}." */
     private final String gridHubUrl;
 
     public RemoteGridBrowser(String browserName) {
@@ -60,7 +65,7 @@ public class RemoteGridBrowser implements Browser {
         this.gridHubUrl = null;
     }
 
-    /** Preferred constructor — hub URL supplied directly, no {@code ConfigManager} dependency. */
+    /** Preferred constructor — hub URL supplied directly. */
     public RemoteGridBrowser(String browserName, String gridHubUrl) {
         this.browserName = browserName.toLowerCase();
         this.gridHubUrl = gridHubUrl;
@@ -74,7 +79,7 @@ public class RemoteGridBrowser implements Browser {
     @Override
     public RemoteWebDriver launchBrowser(Capabilities capabilities) {
         String hubUrl = gridHubUrl != null ? gridHubUrl
-                : ConfigManager.getInstance().getConfig().getGridHubUrl();
+                : ConfigResolver.resolveString("gridHubUrl", "GRID_HUB_URL", null, DEFAULT_HUB_URL);
         try {
             MutableCapabilities options = buildOptions();
             if (capabilities != null) {
@@ -88,7 +93,7 @@ public class RemoteGridBrowser implements Browser {
             throw new RuntimeException(
                 "Invalid Selenium Grid hub URL: '" + hubUrl + "'. "
                 + "Set autoFrameX.grid.hub.url in frameworkConfig.properties "
-                + "or pass -DgridHubUrl=<url> at runtime.", e);
+                + "(or pass -DgridHubUrl=<url> / set GRID_HUB_URL when no PoolConfig is involved).", e);
         }
     }
 

@@ -277,38 +277,9 @@ public class ProjectDirector {
         }
     }
 
-    /**
-     * The environment name: suite parameter, then the ENVIRONMENT variable, then a system property,
-     * each looked up as {@code environment} and then its short alias {@code env} (every workflow,
-     * suite XML and the Dockerfile use {@code env}); {@code dev} when nothing is set. A value that
-     * still contains {@code ${...}} is an unexpanded suite-XML placeholder (e.g. {@code ${env}}
-     * with no {@code -Denv}) and counts as not set.
-     */
+    /** The environment name; see {@link ConfigResolver#resolveEnvironment}. */
     static String resolveEnvironmentName(ConcurrentMap<String, String> params) {
-        String[] keys = { "environment", "env" };
-        if (params != null) {
-            for (String key : keys) {
-                String value = params.get(key);
-                if (isUsableEnvironment(value)) {
-                    return value.trim();
-                }
-            }
-        }
-        String fromVariable = System.getenv("ENVIRONMENT");
-        if (isUsableEnvironment(fromVariable)) {
-            return fromVariable.trim();
-        }
-        for (String key : keys) {
-            String value = System.getProperty(key);
-            if (isUsableEnvironment(value)) {
-                return value.trim();
-            }
-        }
-        return "dev";
-    }
-
-    private static boolean isUsableEnvironment(String value) {
-        return value != null && !value.isBlank() && !value.contains("${");
+        return ConfigResolver.resolveEnvironment(params);
     }
 
     // ── Type-safe resolution helpers ─────────────────────────────────────────

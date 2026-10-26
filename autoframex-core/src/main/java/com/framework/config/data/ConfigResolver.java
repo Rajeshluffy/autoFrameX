@@ -143,4 +143,56 @@ public final class ConfigResolver {
         }
         return (short) resolved;
     }
+
+    // ------------------------------------------------------------------------
+    // The environment
+    // ------------------------------------------------------------------------
+
+    /**
+     * The environment name: suite parameter, then the {@code ENVIRONMENT} variable, then a system property, each looked up
+     * as {@code environment} and then its short alias {@code env} (every workflow, suite XML and the Dockerfile use
+     * {@code env}); {@code dev} when nothing is set. A value that still contains {@code ${...}} is an unexpanded
+     * suite-XML placeholder (e.g. {@code ${env}} with no {@code -Denv}) and counts as not set.
+     *
+     * <p>This is the one place that decides it. The project configuration, the browser safety policy and the
+     * ZAP scan guard all use it; before, the browser policy understood only {@code environment}, so a run started with
+     * {@code -Denv=prod} was treated as dev there.
+     *
+     * @param params suite / test parameters, or {@code null}
+     */
+    public static String resolveEnvironment(Map<String, String> params) {
+        String[] keys = { "environment", "env" };
+        if (params != null) {
+            for (String key : keys) {
+                String value = params.get(key);
+                if (isUsableEnvironment(value)) {
+                    return value.trim();
+                }
+            }
+        }
+        String fromVariable = System.getenv("ENVIRONMENT");
+        if (isUsableEnvironment(fromVariable)) {
+            return fromVariable.trim();
+        }
+        for (String key : keys) {
+            String value = System.getProperty(key);
+            if (isUsableEnvironment(value)) {
+                return value.trim();
+            }
+        }
+        return "dev";
+    }
+
+    private static boolean isUsableEnvironment(String value) {
+        return value != null && !value.isBlank() && !value.contains("${");
+    }
+
+    /** Whether {@code environment} is production: {@code prod} or {@code production}, in any case. */
+    public static boolean isProduction(String environment) {
+        if (environment == null) {
+            return false;
+        }
+        String value = environment.trim().toLowerCase(java.util.Locale.ROOT);
+        return "prod".equals(value) || "production".equals(value);
+    }
 }

@@ -53,6 +53,15 @@ public final class BrowserRegistry {
         REGISTRY.put(id, provider);
     }
 
+    /**
+     * Installs where the browser safety settings read their suite / test parameters from (see
+     * {@code BrowserSecurityPolicy}). Called by the pool's adapter, {@code DriverPoolManager}, which is the one class
+     * that knows the project configuration; {@code null} removes it.
+     */
+    public static void useSuiteParameterSource(java.util.function.Function<String, String> source) {
+        BrowserSecurityPolicy.useSuiteParameterSource(source);
+    }
+
     /** Whether {@code id} has a registered provider. */
     public static boolean isRegistered(String id) {
         return id != null && REGISTRY.containsKey(id);

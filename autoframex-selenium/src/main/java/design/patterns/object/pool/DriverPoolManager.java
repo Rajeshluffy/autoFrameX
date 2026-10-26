@@ -81,6 +81,12 @@ public class DriverPoolManager {
 	// Initialization state tracking
 	private volatile boolean poolInitialized = false;
 
+	static {
+		// This class is the adapter between the project configuration and the generic browser factories: it tells them
+		// where the suite / test parameters of the calling thread's context are (they read it when a browser starts).
+		BrowserRegistry.useSuiteParameterSource(key -> ConfigManager.getInstance().getRuntimeOverride(key));
+	}
+
 	/**
 	 * Lazily returns the resolved framework configuration from the property file.
 	 * Using a method instead of field initializer avoids static init order issues.

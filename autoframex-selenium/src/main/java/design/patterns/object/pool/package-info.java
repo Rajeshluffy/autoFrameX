@@ -9,10 +9,11 @@
  * {@code getDriver()}/{@code getDriverManager()}.
  *
  * <p><b>Design intent:</b> this package (and {@code design.patterns.factory.browser})
- * is meant to be generic, framework-agnostic infrastructure with no knowledge of any
- * one project's configuration — in practice it still imports
- * {@code com.framework.config.data} directly (see that package's Javadoc), a known, not-yet-fully-fixed violation of
- * that intent.
+ * is generic, framework-agnostic infrastructure with no knowledge of any one project's
+ * configuration. {@code DriverPoolManager} is the single adapter that reads it
+ * ({@code ConfigManager}, {@code ProjectConfig}) and hands the rest what it needs as data
+ * ({@code PoolConfig}); {@code ArchitectureRulesTest} fails the build if any other class here depends on
+ * {@code com.framework.config.data} (the stateless {@code ConfigResolver} excepted).
  *
  * <p><b>Thread safety:</b> {@code DriverPoolManager} is bound per-thread via a
  * {@code contextId} (see {@code com.framework.config.data} package docs) so multiple

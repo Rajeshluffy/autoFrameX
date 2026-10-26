@@ -1,7 +1,6 @@
 package design.patterns.factory.browser;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
@@ -9,7 +8,6 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.framework.config.data.ConfigManager;
 import com.framework.config.data.ConfigResolver;
 
 /**
@@ -39,6 +37,22 @@ final class BrowserSecurityPolicy {
 
     /** Docker creates this file in every container's root filesystem. */
     private static final String DOCKER_ENV_MARKER = "/.dockerenv";
+
+    /**
+     * Where the suite / test parameters come from. This class sits in the generic browser-factory layer, which
+     * knows nothing of the project configuration, so the adapter ({@code DriverPoolManager}) installs a source
+     * through {@link BrowserRegistry#useSuiteParameterSource}. With none installed there are no parameters and a
+     * setting comes from its environment variable, system property or default.
+     */
+    private static volatile Function<String, String> suiteParameterSource = key -> null;
+
+    static void useSuiteParameterSource(Function<String, String> source) {
+        suiteParameterSource = source != null ? source : key -> null;
+    }
+
+    static Function<String, String> suiteParameterSource() {
+        return suiteParameterSource;
+    }
 
     private BrowserSecurityPolicy() {}
 
@@ -77,11 +91,7 @@ final class BrowserSecurityPolicy {
 
     /** {@code prod} / {@code production}, case-insensitive. */
     static boolean isProduction(String environment) {
-        if (environment == null) {
-            return false;
-        }
-        String value = environment.trim().toLowerCase(Locale.ROOT);
-        return "prod".equals(value) || "production".equals(value);
+        return ConfigResolver.isProduction(environment);
     }
 
     /**
@@ -115,14 +125,17 @@ final class BrowserSecurityPolicy {
     }
 
     private static String environment() {
-        return ConfigResolver.resolveString("environment", "ENVIRONMENT", suiteParams("environment"), "dev");
+        // Both spellings: every workflow, suite XML and the Dockerfile say "env"; this used to look only for "environment".
+        Map<String, String> params = suiteParams("environment");
+        params.putAll(suiteParams("env"));
+        return ConfigResolver.resolveEnvironment(params);
     }
 
     /** The suite/test parameters of the context bound to this thread (null-safe: none bound means none). */
     private static Map<String, String> suiteParams(String key) {
         Map<String, String> params = new HashMap<>();
         try {
-            String value = ConfigManager.getInstance().getRuntimeOverride(key);
+            String value = suiteParameterSource.apply(key);
             if (value != null) {
                 params.put(key, value);
             }

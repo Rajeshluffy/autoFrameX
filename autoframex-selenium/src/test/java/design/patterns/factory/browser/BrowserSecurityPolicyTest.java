@@ -18,7 +18,7 @@ import org.testng.annotations.Test;
  */
 public class BrowserSecurityPolicyTest {
 
-	private static final String[] PROPERTIES = {"noSandbox", "acceptInsecureCerts", "relaxedDownloads", "environment"};
+	private static final String[] PROPERTIES = {"noSandbox", "acceptInsecureCerts", "relaxedDownloads", "environment", "env"};
 
 	@AfterMethod(alwaysRun = true)
 	public void clearOverrides() {
@@ -30,6 +30,63 @@ public class BrowserSecurityPolicyTest {
 	// -------------------------------------------------------------------------
 	// the pure decisions
 	// -------------------------------------------------------------------------
+
+	@Test
+	public void aSuiteParameterSourceInstalledByTheAdapterIsConsulted() {
+		java.util.function.Function<String, String> before = BrowserSecurityPolicy.suiteParameterSource();
+		try {
+			BrowserRegistry.useSuiteParameterSource(key -> "acceptInsecureCerts".equals(key) ? "false" : null);
+
+			Assert.assertFalse(BrowserSecurityPolicy.acceptInsecureCerts(),
+					"the installed source says false, which beats the dev default of true");
+		} finally {
+			BrowserRegistry.useSuiteParameterSource(before);
+		}
+	}
+
+	@Test
+	public void withoutASourceTheSettingsComeFromTheEnvironmentAndTheDefaults() {
+		java.util.function.Function<String, String> before = BrowserSecurityPolicy.suiteParameterSource();
+		try {
+			BrowserRegistry.useSuiteParameterSource(null);   // no adapter installed: must not fail, must not guess
+
+			Assert.assertNotNull(BrowserSecurityPolicy.suiteParameterSource());
+			Assert.assertNull(BrowserSecurityPolicy.suiteParameterSource().apply("noSandbox"));
+		} finally {
+			BrowserRegistry.useSuiteParameterSource(before);
+		}
+	}
+
+	/**
+	 * The environment is chosen as {@code environment} or its short alias {@code env}, and every workflow, suite XML and the
+	 * Dockerfile use {@code env}. The policy only looked at {@code environment}, so a run started with {@code -Denv=prod}
+	 * was still treated as dev here: invalid TLS certificates accepted and download protection switched off in production.
+	 */
+	@Test
+	public void aProductionRunSelectedWithTheEnvAliasIsTreatedAsProduction() {
+		if (System.getenv("ENVIRONMENT") != null && !System.getenv("ENVIRONMENT").isBlank()) {
+			throw new org.testng.SkipException("ENVIRONMENT is set in this process");
+		}
+		System.setProperty("env", "prod");
+
+		Assert.assertFalse(BrowserSecurityPolicy.acceptInsecureCerts(), "production must not accept invalid certificates");
+		Assert.assertFalse(BrowserSecurityPolicy.relaxedDownloads(), "production keeps Chrome's download protection");
+	}
+
+	@Test
+	public void aSuiteParameterNamedEnvSelectsProductionToo() {
+		if (System.getenv("ENVIRONMENT") != null && !System.getenv("ENVIRONMENT").isBlank()) {
+			throw new org.testng.SkipException("ENVIRONMENT is set in this process");
+		}
+		java.util.function.Function<String, String> before = BrowserSecurityPolicy.suiteParameterSource();
+		try {
+			BrowserRegistry.useSuiteParameterSource(key -> "env".equals(key) ? "production" : null);
+
+			Assert.assertFalse(BrowserSecurityPolicy.acceptInsecureCerts());
+		} finally {
+			BrowserRegistry.useSuiteParameterSource(before);
+		}
+	}
 
 	@Test
 	public void anExplicitSettingAlwaysBeatsTheAutomaticDefault() {

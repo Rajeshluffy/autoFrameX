@@ -41,15 +41,14 @@ public class RemoteGridBrowserDecouplingTest {
 
 	@Test
 	public void oneArgLegacyConstructorFailsOnConnectionRefusedNotDns() {
-		RemoteGridBrowser browser = new RemoteGridBrowser("chrome"); // legacy path — reads ConfigManager
+		RemoteGridBrowser browser = new RemoteGridBrowser("chrome"); // legacy path - gridHubUrl / GRID_HUB_URL, else the default hub
 
 		Exception ex = Assert.expectThrows(Exception.class, () -> browser.launchBrowser(null));
 
 		String chain = exceptionChainClassNames(ex);
 		Assert.assertFalse(chain.contains("UnresolvedAddressException"),
-				"Legacy 1-arg constructor should resolve 'localhost' (from ConfigManager's "
-				+ "default frameworkConfig.properties value) fine and fail on connection-refused "
-				+ "instead — got a DNS failure, meaning it did NOT reach ConfigManager as expected: " + chain);
+				"Legacy 1-arg constructor should resolve 'localhost' (the default hub) fine and fail on "
+				+ "connection-refused instead - got a DNS failure: " + chain);
 	}
 
 	private static String exceptionChainClassNames(Throwable t) {

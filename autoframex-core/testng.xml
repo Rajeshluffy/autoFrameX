@@ -34,6 +34,7 @@
             <class name="com.framework.config.data.ProjectDirectorHeadlessTest"/>
             <class name="com.framework.utils.DataLibraryAccountFileTest"/>
             <class name="com.framework.config.data.ExecutionModeTest"/>
+            <class name="com.framework.config.data.ConfigResolverEnvironmentTest"/>
         </classes>
     </test>
 

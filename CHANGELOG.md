@@ -63,6 +63,16 @@ differently); read those before you upgrade. See [RELEASING.md](RELEASING.md) fo
 
 ### Environment, layering and code hygiene
 
+- **Behaviour change: a production run started with `env` is now treated as production by the browser safety policy.** The
+  environment is chosen as `environment` or its alias `env`, and every workflow, suite XML and the Dockerfile use `env`, but the
+  policy read only `environment`: with `-Denv=prod` (or an `env` suite parameter) it still saw "dev" and accepted invalid TLS
+  certificates and switched off Chrome's download protection in production. One implementation now
+  (`ConfigResolver.resolveEnvironment` / `isProduction`), used by the project configuration, the browser policy and the ZAP guard.
+- **Layering:** `design.patterns..` (browser factories and the driver pool) read the project configuration directly in three
+  classes. `BrowserSecurityPolicy` and `RemoteGridBrowser` no longer do (the policy gets a parameter source from
+  `DriverPoolManager`, the legacy `RemoteGridBrowser(String)` constructor reads `gridHubUrl` / `GRID_HUB_URL`, else the default
+  hub), and a new ArchUnit rule fails the build if any class there other than the `DriverPoolManager` adapter depends on
+  `com.framework.config.data` (`ConfigResolver`, a stateless utility, excepted).
 - **PMD gate raised from priority 2 to 4.** The 49 findings of priority 3 and 4 are fixed: unused imports, fields and parameters
   (including five write-only fields in `RequestSpecBuilder`; its `setOauthBasePath` stored its argument in a field nothing read and
   is now a documented, deprecated no-op), redundant `public` on interface methods, empty catch blocks, a stray semicolon.
