@@ -55,6 +55,13 @@
 			<groupId>io.cucumber</groupId>
 			<artifactId>cucumber-testng</artifactId>
 		</dependency>
+		<!-- Cucumber 8 needs a JSON library to write its reports and brings none: without this a runner fails in
+		     @BeforeClass with "Cucumber needs a JSON library to write reports". It used to work only because
+		     logstash-logback-encoder 9 happens to pull Jackson 3 in. -->
+		<dependency>
+			<groupId>tools.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>io.cucumber</groupId>
 			<artifactId>cucumber-picocontainer</artifactId>

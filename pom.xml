@@ -55,31 +55,33 @@
 		<browser>chrome</browser>
 		<env>qa</env>
 		<headless>false</headless>
-		<selenium.version>4.33.0</selenium.version>
+		<selenium.version>4.51.0</selenium.version>
 		<testng.version>7.7.0</testng.version>
-		<apache.poi.version>5.4.1</apache.poi.version>
+		<apache.poi.version>6.0.0</apache.poi.version>
 		<extent.report.version>5.1.2</extent.report.version>
-		<rest.assured.version>5.5.0</rest.assured.version>
+		<rest.assured.version>6.3.0</rest.assured.version>
 		<gson.version>2.11.0</gson.version>
-		<commons.io.version>2.19.0</commons.io.version>
-		<cucumber.jvm.version>7.21.1</cucumber.jvm.version>
-		<cucumber.jvm.testng.version>7.21.1</cucumber.jvm.testng.version>
-		<cucumber.picocontainer.version>7.21.1</cucumber.picocontainer.version>
-		<jackson.databind.version>2.18.0</jackson.databind.version>
+		<commons.io.version>2.22.0</commons.io.version>
+		<cucumber.jvm.version>8.0.4</cucumber.jvm.version>
+		<cucumber.jvm.testng.version>8.0.4</cucumber.jvm.testng.version>
+		<cucumber.picocontainer.version>8.0.4</cucumber.picocontainer.version>
+		<jackson.databind.version>2.22.4</jackson.databind.version>
 		<owner.version>1.0.12</owner.version>
 		<commons.lang3.version>3.20.0</commons.lang3.version>
 		<commons.compress.version>1.27.1</commons.compress.version>
 		<faker.version>1.0.2</faker.version>
 		<mysql.version>9.6.0</mysql.version>
-		<snakeyaml.version>2.6</snakeyaml.version>
+		<snakeyaml.version>2.7</snakeyaml.version>
 		<protobuf.version>4.34.1</protobuf.version>
 		<jspecify.version>1.0.0</jspecify.version>
 		<slf4j.version>2.0.17</slf4j.version>
-		<logback.version>1.5.18</logback.version>
-		<logstash.encoder.version>8.1</logstash.encoder.version>
+		<logback.version>1.6.5</logback.version>
+		<logstash.encoder.version>9.0</logstash.encoder.version>
 		<archunit.version>1.3.0</archunit.version>
-		<wiremock.version>3.9.1</wiremock.version>
+		<wiremock.version>3.13.2</wiremock.version>
 		<h2.version>2.3.232</h2.version>
+		<!-- Cucumber 8 writes its JSON and HTML reports with Jackson 3 (tools.jackson) and does not bring it: pinned to the version it is built against. -->
+		<jackson3.version>3.2.3</jackson3.version>
 		<sonar.projectKey>autoFrameX</sonar.projectKey>
 		<sonar.projectName>autoFrameX</sonar.projectName>
 		<sonar.java.source>17</sonar.java.source>
@@ -252,6 +254,11 @@
 				<version>${jspecify.version}</version>
 				<!-- matches selenium-api's own transitive need at the same version -->
 			</dependency>
+			<dependency>
+				<groupId>tools.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>${jackson3.version}</version>
+			</dependency>
 			<!-- In-memory database for the JDBC tests of autoframex-database: a real JDBC driver and SQL engine, no server. -->
 			<dependency>
 				<groupId>com.h2database</groupId>
@@ -271,32 +278,32 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-clean-plugin</artifactId>
-					<version>3.2.0</version>
+					<version>3.5.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
-					<version>3.4.0</version>
+					<version>3.5.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>3.4.2</version>
+					<version>3.5.1</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-install-plugin</artifactId>
-					<version>3.1.4</version>
+					<version>3.2.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-deploy-plugin</artifactId>
-					<version>3.1.4</version>
+					<version>3.2.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-site-plugin</artifactId>
-					<version>3.12.1</version>
+					<version>3.22.0</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -304,7 +311,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>3.6.3</version>
 				<executions>
 					<execution>
 						<id>enforce-build-environment</id>
@@ -334,7 +341,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.13.0</version>
+				<version>3.16.0</version>
 				<configuration>
 					<!-- release, not source/target: a JDK 21 machine must not let a Java 18+ API compile into a module that ships as Java 17. -->
 					<release>${java.version}</release>
@@ -345,7 +352,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.3.0</version>
+				<version>3.4.0</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -360,7 +367,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M7</version>
+				<!-- Stay below 3.6: from 3.6.0 Surefire runs TestNG on the JUnit Platform and rejects suiteXmlFiles
+				     ("Parameter suiteXmlFiles is not supported since 3.6.0"), and every module here is run from a TestNG
+				     suite XML. 3.5.x is the last line that reads them. -->
+				<version>3.5.4</version>
 				<configuration>
 					<suiteXmlFiles>
 						<suiteXmlFile>${testng.suite.file}</suiteXmlFile>
@@ -376,7 +386,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.12</version>
+				<version>0.8.15</version>
 				<executions>
 					<execution>
 						<id>prepare-agent</id>
@@ -428,7 +438,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>3.6.0</version>
 				<configuration>
 					<configLocation>google_checks.xml</configLocation>
 					<failOnViolation>false</failOnViolation>
@@ -450,7 +460,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pmd-plugin</artifactId>
-				<version>3.26.0</version>
+				<version>3.28.0</version>
 				<configuration>
 					<failOnViolation>true</failOnViolation>
 					<failurePriority>${pmd.gate.priority}</failurePriority>
@@ -474,7 +484,8 @@
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
-				<version>4.8.6.6</version>
+				<!-- 4.10.4.0 and later require Maven 3.8.9; this build allows 3.8.8 (see the enforcer rule below). -->
+				<version>4.10.3.0</version>
 				<configuration>
 					<failOnError>true</failOnError>
 					<threshold>${spotbugs.gate.threshold}</threshold>
@@ -495,7 +506,7 @@
 			<plugin>
 				<groupId>org.owasp</groupId>
 				<artifactId>dependency-check-maven</artifactId>
-				<version>10.0.4</version>
+				<version>13.0.0</version>
 				<configuration>
 					<failBuildOnCVSS>9</failBuildOnCVSS>
 					<formats>

@@ -9,6 +9,14 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 10
+    ignore:
+      # Surefire 3.6+ cannot run a TestNG suite XML file, which every module here uses (see the comment on the
+      # plugin in the root pom). Without this Dependabot reopens the same breaking update every week.
+      - dependency-name: "org.apache.maven.plugins:maven-surefire-plugin"
+        versions: [">=3.6.0"]
+      # 4.10.4.0 and later need Maven 3.8.9; the build supports 3.8.8 (enforcer rule in the root pom).
+      - dependency-name: "com.github.spotbugs:spotbugs-maven-plugin"
+        versions: [">=4.10.4.0"]
     groups:
       selenium:
         patterns: ["org.seleniumhq.selenium:*"]

@@ -43,14 +43,14 @@ A shared, enterprise-grade test automation framework built on Selenium 4, TestNG
 
 | Layer | Library | Version |
 |---|---|---|
-| Browser automation | Selenium Java | 4.33.0 |
+| Browser automation | Selenium Java | 4.51.0 |
 | Test runner | TestNG | 7.7.0 |
-| BDD | Cucumber JVM + PicoContainer | 7.21.1 |
-| API testing | REST Assured | 5.5.0 |
+| BDD | Cucumber JVM + PicoContainer | 8.0.4 |
+| API testing | REST Assured | 6.3.0 |
 | Reporting | ExtentReports | 5.1.2 |
-| Data | Apache POI, JavaFaker, SnakeYAML | 5.4.1 / 1.0.2 / 2.6 |
-| JSON | Jackson Databind, Gson | 2.18.0 / 2.11.0 |
-| Logging | SLF4J + Logback + Logstash encoder | 2.0.17 / 1.5.18 / 8.1 |
+| Data | Apache POI, JavaFaker, SnakeYAML | 6.0.0 / 1.0.2 / 2.7 |
+| JSON | Jackson Databind, Gson | 2.22.4 / 2.11.0 |
+| Logging | SLF4J + Logback + Logstash encoder | 2.0.17 / 1.6.5 / 9.0 |
 | Database | MySQL Connector/J | 9.6.0 |
 | Security | OWASP ZAP (via ZapSecurityUtils) | — |
 | Video | WebDriver screenshots + FFmpeg (system binary) | — |

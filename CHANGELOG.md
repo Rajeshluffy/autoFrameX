@@ -61,6 +61,26 @@ differently); read those before you upgrade. See [RELEASING.md](RELEASING.md) fo
 - Dependency upgrades for known vulnerabilities, SnakeYAML override fixed, Dependabot added.
 - `gitleaks` scans every push and pull request.
 
+### Dependency and plugin updates
+
+Taken from the open Dependabot pull requests, each batch built with the whole reactor and the three real-Chrome smoke
+suites before the next. Some needed more than the version number:
+
+- **Cucumber 7.21.1 to 8.0.4 needs a JSON library and brings none.** Dependabot's own branch failed because the runner's JSON
+  report could not be written ("Cucumber needs a JSON library to write reports"). It only passed here by accident, through
+  Jackson 3 arriving transitively from `logstash-logback-encoder` 9. `autoframex-cucumber` now declares
+  `tools.jackson.core:jackson-databind` (3.2.3, the version Cucumber is built against) itself. Recreated both ways: without the
+  declaration and with Logstash 8.1 the smoke suite fails with that message; with it, it passes. Report files are valid.
+- **Surefire stays below 3.6.** From 3.6.0 Surefire runs TestNG on the JUnit Platform and rejects `suiteXmlFiles`, and every
+  module runs from a suite XML. Pinned to 3.5.4 (from 3.0.0-M7); Dependabot is told to ignore 3.6 and later.
+- **SpotBugs plugin stays at 4.10.3.0.** 4.10.4.0 and later need Maven 3.8.9; this build supports 3.8.8. Dependabot is told to ignore them.
+- Updated: Selenium 4.33.0 to 4.51.0, REST Assured 5.5.0 to 6.3.0, Apache POI 5.4.1 to 6.0.0, Logback 1.5.18 to 1.6.5, Logstash
+  encoder 8.1 to 9.0, Jackson 2.18.0 to 2.22.4, SnakeYAML 2.6 to 2.7, commons-io 2.19.0 to 2.22.0, WireMock 3.9.1 to 3.13.2;
+  the Maven plugins (compiler 3.16.0, enforcer 3.6.3, JaCoCo 0.8.15, PMD 3.28.0, Checkstyle 3.6.0, clean/resources/jar/install/deploy/site);
+  and the GitHub Actions (checkout 7, setup-java 6, upload-artifact 7, setup-chrome 2, gitleaks-action 3).
+- Not verified: OWASP Dependency-Check 10.0.4 to 13.0.0 (it is not part of the build and needs the NVD feed; run
+  `mvn dependency-check:check` once before relying on the weekly workflow).
+
 ### CI
 
 - `sonar.yml` is skipped, with a notice and a job summary, when the `SONAR_TOKEN` and `SONAR_HOST_URL` secrets are not both
