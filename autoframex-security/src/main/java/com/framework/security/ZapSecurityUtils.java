@@ -17,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 
+import com.framework.config.data.ConfigResolver;
+
 import io.restassured.RestAssured;
 import io.restassured.config.HttpClientConfig;
 import io.restassured.config.RestAssuredConfig;
@@ -178,9 +180,14 @@ public final class ZapSecurityUtils {
      * Starts an active scan against {@code targetUrl} and returns the scan ID.
      * Pass the scan ID to {@link #waitForActiveScanComplete} before reading results.
      *
-     * @throws IllegalStateException if ZAP rejects the request or returns no scan id
+     * <p>Refused when the environment is production, unless {@code zap.allow.production.scan=true}
+     * (env {@code ZAP_ALLOW_PRODUCTION_SCAN}): an active scan sends attack traffic at the target.
+     *
+     * @throws IllegalStateException if the environment is production and the scan was not explicitly allowed, or if
+     *                               ZAP rejects the request or returns no scan id
      */
     public static String startActiveScan(String zapBaseUrl, String targetUrl) {
+        requireActiveScanAllowed(targetUrl);
         String scanId = zapGet(zapBaseUrl, "/JSON/ascan/action/scan/",
                 "url", targetUrl, "recurse", "true").getString("scan");
         if (scanId == null || scanId.isBlank()) {
@@ -344,6 +351,41 @@ public final class ZapSecurityUtils {
     // =========================================================================
     // HELPERS
     // =========================================================================
+
+    /**
+     * An active scan is an attack on {@code targetUrl}: SQL injection and XSS probes, fuzzing, forced browsing. A
+     * pipeline whose environment variable was left on production would run it against production, so it needs a
+     * deliberate, named switch. The passive scan only observes traffic and is not restricted.
+     */
+    static void requireActiveScanAllowed(String targetUrl) {
+        String environment = ConfigResolver.resolveEnvironment(runtimeEnvironmentParameters());
+        if (!ConfigResolver.isProduction(environment)) {
+            return;
+        }
+        if (ConfigResolver.resolveBoolean("zap.allow.production.scan", "ZAP_ALLOW_PRODUCTION_SCAN", null, false)) {
+            logger.warn("Active scan of {} in the {} environment, allowed by zap.allow.production.scan", targetUrl, environment);
+            return;
+        }
+        throw new IllegalStateException("Refusing to run a ZAP active scan against " + targetUrl + ": the environment is '"
+                + environment + "' (production). An active scan sends attack traffic at the target. Run it against dev or "
+                + "qa, or, if production really is meant, set zap.allow.production.scan=true (or ZAP_ALLOW_PRODUCTION_SCAN=true).");
+    }
+
+    /** The environment parameters of the context bound to this thread, if any. */
+    private static Map<String, String> runtimeEnvironmentParameters() {
+        Map<String, String> params = new LinkedHashMap<>();
+        try {
+            for (String key : new String[] { "environment", "env" }) {
+                String value = com.framework.config.data.ConfigManager.getInstance().getRuntimeOverride(key);
+                if (value != null) {
+                    params.put(key, value);
+                }
+            }
+        } catch (RuntimeException e) {
+            logger.debug("No suite parameters available for the environment: {}", e.toString());
+        }
+        return params;
+    }
 
     private static String startSpider(String zapBaseUrl, String targetUrl) {
         zapGet(zapBaseUrl, "/JSON/pscan/action/enableAllScanners/");

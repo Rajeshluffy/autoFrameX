@@ -322,6 +322,7 @@ These are explicit, opt-in, and SLA-asserting — call them yourself when you ne
 
 - `@BeforeSuite` verifies ZAP is reachable (a warning, not a failure, if it is not)
 - Start ZAP with an API key and give the tests the same one (`-Dzap.api.key=...` or `ZAP_API_KEY`); it is sent as an `X-ZAP-API-Key` header, never in a URL. `-config api.disablekey=true` still works but lets anyone who can reach the port control ZAP
+- An active scan (`runActiveScan`, `ZapSecurityUtils.startActiveScan`) is refused when the environment is production (`prod` / `production`, as `environment` or `env`): it sends attack traffic at the target. `-Dzap.allow.production.scan=true` (or `ZAP_ALLOW_PRODUCTION_SCAN=true`) is the explicit, named override; a passive scan is not restricted
 - A security suite starts no browser: `SecurityTestBase` overrides the inherited `@BeforeTest` that would pre-warm Chrome
 - `InputSanitizer.containsSqlInjection` / `containsXss` report statement-shaped SQL and real markup and event-handler payloads, not the bare words "select" or "update"; `sanitize` also escapes line breaks so a value cannot forge a log line
 - `@AfterSuite` generates an HTML report into `reports/zap/`

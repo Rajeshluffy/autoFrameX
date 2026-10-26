@@ -334,6 +334,74 @@ public class ZapSecurityUtilsTest {
 		}
 	}
 
+	/**
+	 * An active scan sends attack traffic at the target: SQL injection and XSS probes, fuzzing, forced browsing. Run against
+	 * a production URL by a pipeline whose environment variable was left on prod, that is an attack on production. It must
+	 * be refused unless somebody says, explicitly and by name, that production is meant.
+	 */
+	@Test
+	public void anActiveScanIsRefusedWhenTheEnvironmentIsProduction() {
+		requireNoEnvironmentVariable();
+		on("/JSON/ascan/action/scan/", 200, "{\"scan\":\"7\"}");
+		System.setProperty("environment", "production");
+		try {
+			IllegalStateException refused = Assert.expectThrows(IllegalStateException.class,
+					() -> ZapSecurityUtils.startActiveScan(zap, "https://app.example"));
+
+			Assert.assertTrue(refused.getMessage().contains("production") && refused.getMessage().contains("zap.allow.production.scan"),
+					"the message names the cause and the switch: " + refused.getMessage());
+			Assert.assertNull(hits.get("/JSON/ascan/action/scan/"), "ZAP was never asked to scan");
+		} finally {
+			System.clearProperty("environment");
+		}
+	}
+
+	@Test
+	public void theEnvAliasIsRefusedToo() {
+		requireNoEnvironmentVariable();
+		on("/JSON/ascan/action/scan/", 200, "{\"scan\":\"7\"}");
+		System.setProperty("env", "prod");
+		try {
+			Assert.expectThrows(IllegalStateException.class, () -> ZapSecurityUtils.startActiveScan(zap, "https://app.example"));
+		} finally {
+			System.clearProperty("env");
+		}
+	}
+
+	@Test
+	public void anActiveScanOfProductionRunsOnlyWithTheExplicitSwitch() {
+		requireNoEnvironmentVariable();
+		on("/JSON/ascan/action/scan/", 200, "{\"scan\":\"7\"}");
+		System.setProperty("environment", "prod");
+		System.setProperty("zap.allow.production.scan", "true");
+		try {
+			Assert.assertEquals(ZapSecurityUtils.startActiveScan(zap, "https://app.example"), "7");
+		} finally {
+			System.clearProperty("environment");
+			System.clearProperty("zap.allow.production.scan");
+		}
+	}
+
+	@Test
+	public void aPassiveScanIsNotRestrictedInProduction() {
+		requireNoEnvironmentVariable();
+		on("/JSON/pscan/action/enableAllScanners/", 200, "{\"Result\":\"OK\"}");
+		on("/JSON/spider/action/scan/", 200, "{\"scan\":\"3\"}");
+		System.setProperty("environment", "prod");
+		try {
+			ZapSecurityUtils.startPassiveScan(zap, "https://app.example");   // observing traffic is not attacking it
+		} finally {
+			System.clearProperty("environment");
+		}
+	}
+
+	private static void requireNoEnvironmentVariable() {
+		String variable = System.getenv("ENVIRONMENT");
+		if (variable != null && !variable.isBlank()) {
+			throw new org.testng.SkipException("ENVIRONMENT is set in this process");
+		}
+	}
+
 	@Test
 	public void theApiKeyIsSentAsAHeaderNotInTheUrl() {
 		queueEmpty();

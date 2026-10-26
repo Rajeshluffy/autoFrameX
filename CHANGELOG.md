@@ -68,6 +68,7 @@ differently); read those before you upgrade. See [RELEASING.md](RELEASING.md) fo
   policy read only `environment`: with `-Denv=prod` (or an `env` suite parameter) it still saw "dev" and accepted invalid TLS
   certificates and switched off Chrome's download protection in production. One implementation now
   (`ConfigResolver.resolveEnvironment` / `isProduction`), used by the project configuration, the browser policy and the ZAP guard.
+- **Behaviour change: a ZAP active scan is refused in production** unless `zap.allow.production.scan=true`; see the README.
 - **Layering:** `design.patterns..` (browser factories and the driver pool) read the project configuration directly in three
   classes. `BrowserSecurityPolicy` and `RemoteGridBrowser` no longer do (the policy gets a parameter source from
   `DriverPoolManager`, the legacy `RemoteGridBrowser(String)` constructor reads `gridHubUrl` / `GRID_HUB_URL`, else the default
