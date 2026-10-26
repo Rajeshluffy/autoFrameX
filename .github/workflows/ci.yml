@@ -84,6 +84,19 @@ jobs:
             -Djacoco.skip=true \
             -Dsurefire.reportNameSuffix=cucumber-smoke
 
+      - name: Run performance browser smoke suite
+        # PerformanceTestBase measuring a page in a real headless Chrome (a data: page, no network):
+        # openBrowser, measurePageLoad, and the browser returned to the pool afterwards.
+        # -DfailIfNoTests=true so a suite that selects nothing fails instead of passing with zero tests.
+        run: |
+          mvn -B -ntp test \
+            -pl autoframex-performance \
+            -Dtestng.suite.file=testng-smoke.xml \
+            -Dheadless=true \
+            -DfailIfNoTests=true \
+            -Djacoco.skip=true \
+            -Dsurefire.reportNameSuffix=performance-smoke
+
       - name: Verify retry engine (expected failures — does not gate merges)
         # RetryTest's methods are intentionally always-failing; they test the
         # RetryEngine's own retry/backoff behavior, not application regressions.

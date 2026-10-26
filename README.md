@@ -312,6 +312,8 @@ The hooks acquire a driver from the pool and open the app URL before each scenar
 
 To tune thresholds without failing builds, run with `-Dperformance.sla.enforce=false`: breaches are then only logged.
 
+`PerformanceTestBase` starts no browser (and does not even start the browser pool) for API tests. A page test asks for one with `openBrowser(url)`, then calls `measurePageLoad` / `getPageTimingMetrics`; the browser goes back to the pool when the test ends. A load test's result keeps up to five distinct failure reasons (`HTTP 401`, `ConnectException: Connection refused`) next to the failure rate.
+
 These are explicit, opt-in, and SLA-asserting — call them yourself when you need a hard pass/fail threshold on one specific call. For passive, always-on timing visibility across every UI/API operation with no code changes, see [Automatic Performance Capture](#automatic-performance-capture) below.
 
 ### Security Module

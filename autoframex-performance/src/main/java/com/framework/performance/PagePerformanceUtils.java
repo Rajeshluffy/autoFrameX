@@ -2,7 +2,6 @@ package com.framework.performance;
 
 import java.util.Map;
 
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +24,6 @@ public final class PagePerformanceUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(PagePerformanceUtils.class);
 
-    private static final String DOM_CONTENT_LOADED_SCRIPT =
-        "return window.performance.timing.domContentLoadedEventEnd - window.performance.timing.navigationStart;";
-
     private PagePerformanceUtils() {}
 
     /**
@@ -41,11 +37,12 @@ public final class PagePerformanceUtils {
     }
 
     /**
-     * Returns the time to DOMContentLoaded in milliseconds.
+     * Returns the time to DOMContentLoaded in milliseconds, or 0 if the page has not reached it yet. Read from the
+     * same guarded metrics as everything else here; it used to carry its own copy of the arithmetic, which
+     * returned about -1.8 trillion before DOMContentLoaded.
      */
     public static long getDomContentLoadedMs(RemoteWebDriver driver) {
-        Object result = ((JavascriptExecutor) driver).executeScript(DOM_CONTENT_LOADED_SCRIPT);
-        long ms = result instanceof Number ? ((Number) result).longValue() : 0L;
+        long ms = PageTimingSupport.getFullTimingMetrics(driver).getOrDefault("domContentLoaded", 0L);
         logger.debug("DOMContentLoaded time: {} ms", ms);
         return ms;
     }

@@ -40,6 +40,13 @@ public class PagePerformanceUtilsDelegationTest {
 		Assert.assertEquals(viaPerformanceUtils.get("connectEnd"), Long.valueOf(0L));
 	}
 
+	@Test
+	public void getDomContentLoadedMsUsesTheSharedGuardedScriptToo() {
+		// It carried its own copy of the arithmetic, without the guard: before DOMContentLoaded it returned about
+		// -1.8 trillion. It now reads the same metrics as everything else.
+		Assert.assertEquals(PagePerformanceUtils.getDomContentLoadedMs(new FakeTimingDriver()), 163L);
+	}
+
 	/**
 	 * Session-less fake driver whose {@code executeScript} distinguishes the two
 	 * Navigation Timing scripts by a substring only the full-metrics script

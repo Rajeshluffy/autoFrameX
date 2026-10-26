@@ -2,16 +2,21 @@ package com.framework.performance;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.slf4j.LoggerFactory;
 import org.testng.ITestContext;
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeTest;
 
 import com.api.design.ResponseAPI;
+import com.framework.config.data.ConfigManager;
 import com.framework.observability.ResourceUsageAccumulator;
 import com.framework.testng.api.base.ProjectSpecificMethods;
 import com.framework.utils.FakerDataFactory;
@@ -23,7 +28,8 @@ import com.framework.utils.ValidationUtils;
  *
  * <h3>What this provides</h3>
  * <ul>
- *   <li>Skips WebDriver acquisition — performance tests call APIs directly.</li>
+ *   <li>Starts no browser by default — performance tests call APIs directly. A test that measures a page asks
+ *       for one with {@link #openBrowser(String)}; the browser pool is not even started until then.</li>
  *   <li>{@link #measureApi} — times a single API call and checks an SLA threshold.</li>
  *   <li>{@link #measurePageLoad} — reads Navigation Timing from a live browser page.</li>
  *   <li>{@link #runLoadTest} — concurrent load test with P95/P99 statistics.</li>
@@ -61,18 +67,84 @@ public abstract class PerformanceTestBase extends ProjectSpecificMethods {
     private static final Logger logger = LoggerFactory.getLogger(PerformanceTestBase.class);
 
     // =========================================================================
-    // METHOD LIFECYCLE — skip WebDriver
+    // METHOD LIFECYCLE — no WebDriver unless the test asks for one
     // =========================================================================
+
+    /** The test method this thread is running, for {@link #openBrowser}; set in {@code preCondition}. */
+    private static final ThreadLocal<Method> CURRENT_METHOD = new ThreadLocal<>();
+    /** Whether this thread's test opened a browser and so has one to return in {@code postCondition}. */
+    private static final ThreadLocal<Boolean> BROWSER_OPENED = new ThreadLocal<>();
+
+    /**
+     * Does not start the browser pool. {@code SeleniumBase.initDriverPool} is a {@code @BeforeTest} every
+     * subclass inherits, and it pre-warms the pool's minimum number of real browsers (two Chrome windows by
+     * default): an API performance suite would need Chrome installed and pay the start-up for nothing. The pool
+     * starts on the first {@link #openBrowser(String)}.
+     */
+    @Override
+    @BeforeTest(alwaysRun = true)
+    public synchronized void initDriverPool(ITestContext context) {
+        logger.info("PerformanceTestBase: not starting the browser pool (openBrowser() starts it when a test needs one)");
+    }
 
     @Override
     @BeforeMethod(alwaysRun = true)
     public void preCondition(Method method, ITestContext context, Object[] parameters) {
-        logger.info("PerformanceTestBase: skipping driver setup for {}", method.getName());
+        logger.info("PerformanceTestBase: no browser for {} unless it calls openBrowser()", method.getName());
+        CURRENT_METHOD.set(method);
+        // Same re-binding the TestNG base does: under parallel execution this runs on a worker thread that has
+        // no config or pool context of its own yet.
+        String contextId = ConfigManager.resolveContextId(extractSuiteParameters(context));
+        ConfigManager.bindContext(contextId);
+        design.patterns.object.pool.DriverPoolManager.bindContext(contextId);
+    }
+
+    /**
+     * Opens a browser on {@code url} for the current test, for {@link #measurePageLoad} and
+     * {@link #getPageTimingMetrics}. It is returned to the pool when the test ends. Call it once per test.
+     *
+     * @param url the page to load, or {@code null} for the configured application URL
+     * @return the browser (also available as {@code getDriver()})
+     */
+    protected RemoteWebDriver openBrowser(String url) {
+        design.patterns.object.pool.DriverPoolManager pool = getDriverManager();
+        if (!pool.isPoolInitialized()) {
+            pool.initializePool(null);
+        }
+        ConcurrentMap<String, String> params = new ConcurrentHashMap<>();
+        if (url != null && !url.isBlank()) {
+            params.put("url", url);
+        }
+        pool.setupDriver(CURRENT_METHOD.get(), params);
+        BROWSER_OPENED.set(Boolean.TRUE);
+        return getDriver();
+    }
+
+    /** The test's browser, or a message that says how to get one. */
+    private RemoteWebDriver requireBrowser(String why) {
+        try {
+            return getDriver();
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException(why + " needs a browser, and PerformanceTestBase does not start one for "
+                    + "API tests. Call openBrowser(url) first.", e);
+        }
     }
 
     @Override
     @AfterMethod(alwaysRun = true)
     public void postCondition(Method method, ITestResult result) {
+        try {
+            if (Boolean.TRUE.equals(BROWSER_OPENED.get())) {
+                try {
+                    getDriverManager().teardownDriver(method, result.isSuccess());
+                } catch (Exception e) {
+                    logger.error("Teardown error for {}: {}", method.getName(), e.getMessage());
+                }
+            }
+        } finally {
+            BROWSER_OPENED.remove();
+            CURRENT_METHOD.remove();
+        }
         FakerDataFactory.cleanup();
         // Reporter.tearDownTest runs next as an inherited @AfterMethod; calling it here as well
         // published every test twice.
@@ -143,15 +215,15 @@ public abstract class PerformanceTestBase extends ProjectSpecificMethods {
      * Reads the full page load time from the browser's Navigation Timing API
      * and checks it against {@code slaMs}.
      *
-     * <p>Requires a live WebDriver with a fully loaded page — call this after
-     * navigating to the page under test.
+     * <p>Requires a browser with a fully loaded page: call {@link #openBrowser(String)} first (this class starts
+     * none for API tests).
      *
      * @param pageName human-readable page label for the log message
      * @param slaMs    SLA threshold in milliseconds
      * @return actual page load time in milliseconds
      */
     protected long measurePageLoad(String pageName, long slaMs) {
-        long actual = PagePerformanceUtils.getPageLoadTimeMs(getDriver());
+        long actual = PagePerformanceUtils.getPageLoadTimeMs(requireBrowser("measurePageLoad"));
         if (actual <= 0) {
             throw new AssertionError("[" + pageName + " page load] was not measured: the browser reports no load "
                     + "time (loadEventEnd is 0, the page has not finished loading), which would otherwise "
@@ -167,7 +239,7 @@ public abstract class PerformanceTestBase extends ProjectSpecificMethods {
      * {@code responseEnd}, {@code connectEnd}.
      */
     protected Map<String, Long> getPageTimingMetrics() {
-        return PagePerformanceUtils.getFullTimingMetrics(getDriver());
+        return PagePerformanceUtils.getFullTimingMetrics(requireBrowser("getPageTimingMetrics"));
     }
 
     // =========================================================================

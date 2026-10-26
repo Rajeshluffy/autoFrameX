@@ -109,6 +109,21 @@ differently); read those before you upgrade. See [RELEASING.md](RELEASING.md) fo
   position scanned to the end); lengths are now bounded. A repeated group in the new `InputSanitizer` pattern
   overflowed the stack on 30,000 columns; it is bounded too, and both have hostile-input tests.
 
+### Performance
+
+- **`PerformanceTestBase` could not measure a page.** It skips browser acquisition for API tests, and gave a page test no
+  way to get one: `measurePageLoad` failed with "No WebDriver available. Ensure @BeforeMethod executed", which it never
+  would. New `openBrowser(url)` (starts the pool on first use, returns the browser to it when the test ends);
+  `measurePageLoad` and `getPageTimingMetrics` say to call it when there is no browser.
+- **Behaviour change:** an API performance suite no longer pre-warms two real Chrome browsers it never uses (the inherited
+  `@BeforeTest`), so it no longer needs Chrome installed. A page test that relied on that must call `openBrowser`.
+- **Navigation Timing reported about -1.8 trillion while a page was still loading** (`0 - navigationStart`), against a
+  Javadoc that promised 0, in `getPageLoadTimeMs`, `getFullTimingMetrics` (which the automatic page-load report line also
+  uses) and `getDomContentLoadedMs` (which carried its own unguarded copy). A timing not reached yet is now 0, never
+  negative. Checked in real Chrome (`PageTimingSupportBrowserTest`).
+- A load test keeps up to five distinct failure reasons, so "100% failed" says why (`LoadTestResult.getFailureSamples()`).
+- CI runs a performance browser smoke (`autoframex-performance/testng-smoke.xml`), with `-DfailIfNoTests=true`.
+
 ### API module
 
 - Shared token cache, `ApiRequest`, typed responses, `ApiAssertions`, safe-call retries, cURL repro, cleanup

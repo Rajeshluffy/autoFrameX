@@ -1,0 +1,16 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+    Performance module smoke suite: PerformanceTestBase measuring a page in a real headless Chrome, with no network
+    and no application (a data: page). Not part of the default suite (testng-ci.xml) because it needs Chrome;
+    ci.yml runs it:
+
+        mvn test -pl autoframex-performance -Dtestng.suite.file=testng-smoke.xml -Dheadless=true -Djacoco.skip=true
+-->
+<suite name="autoframex-performance Browser Smoke" verbose="1" parallel="none">
+    <test name="Page measurement in a real browser">
+        <classes>
+            <class name="com.framework.performance.PerformanceBrowserSmokeTest"/>
+        </classes>
+    </test>
+</suite>

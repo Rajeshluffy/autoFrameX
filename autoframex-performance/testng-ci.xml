@@ -10,10 +10,8 @@
     framework-3.1 automatic performance-capture refactor) rather than
     duplicating the Navigation Timing JS.
 
-    Not currently wired into the root .github/workflows/ci.yml — that
-    workflow only runs autoframex-selenium's testng-ci.xml today. Run
-    manually with:
-        mvn -pl autoframex-performance test -Dtestng.suite.file=testng-ci.xml
+    This is the module's default suite, so the reactor build in ci.yml runs it. The one test that needs a
+    real browser is in testng-smoke.xml, which ci.yml runs as its own step.
 -->
 <suite name="autoFrameX Performance CI Suite" verbose="1" parallel="none">
 
@@ -21,6 +19,8 @@
         <classes>
             <class name="com.framework.performance.PagePerformanceUtilsDelegationTest"/>
             <class name="com.framework.performance.PerformanceAssertionsAreHonestTest"/>
+            <class name="com.framework.performance.PerformanceTestBaseLifecycleTest"/>
+            <class name="com.framework.performance.LoadTestFailureReasonTest"/>
         </classes>
     </test>
 

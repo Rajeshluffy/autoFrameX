@@ -34,4 +34,11 @@
         </classes>
     </test>
 
+    <!-- Real Chrome, no network: JavaScript can only be checked in a browser. Each method launches its own. -->
+    <test name="Navigation Timing in a real browser">
+        <classes>
+            <class name="com.framework.selenium.api.actions.PageTimingSupportBrowserTest"/>
+        </classes>
+    </test>
+
 </suite>

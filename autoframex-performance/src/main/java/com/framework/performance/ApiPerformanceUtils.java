@@ -3,6 +3,7 @@ package com.framework.performance;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +28,10 @@ public final class ApiPerformanceUtils {
 
     /** How long after the deadline workers may take to finish their last call before they are interrupted. */
     static final long DEFAULT_GRACE_SECONDS = 30;
+
+    /** How many distinct failure reasons a load test keeps, so "100% failed" can say why. */
+    static final int MAX_FAILURE_SAMPLES = 5;
+    private static final int MAX_REASON_CHARS = 200;
 
     private ApiPerformanceUtils() {}
 
@@ -92,6 +97,7 @@ public final class ApiPerformanceUtils {
             Supplier<ResponseAPI> apiCall, int threads, int durationSeconds, long graceSeconds) {
         List<Long> successLatencies = Collections.synchronizedList(new ArrayList<>());
         AtomicInteger failureCount = new AtomicInteger(0);
+        ConcurrentLinkedQueue<String> failureSamples = new ConcurrentLinkedQueue<>();
 
         long startNs = System.nanoTime();
         long deadlineNs = startNs + TimeUnit.SECONDS.toNanos(Math.max(0, durationSeconds));
@@ -120,9 +126,14 @@ public final class ApiPerformanceUtils {
                             successLatencies.add(ms);
                         } else {
                             failureCount.incrementAndGet();
+                            keepReason(failureSamples, response == null ? "no response" : "HTTP " + response.getStatusCode());
                         }
                     } catch (Exception e) {
                         failureCount.incrementAndGet();
+                        if (failureSamples.size() < MAX_FAILURE_SAMPLES) {
+                            keepReason(failureSamples, e.getClass().getSimpleName()
+                                    + (e.getMessage() == null ? "" : ": " + e.getMessage()));
+                        }
                     }
                     if (Thread.currentThread().isInterrupted()) {
                         return;
@@ -147,7 +158,20 @@ public final class ApiPerformanceUtils {
             logger.warn("Load test interrupted before completion");
         }
         long elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs);
-        return buildResult(successLatencies, failureCount.get(), elapsedMs, complete);
+        return buildResult(successLatencies, failureCount.get(), elapsedMs, complete, new ArrayList<>(failureSamples));
+    }
+
+    /** Remembers {@code reason} unless the cap is reached or it is already there. */
+    private static void keepReason(ConcurrentLinkedQueue<String> samples, String reason) {
+        if (samples.size() >= MAX_FAILURE_SAMPLES) {
+            return;
+        }
+        String text = reason.length() <= MAX_REASON_CHARS ? reason : reason.substring(0, MAX_REASON_CHARS) + "...";
+        synchronized (samples) {
+            if (samples.size() < MAX_FAILURE_SAMPLES && !samples.contains(text)) {
+                samples.add(text);
+            }
+        }
     }
 
     // =========================================================================
@@ -160,7 +184,7 @@ public final class ApiPerformanceUtils {
     }
 
     private static LoadTestResult buildResult(
-            List<Long> successLatencies, int failure, long elapsedMs, boolean complete) {
+            List<Long> successLatencies, int failure, long elapsedMs, boolean complete, List<String> failureSamples) {
         List<Long> sorted;
         synchronized (successLatencies) {
             sorted = new ArrayList<>(successLatencies);
@@ -168,7 +192,8 @@ public final class ApiPerformanceUtils {
         int success = sorted.size();
         if (sorted.isEmpty()) {
             // -1, not 0: "no successful call to measure". Zero would pass any SLA.
-            return new LoadTestResult(success + failure, success, failure, -1, -1, -1.0, -1, -1, elapsedMs, complete);
+            return new LoadTestResult(success + failure, success, failure, -1, -1, -1.0, -1, -1, elapsedMs, complete,
+                    failureSamples);
         }
         Collections.sort(sorted);
         long min = sorted.get(0);
@@ -176,7 +201,8 @@ public final class ApiPerformanceUtils {
         double avg = sorted.stream().mapToLong(Long::longValue).average().orElse(0.0);
         long p95 = sorted.get(Math.max(0, (int) Math.ceil(0.95 * sorted.size()) - 1));
         long p99 = sorted.get(Math.max(0, (int) Math.ceil(0.99 * sorted.size()) - 1));
-        return new LoadTestResult(success + failure, success, failure, min, max, avg, p95, p99, elapsedMs, complete);
+        return new LoadTestResult(success + failure, success, failure, min, max, avg, p95, p99, elapsedMs, complete,
+                failureSamples);
     }
 
     // =========================================================================
@@ -199,9 +225,12 @@ public final class ApiPerformanceUtils {
         private final long   p99Ms;
         private final long   elapsedMs;
         private final boolean complete;
+        private final List<String> failureSamples;
 
         LoadTestResult(int total, int success, int failure,
-                       long min, long max, double avg, long p95, long p99, long elapsedMs, boolean complete) {
+                       long min, long max, double avg, long p95, long p99, long elapsedMs, boolean complete,
+                       List<String> failureSamples) {
+            this.failureSamples = Collections.unmodifiableList(new ArrayList<>(failureSamples));
             this.totalRequests = total;
             this.successCount  = success;
             this.failureCount  = failure;
@@ -234,6 +263,14 @@ public final class ApiPerformanceUtils {
             return elapsedMs <= 0 ? 0.0 : successCount * 1000.0 / elapsedMs;
         }
 
+        /**
+         * Up to {@value ApiPerformanceUtils#MAX_FAILURE_SAMPLES} distinct reasons calls failed ({@code HTTP 503},
+         * {@code ConnectException: Connection refused}), so a high failure rate says why. Empty when nothing failed.
+         */
+        public List<String> getFailureSamples() {
+            return failureSamples;
+        }
+
         /** {@code false} if workers had to be interrupted: the figures then cover only the calls that finished. */
         public boolean isComplete() {
             return complete;
@@ -243,9 +280,10 @@ public final class ApiPerformanceUtils {
         public String toString() {
             return String.format(
                 "LoadTestResult{total=%d, success=%d, failure=%d (%.1f%%), "
-                + "min=%dms, avg=%.1fms, max=%dms, p95=%dms, p99=%dms, %.1f ok/s, complete=%s}",
+                + "min=%dms, avg=%.1fms, max=%dms, p95=%dms, p99=%dms, %.1f ok/s, complete=%s%s}",
                 totalRequests, successCount, failureCount, getFailureRate() * 100,
-                minMs, avgMs, maxMs, p95Ms, p99Ms, getThroughputPerSecond(), complete);
+                minMs, avgMs, maxMs, p95Ms, p99Ms, getThroughputPerSecond(), complete,
+                failureSamples.isEmpty() ? "" : ", failure reasons=" + failureSamples);
         }
     }
 }

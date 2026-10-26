@@ -23,17 +23,25 @@ import org.openqa.selenium.remote.RemoteWebDriver;
  */
 public final class PageTimingSupport {
 
-	private static final String LOAD_TIME_SCRIPT =
-		"return window.performance.timing.loadEventEnd - window.performance.timing.navigationStart;";
+	/*
+	 * A timing the browser has not reached yet is reported as 0, never as (0 - navigationStart): that expression
+	 * is about -1.8 trillion while a page is still loading, which is what these scripts used to return, against
+	 * a Javadoc that promised 0. A value of 0 means "not measured" to every caller.
+	 */
+	static final String LOAD_TIME_SCRIPT =
+		"var t = window.performance.timing;" +
+		"return t.loadEventEnd > 0 ? t.loadEventEnd - t.navigationStart : 0;";
 
-	private static final String FULL_TIMING_SCRIPT =
-		"var t = window.performance.timing; return {" +
+	static final String FULL_TIMING_SCRIPT =
+		"var t = window.performance.timing;" +
+		"function since(x) { return x > 0 ? x - t.navigationStart : 0; }" +
+		"return {" +
 		"'navigationStart': t.navigationStart," +
-		"'domContentLoaded': t.domContentLoadedEventEnd - t.navigationStart," +
-		"'loadEventEnd': t.loadEventEnd - t.navigationStart," +
-		"'domInteractive': t.domInteractive - t.navigationStart," +
-		"'responseEnd': t.responseEnd - t.navigationStart," +
-		"'connectEnd': t.connectEnd - t.connectStart" +
+		"'domContentLoaded': since(t.domContentLoadedEventEnd)," +
+		"'loadEventEnd': since(t.loadEventEnd)," +
+		"'domInteractive': since(t.domInteractive)," +
+		"'responseEnd': since(t.responseEnd)," +
+		"'connectEnd': (t.connectEnd > 0 && t.connectStart > 0) ? t.connectEnd - t.connectStart : 0" +
 		"};";
 
 	private PageTimingSupport() {}
