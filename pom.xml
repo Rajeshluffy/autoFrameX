@@ -65,7 +65,7 @@
 		<cucumber.jvm.version>7.21.1</cucumber.jvm.version>
 		<cucumber.jvm.testng.version>7.21.1</cucumber.jvm.testng.version>
 		<cucumber.picocontainer.version>7.21.1</cucumber.picocontainer.version>
-		<jackson.databind.version>2.18.0</jackson.databind.version>
+		<jackson.databind.version>2.22.4</jackson.databind.version>
 		<owner.version>1.0.12</owner.version>
 		<commons.lang3.version>3.20.0</commons.lang3.version>
 		<commons.compress.version>1.27.1</commons.compress.version>
