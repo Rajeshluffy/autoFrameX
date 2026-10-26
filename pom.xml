@@ -55,7 +55,7 @@
 		<browser>chrome</browser>
 		<env>qa</env>
 		<headless>false</headless>
-		<selenium.version>4.33.0</selenium.version>
+		<selenium.version>4.51.0</selenium.version>
 		<testng.version>7.7.0</testng.version>
 		<apache.poi.version>5.4.1</apache.poi.version>
 		<extent.report.version>5.1.2</extent.report.version>
