@@ -68,7 +68,7 @@
 		<jackson.databind.version>2.22.4</jackson.databind.version>
 		<owner.version>1.0.12</owner.version>
 		<commons.lang3.version>3.20.0</commons.lang3.version>
-		<commons.compress.version>1.27.1</commons.compress.version>
+		<commons.compress.version>1.28.0</commons.compress.version>
 		<faker.version>1.0.2</faker.version>
 		<mysql.version>9.6.0</mysql.version>
 		<snakeyaml.version>2.7</snakeyaml.version>
