@@ -73,7 +73,7 @@
 		<mysql.version>9.6.0</mysql.version>
 		<snakeyaml.version>2.7</snakeyaml.version>
 		<protobuf.version>4.34.1</protobuf.version>
-		<jspecify.version>1.0.0</jspecify.version>
+		<jspecify.version>1.0.1</jspecify.version>
 		<slf4j.version>2.0.17</slf4j.version>
 		<logback.version>1.6.5</logback.version>
 		<logstash.encoder.version>9.0</logstash.encoder.version>
